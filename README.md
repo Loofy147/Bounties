@@ -22,7 +22,13 @@ Current B0 target: 1inch Smart Contracts, beginning with a pinned production rel
 
 The reusable research engine is defined in [`research/BUG-HUNTER-FOUNDATION-v0.1.md`](research/BUG-HUNTER-FOUNDATION-v0.1.md).
 
-The canonical model is:
+The reusable autonomous execution architecture is defined in [`research/CONTROL-PLANE-ARCHITECTURE-v0.1.md`](research/CONTROL-PLANE-ARCHITECTURE-v0.1.md), with its executable safety contract and implementation sequence in:
+
+- [`research/CONTROL-PLANE-INVARIANTS-v0.1.md`](research/CONTROL-PLANE-INVARIANTS-v0.1.md)
+- [`research/CONTROL-PLANE-ROADMAP-v0.1.md`](research/CONTROL-PLANE-ROADMAP-v0.1.md)
+- [`research/CONTROL-PLANE-DECISIONS-v0.1.md`](research/CONTROL-PLANE-DECISIONS-v0.1.md)
+
+The canonical model remains:
 
 ```text
 scope
@@ -40,7 +46,7 @@ scope
 → submission
 ```
 
-The system is evidence-driven rather than report-volume-driven. AI components may generate and investigate hypotheses, but the research record remains provenance-aware and a human approval gate is required before external submission.
+The Control Plane governs how this workflow is executed. It does not replace target-specific research, scope verification, evidence collection, or human submission approval.
 
 ## Directory model
 
@@ -50,7 +56,7 @@ bounties/
 ├── evidence/          # deterministic evidence packages and minimized traces
 ├── submissions/       # submission-ready reports; no secrets
 ├── outcomes/          # triage, acceptance, rejection, payout records
-└── research/          # cross-target methodology and reusable checklists
+└── research/          # cross-target methodology, architecture, and checklists
 ```
 
 ## Relationship to Moirae
