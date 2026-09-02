@@ -143,13 +143,13 @@ Adds a narrow concurrency reference model around stable `effect_key` with one ac
 
 `control_plane/durable_ownership.py`
 
-Extends the fencing model across independent local processes using SQLite WAL and transactional `BEGIN IMMEDIATE` claim/update operations.
+Extends fencing across independent local processes using SQLite WAL and transactional claim/update operations.
 
 ### Atomic ownership + budget admission
 
 `control_plane/durable_budget_ownership.py`
 
-Binds ownership acquisition and pessimistic budget reservation to the same SQLite transaction. Failed admission rolls back both; expiry replacement releases the old reservation and grants the new fence/reservation atomically.
+Binds ownership acquisition and pessimistic budget reservation to one SQLite transaction. A failed admission cannot leave a newly granted owner or reservation behind; expiry replacement removes the prior reservation and grants the new fence/reservation together.
 
 `research/CONTROL-PLANE-ATOMIC-ADMISSION-v0.1.md` defines the contract and limits.
 
@@ -192,7 +192,7 @@ After a worker crash, a new worker may safely acquire a newer ownership token wi
 
 ### Lesson G — Ownership and budget form one admission decision
 
-Separating ownership and resource reservation creates an authorization gap. The local transactional reference therefore admits them together, so resource capacity and execution authority cannot diverge during the claim operation.
+Separating ownership and resource reservation creates an authorization gap. The local transactional reference therefore admits them together so resource capacity and execution authority cannot diverge during the claim operation.
 
 This closes the local admission gap but does not settle actual external-effect settlement, distributed failover, or production-grade transactional infrastructure.
 
@@ -281,7 +281,7 @@ These are settled architecture decisions for v0.1.
 
 ## 9. Next gate
 
-The ownership and budget admission model is now implemented as a local transactional reference. The next unresolved boundary is **durable ownership binding at PEP/executor admission**.
+The next unresolved boundary is **durable ownership binding at PEP/executor admission**.
 
 Required sequence:
 
@@ -303,7 +303,7 @@ The next phase must answer one precise question:
 
 > Can an execution request that has lost or superseded ownership still reach the controlled execution admission boundary?
 
-The target is prevention, not detection after the fact.
+The target is prevention, not detection after the fact. The PEP must not rely on a standalone pre-check that leaves an uncontrolled TOCTOU window.
 
 This phase must remain local-only and must not add network execution, exploit execution, adaptive scheduling, or Hunter integration.
 
