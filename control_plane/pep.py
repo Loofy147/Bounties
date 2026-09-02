@@ -1,8 +1,4 @@
-"""Local Policy Enforcement Point reference adapter.
-
-No network I/O is performed. The adapter only proves that an execution
-request is bound to the exact immutable lease issued by the control plane.
-"""
+"""Local Policy Enforcement Point for deterministic lease binding tests."""
 
 from __future__ import annotations
 
@@ -18,37 +14,40 @@ class ExecutionRequest:
     target: str
     action_type: str
     effect_key: str
-    observed_target_identity: str
+    action_digest: str
+    target_identity_digest: str
     actual_cost: Decimal
 
 
 class LocalPEP:
-    """Fail-closed local PEP for execution-binding tests."""
+    """Fail-closed local PEP; performs no external I/O."""
 
     def __init__(self, control_plane: ControlPlane) -> None:
         self.control_plane = control_plane
 
     def validate_binding(self, request: ExecutionRequest, lease: Lease) -> None:
-        if request.lease_id != lease.lease_id:
-            raise PermissionError("lease binding mismatch")
-        if request.target != lease.target:
-            raise PermissionError("target binding mismatch")
-        if request.action_type != lease.action_type:
-            raise PermissionError("action binding mismatch")
-        if request.effect_key != lease.effect_key:
-            raise PermissionError("effect binding mismatch")
-        if request.observed_target_identity != lease.target:
-            raise PermissionError("target identity mismatch")
+        checks = (
+            (request.lease_id == lease.lease_id, "lease binding mismatch"),
+            (request.target == lease.target, "target binding mismatch"),
+            (request.action_type == lease.action_type, "action binding mismatch"),
+            (request.effect_key == lease.effect_key, "effect binding mismatch"),
+            (request.action_digest == lease.action_digest, "action digest mismatch"),
+            (
+                request.target_identity_digest == lease.target_identity_digest,
+                "target identity digest mismatch",
+            ),
+        )
+        for valid, message in checks:
+            if not valid:
+                raise PermissionError(message)
 
     def execute(self, request: ExecutionRequest) -> Lease:
-        """Consume exactly one authorized lease after binding verification.
+        """Admit one exact lease into the local execution boundary.
 
-        The method intentionally performs no external side effect. A future
-        concrete executor must call this binding gate before dispatching any
-        externally visible action.
+        No network or target-side effect occurs here. A future external
+        executor must provide a durable effect protocol for crash/commit
+        ambiguity before this adapter can become a real execution PEP.
         """
-        lease = self.control_plane._leases.get(request.lease_id)
-        if lease is None:
-            raise PermissionError("unknown lease")
+        lease = self.control_plane.get_lease(request.lease_id)
         self.validate_binding(request, lease)
         return self.control_plane.consume_lease(request.lease_id, request.actual_cost)
