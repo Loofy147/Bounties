@@ -4,18 +4,20 @@
 
 ## Eligibility boundary
 
-The 1inch Smart Contracts program was re-verified on 2026-09-02. The current official program scope says Limit Order Protocol is in scope, applies only to the latest tag/releases, requires a PoC, and prohibits testing on mainnet/public testnets; testing must use local forks. citeturn271879search0
+The 1inch Smart Contracts program was re-verified on 2026-09-02. Official Immunefi scope states that Limit Order Protocol is in scope, applies only to the latest tag/releases, requires a PoC, and prohibits testing on mainnet/public testnets; testing must use local forks.
 
-The production source guidance currently identifies tag `4.3.2` as the latest production/audited version and warns that `master` is work-in-progress. citeturn271879search1
+The production source guidance currently identifies tag `4.3.2` as the latest production/audited version and warns that `master` is work-in-progress. Verify again immediately before any submission.
 
 ```text
 repository: 1inch/limit-order-protocol
 tag: 4.3.2
 rule: never treat master/WIP as the bounty target
 research environment: local fork only
+scope source: Immunefi 1inch Smart Contracts program, verified 2026-09-02
+production source: 1inch/limit-order-protocol README, verified 2026-09-02
 ```
 
-The program currently lists critical, high, medium, and low smart-contract impacts and requires reproducible impact evidence. citeturn271879search0turn271879search2
+The program currently lists critical, high, medium, and low smart-contract impacts and requires reproducible impact evidence. See the live Immunefi program page before submission.
 
 ## Primary audit surface
 
