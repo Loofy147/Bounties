@@ -4,15 +4,18 @@
 
 ## Eligibility boundary
 
-The current 1inch Smart Contracts program must be re-verified immediately before any submission. The working source pin from the 2026-09-01 reconnaissance snapshot was:
+The 1inch Smart Contracts program was re-verified on 2026-09-02. The current official program scope says Limit Order Protocol is in scope, applies only to the latest tag/releases, requires a PoC, and prohibits testing on mainnet/public testnets; testing must use local forks. citeturn271879search0
+
+The production source guidance currently identifies tag `4.3.2` as the latest production/audited version and warns that `master` is work-in-progress. citeturn271879search1
 
 ```text
 repository: 1inch/limit-order-protocol
 tag: 4.3.2
 rule: never treat master/WIP as the bounty target
+research environment: local fork only
 ```
 
-The bounty program applies to eligible latest tags/releases and requires a reproducible PoC. Keep the exact release and impact category in every evidence package.
+The program currently lists critical, high, medium, and low smart-contract impacts and requires reproducible impact evidence. citeturn271879search0turn271879search2
 
 ## Primary audit surface
 
