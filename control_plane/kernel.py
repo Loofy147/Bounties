@@ -1,24 +1,24 @@
-"""Deterministic, local-only control-plane primitives.
-
-This module deliberately contains no network client and no exploit logic. It
-models authorization, immutable execution leases, pessimistic budget
-reservations, revocation, kill-switch behavior, trajectory state, and
-hash-linked provenance for local testing.
-"""
+"""Deterministic, local-only Control Plane kernel primitives."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from hashlib import sha256
 from threading import Lock
 from typing import FrozenSet, Mapping, Optional
 from uuid import uuid4
 
+from .target_identity import TargetIdentity
+
 
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _digest(parts: tuple[str, ...]) -> str:
+    return sha256("|".join(parts).encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -54,16 +54,31 @@ class Action:
     target: str
     action_type: str
     effect_key: str
+    target_identity_digest: str
     requested_at: datetime = field(default_factory=now_utc)
+
+    def digest(self) -> str:
+        return _digest(
+            (
+                self.action_id,
+                self.principal_id,
+                self.target,
+                self.action_type,
+                self.effect_key,
+                self.target_identity_digest,
+            )
+        )
 
 
 @dataclass(frozen=True)
 class Lease:
     lease_id: str
     action_id: str
+    action_digest: str
     capability_id: str
     engagement_id: str
     target: str
+    target_identity_digest: str
     action_type: str
     effect_key: str
     policy_version: str
@@ -149,7 +164,7 @@ class BudgetGovernor:
 
 
 class KillSwitch:
-    """Independent process-wide stop state for the kernel."""
+    """Independent stop state for local kernel tests."""
 
     def __init__(self) -> None:
         self._engagements: set[str] = set()
@@ -165,22 +180,27 @@ class KillSwitch:
 
 
 class ProvenanceLedger:
-    """Append-only hash-linked provenance chain for deterministic tests."""
+    """Hash-linked provenance chain; storage immutability remains an external boundary."""
 
     def __init__(self) -> None:
         self._events: list[ProvenanceEvent] = []
         self._lock = Lock()
 
+    @property
+    def events(self) -> tuple[ProvenanceEvent, ...]:
+        with self._lock:
+            return tuple(self._events)
+
     def append(self, event_type: str, payload: Mapping[str, str]) -> ProvenanceEvent:
         with self._lock:
             previous = self._events[-1].event_hash if self._events else "GENESIS"
-            canonical = "|".join(f"{k}={payload[k]}" for k in sorted(payload))
-            material = f"{previous}|{event_type}|{canonical}"
-            digest = sha256(material.encode("utf-8")).hexdigest()
+            normalized = dict(sorted(payload.items()))
+            canonical = "|".join(f"{k}={v}" for k, v in normalized.items())
+            digest = _digest((previous, event_type, canonical))
             event = ProvenanceEvent(
                 event_id=str(uuid4()),
                 event_type=event_type,
-                payload=dict(payload),
+                payload=normalized,
                 previous_hash=previous,
                 event_hash=digest,
                 recorded_at=now_utc(),
@@ -195,9 +215,7 @@ class ProvenanceLedger:
                 canonical = "|".join(
                     f"{k}={event.payload[k]}" for k in sorted(event.payload)
                 )
-                expected = sha256(
-                    f"{previous}|{event.event_type}|{canonical}".encode("utf-8")
-                ).hexdigest()
+                expected = _digest((previous, event.event_type, canonical))
                 if event.previous_hash != previous or event.event_hash != expected:
                     return False
                 previous = event.event_hash
@@ -207,8 +225,13 @@ class ProvenanceLedger:
 class ControlPlane:
     """Fail-closed authorization kernel for local fixtures."""
 
-    def __init__(self, policy: EngagementPolicy, governor: BudgetGovernor, kill_switch: KillSwitch,
-                 ledger: ProvenanceLedger) -> None:
+    def __init__(
+        self,
+        policy: EngagementPolicy,
+        governor: BudgetGovernor,
+        kill_switch: KillSwitch,
+        ledger: ProvenanceLedger,
+    ) -> None:
         self.policy = policy
         self.governor = governor
         self.kill_switch = kill_switch
@@ -227,6 +250,13 @@ class ControlPlane:
         with self._lock:
             self._capabilities[capability.capability_id] = capability
 
+    def get_lease(self, lease_id: str) -> Lease:
+        with self._lock:
+            lease = self._leases.get(lease_id)
+            if lease is None:
+                raise PermissionError("unknown lease")
+            return lease
+
     def revoke_capability(self, capability_id: str) -> None:
         with self._lock:
             capability = self._capabilities.get(capability_id)
@@ -234,7 +264,7 @@ class ControlPlane:
                 raise KeyError(capability_id)
             self._capabilities[capability_id] = capability.revoke()
             for lease_id, lease in self._leases.items():
-                if lease.capability_id == capability_id:
+                if lease.capability_id == capability_id and not lease.consumed:
                     self._leases[lease_id] = lease.revoke()
             self.ledger.append("CAPABILITY_REVOKED", {"capability_id": capability_id})
 
@@ -247,9 +277,20 @@ class ControlPlane:
             self._trajectories[trajectory.trajectory_id] = trajectory
         return trajectory
 
-    def authorize(self, action: Action, capability_id: str, reservation: Decimal,
-                  lease_ttl_seconds: int = 30) -> Lease:
+    def authorize(
+        self,
+        action: Action,
+        capability_id: str,
+        target_identity: TargetIdentity,
+        reservation: Decimal,
+        lease_ttl_seconds: int = 30,
+    ) -> Lease:
         now = now_utc()
+        observed_digest = target_identity.digest()
+        if observed_digest != action.target_identity_digest:
+            raise PermissionError("target identity binding mismatch")
+        if lease_ttl_seconds <= 0:
+            raise ValueError("lease TTL must be positive")
         with self._lock:
             if self.kill_switch.is_tripped(self.policy.engagement_id):
                 raise PermissionError("engagement kill switch is active")
@@ -258,10 +299,14 @@ class ControlPlane:
             capability = self._capabilities.get(capability_id)
             if capability is None or capability.revoked:
                 raise PermissionError("capability unavailable")
+            if capability.policy_version != self.policy.policy_version:
+                raise PermissionError("capability policy version mismatch")
             if capability.principal_id != action.principal_id:
                 raise PermissionError("principal mismatch")
             if now >= capability.expires_at:
                 raise PermissionError("capability expired")
+            if action.target != target_identity.canonical_target:
+                raise PermissionError("target identity canonical-target mismatch")
             if action.target not in self.policy.authorized_targets:
                 raise PermissionError("target out of scope")
             if action.target not in capability.target_set:
@@ -276,15 +321,15 @@ class ControlPlane:
                 raise ValueError("reservation must be non-negative")
             self.governor.reserve(reservation)
             expiry = min(self.policy.expires_at, capability.expires_at)
-            lease_expiry = min(expiry, now.replace(microsecond=0))
-            from datetime import timedelta
             lease_expiry = min(expiry, now + timedelta(seconds=lease_ttl_seconds))
             lease = Lease(
                 lease_id=str(uuid4()),
                 action_id=action.action_id,
+                action_digest=action.digest(),
                 capability_id=capability.capability_id,
                 engagement_id=self.policy.engagement_id,
                 target=action.target,
+                target_identity_digest=observed_digest,
                 action_type=action.action_type,
                 effect_key=action.effect_key,
                 policy_version=self.policy.policy_version,
@@ -299,8 +344,10 @@ class ControlPlane:
                 {
                     "lease_id": lease.lease_id,
                     "action_id": action.action_id,
+                    "action_digest": lease.action_digest,
                     "capability_id": capability.capability_id,
                     "target": action.target,
+                    "target_identity_digest": observed_digest,
                     "action_type": action.action_type,
                     "policy_version": self.policy.policy_version,
                 },
