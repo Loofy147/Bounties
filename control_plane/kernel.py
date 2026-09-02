@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from hashlib import sha256
 from threading import Lock
+from types import MappingProxyType
 from typing import FrozenSet, Mapping, Optional
 from uuid import uuid4
 
@@ -180,7 +181,7 @@ class KillSwitch:
 
 
 class ProvenanceLedger:
-    """Hash-linked provenance chain; storage immutability remains an external boundary."""
+    """Hash-linked provenance chain with immutable event payloads."""
 
     def __init__(self) -> None:
         self._events: list[ProvenanceEvent] = []
@@ -193,14 +194,14 @@ class ProvenanceLedger:
 
     def append(self, event_type: str, payload: Mapping[str, str]) -> ProvenanceEvent:
         with self._lock:
-            previous = self._events[-1].event_hash if self._events else "GENESIS"
             normalized = dict(sorted(payload.items()))
             canonical = "|".join(f"{k}={v}" for k, v in normalized.items())
+            previous = self._events[-1].event_hash if self._events else "GENESIS"
             digest = _digest((previous, event_type, canonical))
             event = ProvenanceEvent(
                 event_id=str(uuid4()),
                 event_type=event_type,
-                payload=normalized,
+                payload=MappingProxyType(normalized),
                 previous_hash=previous,
                 event_hash=digest,
                 recorded_at=now_utc(),
