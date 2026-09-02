@@ -54,12 +54,16 @@ def test_taking_mode_clamps_when_computed_maker_exceeds_remaining() -> None:
 
 def test_rounding_is_floor_for_maker_and_ceil_for_taker() -> None:
     order = OrderModel(maker_amount=7, taker_amount=10)
-    maker = order.fill_by_taking(1)
-    assert maker.making_amount == 0 or maker.making_amount == 1
+    maker = order.fill_by_taking(2)
+    assert maker.making_amount == 1
 
     order = OrderModel(maker_amount=7, taker_amount=10)
     taking = order.fill_by_making(1)
     assert taking.taking_amount == 2
+
+    order = OrderModel(maker_amount=10, taker_amount=7)
+    with pytest.raises(ModelError):
+        order.fill_by_taking(1)
 
 
 def test_remaining_invalidator_is_exact_bitwise_complement() -> None:
@@ -89,7 +93,7 @@ def test_boundaries_and_invalid_inputs() -> None:
 
 def test_4_3_2_unchecked_overflow_edge_is_zero_at_the_calculator_boundary() -> None:
     # For orderMaker=max and low-128 orderTaker/swapMaker, the unchecked
-    # numerator can wrap.  OrderMixin's downstream zero-amount guard rejects
+    # numerator can wrap. OrderMixin's downstream zero-amount guard rejects
     # the resulting zero fill; this is a boundary control, not a finding.
     result = production_guarded_ceil(UINT256_MAX, 2, 1)
     assert result == 0
@@ -97,9 +101,8 @@ def test_4_3_2_unchecked_overflow_edge_is_zero_at_the_calculator_boundary() -> N
 
 def test_4_3_2_unchecked_overflow_cannot_yield_positive_sub_order_result_after_wrap() -> None:
     # When the guarded branch wraps, numerator = swapMaker*orderTaker + M - 1
-    # modulo 2**256.  With both multiplicands below 2**128, the wrapped value
-    # is strictly below M whenever an overflow occurs, hence integer division
-    # by M yields zero. This captures the downstream-zero-revert classification.
+    # modulo 2**256. With both multiplicands below 2**128, an overflowing
+    # wrapped value is below M, hence integer division by M yields zero.
     for order_maker in (UINT256_MAX - 1000, UINT256_MAX - 1, UINT256_MAX):
         for order_taker in (2, 3, 17, 255):
             for swap_maker in (1, 2, 7, 128):
