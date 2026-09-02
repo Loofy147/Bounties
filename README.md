@@ -18,6 +18,30 @@ Obtain the first legitimate, externally accepted paid finding, regardless of pay
 
 Current B0 target: 1inch Smart Contracts, beginning with a pinned production release of Limit Order Protocol. See `targets/1inch/`.
 
+## Hunter architecture
+
+The reusable research engine is defined in [`research/BUG-HUNTER-FOUNDATION-v0.1.md`](research/BUG-HUNTER-FOUNDATION-v0.1.md).
+
+The canonical model is:
+
+```text
+scope
+→ target snapshot
+→ attack-surface/state model
+→ security invariant
+→ hypothesis
+→ controlled experiment
+→ evidence
+→ independent validation
+→ impact
+→ minimized counterexample
+→ novelty/scope gate
+→ human review
+→ submission
+```
+
+The system is evidence-driven rather than report-volume-driven. AI components may generate and investigate hypotheses, but the research record remains provenance-aware and a human approval gate is required before external submission.
+
 ## Directory model
 
 ```text
