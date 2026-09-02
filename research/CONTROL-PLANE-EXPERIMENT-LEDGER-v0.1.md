@@ -137,23 +137,21 @@ Provides a local JSONL crash-recovery reference model with state-transition vali
 
 `control_plane/ownership.py`
 
-Adds a narrow concurrency reference model around stable `effect_key`:
+Adds a narrow concurrency reference model around stable `effect_key` with one active owner, monotonic fencing, stale-owner rejection, expiry recovery, and local revocation.
 
-```text
-one effect_key
-    ↓
-one active owner
-    ↓
-monotonic fencing token
-    ↓
-stale owner rejection
-    ↓
-expiry/recovery or explicit revocation
-```
+### Durable shared ownership
 
-The implementation uses a lock for local atomic claim/validation and does not claim distributed durability or external-side-effect atomicity.
+`control_plane/durable_ownership.py`
 
-`research/CONTROL-PLANE-OWNERSHIP-v0.1.md` defines the contract and explicit limits.
+Extends the fencing model across independent local processes using SQLite WAL and transactional `BEGIN IMMEDIATE` claim/update operations.
+
+### Atomic ownership + budget admission
+
+`control_plane/durable_budget_ownership.py`
+
+Binds ownership acquisition and pessimistic budget reservation to the same SQLite transaction. Failed admission rolls back both; expiry replacement releases the old reservation and grants the new fence/reservation atomically.
+
+`research/CONTROL-PLANE-ATOMIC-ADMISSION-v0.1.md` defines the contract and limits.
 
 ## 4. What has been learned from implementation review
 
@@ -167,7 +165,7 @@ The external boundary still requires executor-specific prepare/commit/reconcile 
 
 Locks and dictionaries are sufficient for deterministic unit-level reasoning but do not survive process loss or coordinate independent workers.
 
-Therefore durability and distributed coordination remain open until an actual persistent concurrency protocol is defined and tested.
+A local SQLite reference is stronger evidence for multi-process serialization, but it remains a single local authority rather than a distributed consensus system.
 
 ### Lesson C — Evidence integrity has two layers
 
@@ -192,11 +190,17 @@ After a worker crash, a new worker may safely acquire a newer ownership token wi
 
 `UNKNOWN` therefore remains authoritative until executor-specific reconciliation determines the external outcome.
 
+### Lesson G — Ownership and budget form one admission decision
+
+Separating ownership and resource reservation creates an authorization gap. The local transactional reference therefore admits them together, so resource capacity and execution authority cannot diverge during the claim operation.
+
+This closes the local admission gap but does not settle actual external-effect settlement, distributed failover, or production-grade transactional infrastructure.
+
 ## 5. Current guarantees
 
-The current implementation is a **local deterministic reference kernel**.
+The current implementation is a **local deterministic reference kernel plus local SQLite concurrency references**.
 
-It currently demonstrates the design direction for:
+It demonstrates the design direction for:
 
 - fail-closed authorization;
 - capability scoping;
@@ -211,7 +215,8 @@ It currently demonstrates the design direction for:
 - local single-owner effect claims;
 - monotonic fencing and stale-owner rejection;
 - expiry-based ownership recovery;
-- local revocation of ownership.
+- local multi-process ownership serialization;
+- atomic ownership + budget reservation at one SQLite authority.
 
 These are reference properties, not production guarantees.
 
@@ -220,7 +225,7 @@ These are reference properties, not production guarantees.
 Not yet proven:
 
 - atomicity with a real external system;
-- distributed/shared durable ownership;
+- distributed consensus/shared ownership across independent authorities;
 - crash-safe distributed revocation propagation;
 - exactly-once effect execution across workers;
 - durable production provenance;
@@ -230,7 +235,8 @@ Not yet proven:
 - secret-reference subsystem;
 - hostile tool-output containment;
 - scheduler fairness under contention;
-- atomic ownership + budget reservation.
+- coupling of durable ownership into PEP/executor admission;
+- actual cost settlement coupled atomically to external effect outcome.
 
 ## 7. Experiment status
 
@@ -251,9 +257,12 @@ Not yet proven:
 | Fencing / stale-owner rejection | Implemented | Older owner/token cannot validate after replacement |
 | Ownership expiry recovery | Implemented | Recovery receives a strictly newer fencing token |
 | Ownership revocation | Implemented | Revoked effect cannot be claimed or validated locally |
-| Distributed concurrency | Open | Requires shared durable atomic authority |
-| Ownership + budget atomicity | Open | Requires one durable transaction boundary |
+| Multi-process ownership claim | Implemented / unexecuted | SQLite transaction model and tests committed; runtime execution pending |
+| Multi-process budget contention | Implemented / unexecuted | Independent effects cannot overbook the shared ceiling by design; runtime execution pending |
+| Ownership + budget atomicity | Implemented / unexecuted | One transaction boundary defined; runtime failure-injection execution pending |
+| Distributed concurrency | Open | Requires a shared durable authority beyond a single local database |
 | External effect atomicity | Open | Requires executor-side protocol |
+| Durable PEP ownership binding | Open | Next implementation gate |
 
 ## 8. Do not repeat these design loops
 
@@ -272,29 +281,31 @@ These are settled architecture decisions for v0.1.
 
 ## 9. Next gate
 
-The local fenced ownership gate is now specified and implemented as a reference model. The unresolved problem is the **durable shared authority** needed to carry the same invariants across independent processes and restart.
+The ownership and budget admission model is now implemented as a local transactional reference. The next unresolved boundary is **durable ownership binding at PEP/executor admission**.
 
 Required sequence:
 
 ```text
-Durable effect state
+Durable ownership + reservation
         ↓
-Atomic ownership / compare-and-swap
+PEP validates lease + target identity + action digest
         ↓
-One effect identity → one active owner
+PEP validates current owner + fencing token
         ↓
-Crash-safe recovery
+Single admission decision
         ↓
-Revocation interaction
+Effect protocol PREPARE
         ↓
-Ownership + budget atomicity
-        ↓
-Fault / concurrency tests
+UNKNOWN / COMMITTED / FAILED reconciliation
 ```
 
-The next phase must use a real shared persistence boundary (initially a local multi-process reference such as SQLite WAL or an equivalent transactional store) and test contention, restart, stale fencing, journal replay, revocation, and reservation races.
+The next phase must answer one precise question:
 
-This phase must still remain local-only. It must not add network execution, exploit execution, adaptive scheduling, or Hunter integration.
+> Can an execution request that has lost or superseded ownership still reach the controlled execution admission boundary?
+
+The target is prevention, not detection after the fact.
+
+This phase must remain local-only and must not add network execution, exploit execution, adaptive scheduling, or Hunter integration.
 
 ## 10. Relationship to Hunter and H-A1
 
