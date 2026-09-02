@@ -127,14 +127,12 @@ class SQLiteOwnershipAuthority:
                 if current.state == DurableOwnershipState.OWNED and expires_at is not None and expires_at > now:
                     raise DurableOwnershipConflict("effect already has an active owner")
 
+                next_version = current.version + 1
                 if current.state == DurableOwnershipState.OWNED:
                     conn.execute(
-                        "UPDATE effect_ownership SET state=?, owner_id=NULL, version=version+1 WHERE effect_key=?",
-                        (DurableOwnershipState.EXPIRED.value, effect_key),
+                        "UPDATE effect_ownership SET state=?, owner_id=NULL, expires_at=NULL, version=? WHERE effect_key=?",
+                        (DurableOwnershipState.EXPIRED.value, next_version, effect_key),
                     )
-                    version = current.version + 1
-                else:
-                    version = current.version
                 token = current.fencing_token + 1
                 conn.execute(
                     """
@@ -146,7 +144,7 @@ class SQLiteOwnershipAuthority:
                         DurableOwnershipState.OWNED.value,
                         owner_id,
                         token,
-                        version + 1,
+                        next_version + 1,
                         now_s,
                         expires_s,
                         effect_key,
@@ -192,15 +190,8 @@ class SQLiteOwnershipAuthority:
 
     def assert_current(self, effect_key: str, owner_id: str, fencing_token: int) -> DurableOwnershipRecord:
         with self._connect() as conn:
-            row = self._current_row(conn, effect_key)
-            current = self._record(row)
-            expires_at = self._parse_time(current.expires_at)
-            if current.state != DurableOwnershipState.OWNED:
-                raise DurableStaleOwner(f"effect is not owned: {current.state}")
-            if expires_at is not None and expires_at <= self._now():
-                raise DurableStaleOwner("ownership has expired")
-            if current.owner_id != owner_id or current.fencing_token != fencing_token:
-                raise DurableStaleOwner("stale owner or fencing token")
+            current = self._record(self._current_row(conn, effect_key))
+            self._require_current(current, owner_id, fencing_token)
             return current
 
     def release(self, effect_key: str, owner_id: str, fencing_token: int) -> DurableOwnershipRecord:
@@ -242,7 +233,7 @@ class SQLiteOwnershipAuthority:
                 )
             else:
                 conn.execute(
-                    "UPDATE effect_ownership SET state=?, owner_id=NULL, version=version+1 WHERE effect_key=?",
+                    "UPDATE effect_ownership SET state=?, owner_id=NULL, expires_at=NULL, version=version+1 WHERE effect_key=?",
                     (DurableOwnershipState.REVOKED.value, effect_key),
                 )
             conn.commit()
@@ -255,19 +246,24 @@ class SQLiteOwnershipAuthority:
             if current.state == DurableOwnershipState.OWNED and expires_at is not None and expires_at <= self._now():
                 conn.execute("BEGIN IMMEDIATE")
                 conn.execute(
-                    "UPDATE effect_ownership SET state=?, owner_id=NULL, version=version+1 WHERE effect_key=? AND state=?",
+                    "UPDATE effect_ownership SET state=?, owner_id=NULL, expires_at=NULL, version=version+1 WHERE effect_key=? AND state=?",
                     (DurableOwnershipState.EXPIRED.value, effect_key, DurableOwnershipState.OWNED.value),
                 )
                 conn.commit()
                 current = self._record(self._current_row(conn, effect_key))
             return current
 
-    @staticmethod
-    def _require_current(record: DurableOwnershipRecord, owner_id: str, fencing_token: int) -> None:
-        expires_at = SQLiteOwnershipAuthority._parse_time(record.expires_at)
+    @classmethod
+    def _require_current(
+        cls,
+        record: DurableOwnershipRecord,
+        owner_id: str,
+        fencing_token: int,
+    ) -> None:
+        expires_at = cls._parse_time(record.expires_at)
         if record.state != DurableOwnershipState.OWNED:
             raise DurableStaleOwner(f"effect is not owned: {record.state}")
-        if expires_at is not None and expires_at <= SQLiteOwnershipAuthority._now():
+        if expires_at is not None and expires_at <= cls._now():
             raise DurableStaleOwner("ownership has expired")
         if record.owner_id != owner_id or record.fencing_token != fencing_token:
             raise DurableStaleOwner("stale owner or fencing token")
