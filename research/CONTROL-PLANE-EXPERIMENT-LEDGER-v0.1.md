@@ -133,6 +133,28 @@ AUTHORIZED
 
 Provides a local JSONL crash-recovery reference model with state-transition validation, monotonic sequence checking, and hash-linked record integrity.
 
+### Local fenced effect ownership
+
+`control_plane/ownership.py`
+
+Adds a narrow concurrency reference model around stable `effect_key`:
+
+```text
+one effect_key
+    ↓
+one active owner
+    ↓
+monotonic fencing token
+    ↓
+stale owner rejection
+    ↓
+expiry/recovery or explicit revocation
+```
+
+The implementation uses a lock for local atomic claim/validation and does not claim distributed durability or external-side-effect atomicity.
+
+`research/CONTROL-PLANE-OWNERSHIP-v0.1.md` defines the contract and explicit limits.
+
 ## 4. What has been learned from implementation review
 
 ### Lesson A — Lease binding is necessary but not sufficient
@@ -158,6 +180,18 @@ A hash chain proves internal consistency only while the underlying trusted recor
 
 A lease keyed only by target is insufficient. Binding must cover action identity and target identity; otherwise a valid lease can be replayed against a modified request.
 
+### Lesson E — Ownership fencing is necessary but not sufficient
+
+A fencing token can reject a stale worker at the Control Plane authority, but the check is not itself an atomic external execution fence.
+
+The production execution path must bind ownership into the authoritative admission/commit boundary, otherwise a time-of-check/time-of-use window remains.
+
+### Lesson F — Recovery ownership does not imply effect replay safety
+
+After a worker crash, a new worker may safely acquire a newer ownership token without being allowed to assume that the previous external effect failed.
+
+`UNKNOWN` therefore remains authoritative until executor-specific reconciliation determines the external outcome.
+
 ## 5. Current guarantees
 
 The current implementation is a **local deterministic reference kernel**.
@@ -173,7 +207,11 @@ It currently demonstrates the design direction for:
 - exact local PEP binding;
 - explicit UNKNOWN state;
 - local crash-recovery journal semantics;
-- provenance tamper detection.
+- provenance tamper detection;
+- local single-owner effect claims;
+- monotonic fencing and stale-owner rejection;
+- expiry-based ownership recovery;
+- local revocation of ownership.
 
 These are reference properties, not production guarantees.
 
@@ -182,7 +220,7 @@ These are reference properties, not production guarantees.
 Not yet proven:
 
 - atomicity with a real external system;
-- distributed lease ownership;
+- distributed/shared durable ownership;
 - crash-safe distributed revocation propagation;
 - exactly-once effect execution across workers;
 - durable production provenance;
@@ -191,7 +229,8 @@ Not yet proven:
 - non-replayable approval protocol;
 - secret-reference subsystem;
 - hostile tool-output containment;
-- scheduler fairness under contention.
+- scheduler fairness under contention;
+- atomic ownership + budget reservation.
 
 ## 7. Experiment status
 
@@ -208,7 +247,12 @@ Not yet proven:
 | Journal recovery | Implemented | State survives local reopen |
 | Journal transition checks | Implemented | Invalid transitions rejected |
 | Journal integrity | Implemented | Hash/sequence corruption detected locally |
-| Distributed concurrency | Open | Requires shared atomic authority |
+| Local ownership claim race | Implemented | Concurrent local claims yield one active owner |
+| Fencing / stale-owner rejection | Implemented | Older owner/token cannot validate after replacement |
+| Ownership expiry recovery | Implemented | Recovery receives a strictly newer fencing token |
+| Ownership revocation | Implemented | Revoked effect cannot be claimed or validated locally |
+| Distributed concurrency | Open | Requires shared durable atomic authority |
+| Ownership + budget atomicity | Open | Requires one durable transaction boundary |
 | External effect atomicity | Open | Requires executor-side protocol |
 
 ## 8. Do not repeat these design loops
@@ -228,12 +272,12 @@ These are settled architecture decisions for v0.1.
 
 ## 9. Next gate
 
-The next unresolved architectural problem is **shared concurrency authority**.
+The local fenced ownership gate is now specified and implemented as a reference model. The unresolved problem is the **durable shared authority** needed to carry the same invariants across independent processes and restart.
 
 Required sequence:
 
 ```text
-Persistent effect state
+Durable effect state
         ↓
 Atomic ownership / compare-and-swap
         ↓
@@ -243,10 +287,14 @@ Crash-safe recovery
         ↓
 Revocation interaction
         ↓
+Ownership + budget atomicity
+        ↓
 Fault / concurrency tests
 ```
 
-The target of the next phase is not throughput. It is proving that two workers cannot both obtain effective authority for the same non-idempotent effect and that recovery does not create duplicate execution authority.
+The next phase must use a real shared persistence boundary (initially a local multi-process reference such as SQLite WAL or an equivalent transactional store) and test contention, restart, stale fencing, journal replay, revocation, and reservation races.
+
+This phase must still remain local-only. It must not add network execution, exploit execution, adaptive scheduling, or Hunter integration.
 
 ## 10. Relationship to Hunter and H-A1
 
