@@ -13,33 +13,71 @@ Therefore an external WETH transfer into a native-order clone can become part of
 
 ## Discriminating experiment
 
-`test/BountyResolverRewardBalance.js` on `Loofy147/limit-order-protocol` creates a native order with 1 ETH of maker collateral, adds 1 wei of WETH from a third-party donor, then lets a local resolver-access-token holder cancel after expiry with the maximum calculated reward.
+Two local controls are used on `Loofy147/limit-order-protocol`:
 
-The test's accounting invariants are:
+- `test/BountyResolverRewardBalance.js`: maker collateral is 1 ETH, a third party adds 1 wei WETH, and a local resolver-access-token holder performs delayed expiry cancellation. Expected accounting:
+  - `resolver balance delta + transaction gas = resolverReward`
+  - `maker balance delta = 1 ETH + 1 wei - resolverReward`
+- `test/BountyResolverUndercollateralizedReward.js`: maker collateral is set below the resolver reward cap (C < R), the resolver adds (R-C) WETH, and delayed expiry cancellation is performed. Expected accounting:
+  - maker delta = 0
+  - resolver delta + gas = (R)
+  - resolver contribution = (R-C)
+  - diverted maker collateral = (C)
 
-- `resolver balance delta + transaction gas = resolverReward`
-- `maker balance delta = 1 ETH + 1 wei - resolverReward`
+These are local-flow tests only. They do not, by themselves, claim attacker profitability or bounty eligibility.
 
-This is a local-flow test only. It does not claim attacker profitability.
+### Harness correction
 
-Research artifact commit: `e2f6b9e982e35c0d2fc75b12b3c84f5c6f5fb0c7`
+The resolver cancellation path requires the configured cancellation delay to have elapsed after order expiration when `rewardLimit > 0`.
+
+The initial resolver tests advanced only to `expiration`; this was a test-harness defect. The contract was not changed.
+
+Correction commits:
+- `BountyResolverRewardBalance.js` → `0f684b3191636d2677d6028e61b14182ec638476`
+- `BountyResolverUndercollateralizedReward.js` → `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+
+## Current execution evidence
+
+Exact-head CI run `36521751170` (run #22) completed successfully on research commit `f0cfc47e1b3593eb01986d8245099f88cbe574e3` and proved the target-pin checks plus the ERC-1271 boundary test (`1 passing`).
+
+That run did not execute the resolver controls.
+
+The branch workflow was expanded to four independent test steps in commit `c455fe9ae5938b05163c58010052a03b8afa7d1d`.
+
+Current PR head:
+`6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+
+Current GitHub Actions run:
+`36522855418` (run #28)
+
+Latest observed state:
+- target pin: **PASS**
+- dependency installation: **IN PROGRESS**
+- boundary/isolation/reward/undercollateralized assertion steps: **PENDING**
+
+Therefore no resolver reproduction result is yet claimed.
 
 ## Eligibility question
 
-The 1inch Immunefi scope excludes attacks requiring privileged addresses, explicitly giving governance and strategist as examples, but the current page does not mention the resolver role by name. The resolver gate in the contract is possession of the production Resolver Access Token.
+The current 1inch Immunefi scope excludes attacks requiring privileged addresses and explicitly gives governance and strategist as examples. The page does not name resolver roles.
 
-The production token contract is a KycNFT whose verified source restricts ordinary transfer/mint paths through the contract owner or an owner-signed authorization. This makes resolver acquisition permissioned, but the exact bounty treatment of a resolver-access-token holder is not explicitly resolved by the published scope.
+1inch Fusion documentation describes resolvers as professional market makers and states that the access token gates resolver/settlement participation. The production KycNFT restricts ordinary mint/transfer paths to the contract owner, with owner-signature authorization as an alternate path.
 
-Until that role is classified, this remains **OPEN**, not IN-SCOPE and not a finding.
+Current classification:
+
+- **ESTABLISHED:** resolver is a permissioned operational actor.
+- **INFERENCE / OPEN:** the published bounty text does not explicitly classify resolver/access-token holders as the excluded privileged-address category.
+
+Until that role is resolved, do not promote this hypothesis to `IN-SCOPE`.
 
 ## Reopen / promote conditions
 
 Promote only if all are established:
 
-1. The local test passes against the exact 4.3.4 target.
+1. The corrected local tests pass against the exact 4.3.4 target.
 2. A resolver-access-token holder is within the bounty's adversary model rather than an excluded privileged address.
-3. The behavior creates an in-scope economic impact under the program's impact table.
+3. The observed behavior creates an in-scope economic impact under the current program impact table.
 4. The behavior is not already disclosed as an unpatched/unresolved audit issue.
-5. A minimal victim-impact scenario exists without using mainnet/public-testnet deployed code.
+5. A minimal victim-impact scenario exists under the permitted local-fork testing model.
 
 Otherwise record the reason and kill the candidate.
