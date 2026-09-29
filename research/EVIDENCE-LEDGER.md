@@ -31,6 +31,12 @@ A rejected candidate is not deleted; the reason is part of the research dataset.
 
 ### Current continuation — native-order boundary review (2026-09-29)
 
+### Execution gate — target pin verified
+
+GitHub Actions run `36521745238` is executing the research harness on PR-head commit `f0cfc47e1b3593eb01986d8245099f88cbe574e3`. The target-pin step has now **PASSED** after changing checkout to the exact pull-request head SHA. Dependency installation is in progress; no test assertion result is claimed yet.
+
+This is the first verified execution-stage progress beyond static review.
+
 ### Resolver reward total-balance edge (2026-09-29)
 
 ### Stronger H-E2 edge — undercollateralized reward (2026-09-29)
