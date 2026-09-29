@@ -1,129 +1,100 @@
-# NativeOrder Resolver Reward — Economic Impact Calibration
+
+# NativeOrder Resolver Reward — Economic Impact Characterization
 
 Snapshot: 2026-09-29
 Target: 1inch Limit Order Protocol 4.3.4
-Commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
+Commit: 7da29889efa2e635611e1caf60f85f595ff7f05f
 
 ## Exact accounting model
 
 Let:
 
-- (C) = maker-owned WETH balance in the clone immediately before resolver cancellation;
-- (T) = resolver-owned WETH top-up transferred to the clone before cancellation;
-- (B=C+T) = total clone WETH balance, assuming no other balance component;
-- (R=min(rewardLimit,; block.basefee	imes70,000	imes1.1)).
+- (C) = maker-owned WETH balance remaining in the clone immediately before resolver cancellation;
+- (T) = resolver-funded WETH top-up transferred to the clone before cancellation;
+- (B=C+T), assuming no other balance component;
+- (R=min(rewardLimit, block.basefee times 70,000 times 1.1)).
 
-The cancellation path reads the full clone balance, unwraps it, then pays (R) to the resolver and (B-R) to the maker.
+The 4.3.4 resolver-cancellation path reads the clone's full WETH balance, unwraps it, pays (R) to the resolver, then sends (B-R) to the maker.
 
-The operation succeeds only when (Bge R).
+For the undercollateralized condition (C<R), choosing (T=R-C) makes (B=R). The cancellation then succeeds with maker proceeds equal to zero.
 
-For the undercollateralized case (C<R), choose (T=R-C). Then:
+Therefore the maker-side value removed by the reward path is:
 
-[
-B=R
-]
+    maker loss = C
 
-[
-	ext{maker proceeds}=B-R=0
-]
-
-[
-	ext{resolver gross proceeds}=R
-]
-
-[
-	ext{resolver top-up}=R-C
-]
-
-Before gas:
-
-[
-	ext{resolver net}=R-(R-C)=C
-]
-
-Therefore:
-
-[
-oxed{	ext{maker loss}=C}
-]
-
-and
-
-[
-oxed{	ext{resolver net after top-up and gas}=C-G}
-]
-
-where (G) is the actual cancellation transaction gas cost.
-
-In other words, the reproduced mechanism can consume **100% of the maker's residual clone collateral** when (C<R).
+The reproduced mechanism can therefore consume 100% of the maker's residual clone collateral when the resolver supplies the missing balance needed to satisfy the reward subtraction.
 
 ## 10 gwei calibration
 
-For the current 4.3.4 reward cap:
+At a 10 gwei base fee:
 
-[
-R=70,000	imes10	ext{ gwei}	imes1.1
-=0.00077	ext{ ETH}
-]
+    R = 70,000 x 10 gwei x 1.1 = 0.00077 ETH
 
-Run #32 reports a `cancelExpiredOrderByResolver` gas figure of 56,603 for the undercollateralized control.
+The current calibration control uses:
 
-At 10 gwei:
+- C = 0.0007 ETH
+- T = 0.00007 ETH
+- R = 0.00077 ETH
 
-[
-G=56,603	imes10	ext{ gwei}
-=0.00056603	ext{ ETH}
-]
+Latest successful calibration execution:
+- GitHub Actions run #51
+- job 109265719467
+- research head e39993268632cc0b758ec7be98cd31048699949c
 
-Representative points:
+Observed output:
 
-| Maker collateral (C) | Resolver top-up (R-C) | Maker loss | Resolver net after gas* |
-|---:|---:|---:|---:|
-| 0.0001 ETH | 0.00067 ETH | 0.0001 ETH | -0.00046603 ETH |
-| 0.0006 ETH | 0.00017 ETH | 0.0006 ETH | +0.00003397 ETH |
-| 0.0007 ETH | 0.00007 ETH | 0.0007 ETH | +0.00013397 ETH |
-| (C	o R) | (R-C	o0) | (C	o0.00077) ETH | (	o0.00020397) ETH |
+- maker residual/cancellation loss: 0.0007 ETH
+- resolver reward: 0.00077 ETH
+- cancellation gas used: 56,627
+- effective gas price: 11 gwei
+- cancellation transaction gas cost: 0.000622897 ETH
 
-*Using the observed 56,603-gas calibration at 10 gwei; the exact net depends on the transaction's effective gas price.
+The calibration measures victim loss and reward transfer separately. It does not claim resolver profitability.
 
-The original (C=0.0001) behavioral reproduction is therefore deliberately **not profitable** at 10 gwei. It proves the transfer mechanism. Economic viability begins when (C>G).
+## Full resolver economics
 
-## General break-even
+A complete attack-cost model must include:
 
-In the pure undercollateralized/top-up model:
+1. reward top-up;
+2. gas to acquire/wrap that top-up;
+3. gas to transfer the top-up into the clone;
+4. gas for the cancellation itself.
 
-[
-oxed{C>G}
-]
+The earlier shorthand condition C > cancellation-only gas was incomplete as a full profitability test.
 
-is the resolver-profitability condition.
+The dedicated partial-fill economic control measures complete resolver accounting from a balance snapshot taken before the top-up:
 
-If the effective gas price is approximately the base fee, the reward-cap headroom is approximately:
+    reward = top-up + deposit gas + transfer gas + cancellation gas + net gain
 
-[
-R-Gapprox(77,000-56,603)	imes block.basefee
-=20,397	imes block.basefee
-]
+A completed run for this control is still required before any statement about end-to-end resolver profitability.
 
-Thus under this model:
+## Natural victim-state reachability
 
-- maximum gross maker loss for one targeted residual balance is bounded by (R);
-- maximum resolver net is approximately (R-G), before priority fees and any other capital/opportunity cost;
-- across multiple independently cancellable clones, the aggregate loss is the sum of each targeted (C_i) satisfying the attack conditions.
+The upstream 4.3.4 test suite contains an ETH-maker-order partial-fill path:
 
-## Important boundary
+- create a native order with 0.3 ETH-equivalent WETH collateral;
+- fill 0.2;
+- the clone retains 0.1 WETH;
+- maker cancellation then refunds the remaining 0.1 WETH.
 
-This is an **impact characterization**, not a severity determination.
+This establishes that residual clone collateral after partial fill is a normal protocol state, not a test-only balance injection.
 
-Eligibility still depends on:
-- whether a resolver/access-token holder is an allowed adversary;
-- whether this use of the resolver reward path is an unintended security property;
-- whether the same behavior appears in applicable audits or prior disclosures;
-- whether a real victim state is reachable under permitted local-fork conditions.
+Our dedicated control targets the same state transition with residual C below the reward cap and then tests resolver cancellation after expiry plus delay.
 
-The dedicated economic-calibration test was added at:
-`Loofy147/limit-order-protocol:test/BountyResolverRewardEconomicCalibration.js`
+## Interpretation
 
-Its CI execution is pending run #38.
+Established:
 
-No severity or bounty amount is assigned here.
+- the resolver reward is funded from the clone's aggregate WETH balance;
+- a resolver can locally supply the missing balance and consume the maker's entire residual C when C<R;
+- residual C<R can arise after an ordinary partial fill;
+- the 10 gwei calibration measured C=0.0007 ETH victim-side loss and R=0.00077 ETH reward transfer.
+
+Still open:
+
+- whether a resolver/access-token holder is an accepted adversary under the current bounty eligibility rules;
+- whether the behavior is already disclosed by an applicable audit/known issue;
+- whether the full end-to-end resolver economics are sufficiently favorable/feasible for the relevant bounty analysis;
+- the exact production-scale victim-state prevalence.
+
+This remains an impact characterization, not a severity or bounty determination.
