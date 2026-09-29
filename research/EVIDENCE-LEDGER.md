@@ -138,6 +138,10 @@ Thus the mechanism can consume 100% of the maker's residual clone collateral in 
 
 Do not use the earlier shorthand C > cancellation-gas as a full profitability condition. Complete resolver economics must include top-up cost and the gas to acquire and transfer the top-up.
 
+### Research endpoint
+
+No further contract-level variant is currently justified on the existing evidence. H-E2/K-04 has a complete local reproduction from normal partial-fill state through resolver cancellation and complete cost accounting. The remaining gates are external to that reproduction: applicable audit/known-issue disclosure, resolver-role eligibility interpretation, and production prevalence/minimum victim-state evidence.
+
 ## Current decision state
 
 B0-1INCH overall: HYPOTHESIS
