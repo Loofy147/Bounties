@@ -29,6 +29,17 @@ A rejected candidate is not deleted; the reason is part of the research dataset.
 
 ## Current B0 research state
 
+### Audit-coverage gate
+
+The public 1inch audit archive entry for **Limit Order Protocol v4.3.4** describes the audited scope as the **Permit2Proxy extension**. This does not prove that NativeOrderFactory/NativeOrderImpl were never reviewed elsewhere, but there is not yet enough public evidence in this ledger to treat NativeOrder audit coverage as established.
+
+Therefore:
+
+- Permit2Proxy: audit coverage is evidenced by the public archive entry.
+- NativeOrderFactory / NativeOrderImpl: audit coverage is **OPEN / UNKNOWN**.
+- Any eventual report must compare reproduced behavior against applicable audit/known-issue material before promotion to `IN-SCOPE`.
+
+
 The canonical hypothesis register is `targets/1inch/HYPOTHESES.md`.
 
 Target pin was refreshed on 2026-09-29 because tag `4.3.4` was created after the earlier `4.3.2` snapshot. `4.3.2` is not treated as the current eligible release.
