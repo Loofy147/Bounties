@@ -4,7 +4,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Working target `4.3.4` → `7da29889efa2e635611e1caf60f85f595ff7f05f`; public v4.3.4 audit index entry explicitly describes Permit2Proxy; NativeOrderFactory/Impl audit coverage OPEN/UNKNOWN; static review has not established a bypass | complete the full local boundary/reward matrix in CI; reconcile all applicable audits/known issues; only then assess impact/scope |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Working target `4.3.4` → `7da29889efa2e635611e1caf60f85f595ff7f05f`; public v4.3.4 audit index entry explicitly describes Permit2Proxy; NativeOrderFactory/Impl audit coverage OPEN/UNKNOWN; static review has not established a bypass | complete corrected boundary/isolation/reward matrix in CI; reconcile all applicable audits/known issues; only then assess impact/scope |
 
 ## Evidence stages
 
@@ -37,91 +37,91 @@ What it actually established:
 - target pin verification **PASS**;
 - package version check **PASS** for 4.3.4;
 - `test/BountyNativeOrderBoundary.js`: **1 passing**;
-- the successful run did **not** execute the isolation or resolver-reward tests because the workflow still contained only the boundary test at that commit.
+- the successful run did **not** execute the isolation or resolver-reward tests because the workflow at that commit still contained only the boundary test.
 
-The research workflow was then expanded on branch `bounty/research-4.3.4` to execute four separate controls:
+The workflow was then expanded in commit `c455fe9ae5938b05163c58010052a03b8afa7d1d` to execute four separate controls:
 1. `BountyNativeOrderBoundary.js`
 2. `BountyNativeOrderIsolation.js`
 3. `BountyResolverRewardBalance.js`
 4. `BountyResolverUndercollateralizedReward.js`
 
-Workflow expansion commit: `c455fe9ae5938b05163c58010052a03b8afa7d1d`.
+Run #28 (`36522855418`) then established:
+- target pin **PASS**;
+- boundary test **PASS**;
+- isolation test **PASS**;
+- resolver reward test **FAIL**, but the failure was entirely in the test harness: `TypeError: Cannot read properties of undefined (reading 'latest')` at `test/BountyResolverRewardBalance.js:39`;
+- undercollateralized test was skipped because the previous step failed.
 
-During review of the new resolver controls, a test-harness timing defect was found: `NativeOrderImpl.cancelExpiredOrderByResolver()` requires the configured cancellation delay to have elapsed after expiration. Both resolver tests had advanced only to `expiration`. This was a **harness defect, not a contract result**.
+This failure is classified as **HARNESS_DEFECT**, not a contract result.
 
-Harness correction commits:
-- `test/BountyResolverRewardBalance.js`: `0f684b3191636d2677d6028e61b14182ec638476`
-- `test/BountyResolverUndercollateralizedReward.js`: `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+The resolver tests were corrected to use the project's available provider RPC time controls (`evm_increaseTime` + `evm_mine`) and to advance past the configured cancellation delay:
+- `test/BountyResolverRewardBalance.js` → `1cd6148388902795f2c610ef5ed069feada55528`
+- `test/BountyResolverUndercollateralizedReward.js` → `75f8dfde597a408e28d6e633dad6ea9c805833bc`
 
-The resulting PR head is `6fd8f86fc4476ec70d110a62b275bf7b85d19429`.
+Current research branch / PR head:
+`75f8dfde597a408e28d6e633dad6ea9c805833bc`
 
-GitHub Actions run #28 (`36522855418`) is now executing that corrected four-control matrix. At the latest observation:
-- target pin verification **PASS**;
-- dependency installation **IN PROGRESS**;
-- all four test assertion steps still **PENDING**.
+GitHub Actions run #32 (`36522991905`) is executing the corrected four-control matrix. Latest observed state:
+- target-pin verification **PASS**;
+- dependency installation **PASS**;
+- `BountyNativeOrderBoundary.js`: **IN PROGRESS**;
+- remaining three assertion steps: **PENDING**.
 
-Therefore the full resolver experiment remains **UNKNOWN / OPEN** until run #28 produces assertion results.
+Therefore the resolver reproduction remains **UNKNOWN / OPEN**.
 
 ### Resolver adversary-model gate — 2026-09-29
 
 Current public 1inch bounty scope:
 - Limit Order Protocol is an in-scope asset.
-- The program applies only to latest tags/releases.
+- The program applies to latest tags/releases.
 - Direct theft of user funds is an in-scope Critical impact.
 - The privileged-address exclusion explicitly names governance and strategist, but does not name resolver/access-token-holder roles.
 
-Current 1inch Fusion repository material describes resolvers as professional market makers, with the access token used to gate resolver/settlement participation. `KycNFT` mint/ordinary transfer paths are owner-controlled or owner-signature-authorized. Therefore:
+Current 1inch Fusion repository material describes resolvers as professional market makers, with the access token used to gate resolver/settlement participation. `KycNFT` mint/ordinary transfer paths are owner-controlled or owner-signature-authorized.
 
 **Established:** resolver is a permissioned operational role.
 
-**Inference / OPEN:** the published bounty text does not explicitly classify that role as an excluded privileged address.
+**Inference / OPEN:** the published bounty language does not explicitly classify resolver/access-token holders as the excluded privileged-address category.
 
-This does not yet promote H-E2 to `IN-SCOPE`; economic impact, exact adversary eligibility, and audit/known-issue reconciliation remain separate gates.
+This does not promote H-E2 to `IN-SCOPE`; economic impact, exact adversary eligibility, and audit/known-issue reconciliation remain separate gates.
 
-### Resolver reward total-balance edge (2026-09-29)
+### Stronger H-E2 edge — undercollateralized reward
 
-### Stronger H-E2 edge — undercollateralized reward (2026-09-29)
+The resolver-reward hypothesis is narrowed to:
 
-The resolver-reward hypothesis was narrowed to a specific condition:
+- maker collateral = (C);
+- resolver reward cap = (R);
+- when (C < R), an external WETH transfer of (R-C) can make the clone balance exactly (R);
+- `_cancelOrder()` then pays (R) from the clone balance to the resolver, leaving zero from that cancellation balance for the maker;
+- before gas, the resolver receives exactly its top-up plus (C).
 
-- Let maker collateral be (C).
-- Let the current resolver reward cap be (R).
-- When (C < R), a resolver can add (R-C) WETH to the clone before expiry cancellation.
-- Because the cancellation code pays the reward from the clone's full WETH balance, the resolver then receives (R), while the maker receives (C + (R-C) - R = 0).
-- Before gas, the resolver's reward exceeds its own top-up by exactly (C). Thus the additional amount paid by the resolver is effectively converted into the maker's collateral.
-
-This is a **behavioral hypothesis**, not yet a vulnerability or severity claim.
-
-The discriminating local control is now corrected to honor the configured cancellation delay:
-- `test/BountyResolverUndercollateralizedReward.js` — latest commit `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
-- four-control workflow — latest branch head `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
-
-Eligibility remains OPEN.
+This remains a **behavioral hypothesis**, not a confirmed vulnerability, severity, profitability claim, or eligibility determination.
 
 ### NativeOrder boundary review
 
-Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vulnerability. The main security invariants currently have direct code support:
+Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vulnerability.
 
-- Factory binding: `create()` requires `maker == msg.sender`, derives the clone from the original order hash, and patches the effective order maker to the clone.
-- ERC-1271 binding: `isValidSignature()` re-derives the clone from the serialized original order, then patches the maker to `address(this)` before comparing the hash.
-- Same-maker cross-order isolation is represented by a dedicated adversarial test.
-- Existing upstream tests cover maker cancellation, resolver cancellation, wrong caller for withdrawal, and partial-fill → cancellation.
+The exact-head boundary test is **EXPERIMENTALLY_SUPPORTED** by run #22 (1 passing).
 
-The exact-head boundary test is now **EXPERIMENTALLY_SUPPORTED** by run #22 (1 passing). The additional isolation and resolver tests remain **UNKNOWN / OPEN** pending run #28.
+The same-maker cross-order isolation test is also **EXPERIMENTALLY_SUPPORTED** by run #28.
+
+The resolver reward controls remain **UNKNOWN / OPEN** pending the corrected run #32.
 
 ### Audit-coverage gate
 
-The public 1inch audit archive entry for **Limit Order Protocol v4.3.4** describes the audited scope as the **Permit2Proxy extension**. This does not prove that NativeOrderFactory/NativeOrderImpl were never reviewed elsewhere, but there is not yet enough public evidence in this ledger to treat NativeOrder audit coverage as established.
+The public 1inch audit archive entry currently used in this research describes the v4.3.4 audit entry as the **Permit2Proxy extension**. This does not prove NativeOrderFactory/NativeOrderImpl were never reviewed elsewhere.
 
 Therefore:
-
-- Permit2Proxy: audit coverage is evidenced by the public archive entry.
-- NativeOrderFactory / NativeOrderImpl: audit coverage is **OPEN / UNKNOWN**.
-- Any eventual report must compare reproduced behavior against applicable audit/known-issue material before promotion to `IN-SCOPE`.
+- Permit2Proxy: audit coverage evidenced.
+- NativeOrderFactory / NativeOrderImpl: audit coverage **OPEN / UNKNOWN**.
+- Any eventual report must reconcile reproduced behavior against applicable audit/known-issue material before promotion to `IN-SCOPE`.
 
 The canonical hypothesis register is `targets/1inch/HYPOTHESES.md`.
 
-Target pin was refreshed on 2026-09-29 because tag `4.3.4` was created after the earlier `4.3.2` snapshot. `4.3.2` is not treated as the current eligible release.
+Target pin:
+- tag `4.3.4`
+- commit `7da29889efa2e635611e1caf60f85f595ff7f05f`
+- tag object `0a40e01befff19d925457b55191900fb456c2dd2`
 
 Tracked families:
 - H-A1: mixed partial-fill accounting;
