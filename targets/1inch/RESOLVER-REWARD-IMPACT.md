@@ -66,7 +66,9 @@ The dedicated partial-fill economic control measures complete resolver accountin
 
     reward = top-up + deposit gas + transfer gas + cancellation gas + net gain
 
-A completed run for this control is still required before any statement about end-to-end resolver profitability.
+Run #64 measured C=0.0007 ETH, T=0.00007 ETH, R=0.00077 ETH, deposit gas=0.000058871677453431 ETH, transfer gas=0.000032863279096389 ETH, cancellation gas=0.000675697 ETH, victim loss=0.0007 ETH, and resolver net=-0.00006743195654982 ETH.
+
+Final execution is complete in run #64 (36621806098), job 109588790780, head 8b59d02804de118ac9bd5ee2f18e58a2d5cf8a38.
 
 ## Natural victim-state reachability
 
@@ -79,7 +81,7 @@ The upstream 4.3.4 test suite contains an ETH-maker-order partial-fill path:
 
 This establishes that residual clone collateral after partial fill is a normal protocol state, not a test-only balance injection.
 
-Our dedicated control targets the same state transition with residual C below the reward cap and then tests resolver cancellation after expiry plus delay.
+Our dedicated control reproduced the same state transition with residual C below the reward cap and successfully executed resolver cancellation after expiry plus delay.
 
 ## Interpretation
 
@@ -92,9 +94,9 @@ Established:
 
 Still open:
 
-- whether a resolver/access-token holder is an accepted adversary under the current bounty eligibility rules;
 - whether the behavior is already disclosed by an applicable audit/known issue;
-- whether the full end-to-end resolver economics are sufficiently favorable/feasible for the relevant bounty analysis;
-- the exact production-scale victim-state prevalence.
+- exact production deployment/version correspondence;
+- exact production-scale victim-state prevalence;
+- final submission eligibility under the current program.
 
 This remains an impact characterization, not a severity or bounty determination.
