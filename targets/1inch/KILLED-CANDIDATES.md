@@ -35,11 +35,11 @@ Reason: the resolver controls rewardLimit and can request zero reward. The arith
 
 Re-open condition: demonstrate that an attacker can force an otherwise valid resolver cancellation to fail in a way that produces an in-scope economic or availability impact beyond the resolver's own transaction.
 
-## K-04 — Undercollateralized resolver reward as profitable extraction
+## K-04 — Undercollateralized resolver reward extraction (REOPENED)
 
 Observation: For C < R, a resolver can supply T = R-C WETH so the clone balance reaches the reward R, leaving zero cancellation proceeds for the maker.
 
-Static disposition: KILLED FOR PROFITABILITY / technical mechanism remains EXPERIMENTALLY_SUPPORTED.
+Static disposition: REOPENED / technical mechanism remains EXPERIMENTALLY_SUPPORTED.
 
 Evidence:
 - successful victim-loss calibration on run #51, job 109265719467, head e39993268632cc0b758ec7be98cd31048699949c;
@@ -52,7 +52,7 @@ Evidence:
 - WETH deposit gas measured = 51,951;
 - WETH transfer gas measured = 29,443.
 
-The measured gas total for deposit + transfer + cancellation is:
+Historical profitability check: the measured gas total for deposit + transfer + cancellation was:
 
     51,951 + 29,443 + 56,627 = 138,021 gas.
 
@@ -60,20 +60,16 @@ At the 10 gwei base fee used for the reward calculation, this is already:
 
     138,021 * 10 gwei = 0.00138021 ETH
 
-which exceeds the maximum reward:
+which exceeds the maximum reward R = 0.00077 ETH in that historical calibration. That correctly showed the chosen top-up path was negative-EV under those measured local costs.
 
-    R = 0.00077 ETH
+However, the profitability-only kill is retired. Current Immunefi guidance treats attacker financial risk/ROI as a feasibility consideration and does not make low ROI alone a sufficient reason to invalidate or downgrade the underlying bug. The completed natural partial-fill execution measured victim loss 0.0007 ETH and resolver net loss 0.00006743195654982 ETH, so attacker loss was about 9.63% of victim loss in the demonstrated case.
 
-Therefore, for C < R, even the limiting case T -> 0 cannot make the resolver profitable through this top-up strategy under the measured current-code gas path. At the observed 11 gwei effective gas price, the corresponding cost is approximately 0.001518231 ETH, before considering any additional opportunity/capital cost.
+The mechanism therefore remains open pending the other eligibility and production gates.
 
-This kills the prior claim that C > cancellation-only gas was a sufficient profitability condition. The technical behavior remains real, but the examined economic extraction path is not a rational positive-return attack under the measured cost envelope.
-
-Re-open condition: obtain a materially lower verified execution-cost path, a reward parameter/configuration that changes the bound, or another mechanism that transfers additional victim value without requiring equivalent resolver funding.
+Re-open condition is satisfied by the final natural partial-fill execution; remaining closure conditions are audit/known-issue reconciliation, resolver-role rule interpretation, production version correspondence, and minimum production victim state.
 
 ## Current frontier
 
-H-E2 remains useful as a technical accounting observation, but its current undercollateralized-profit sub-hypothesis is KILLED.
-
-Do not submit K-04 as a bounty finding without a new positive-impact mechanism.
+H-E2 is EXPERIMENTALLY_SUPPORTED. K-04 is REOPENED. Do not assign severity or submit until the remaining audit/known-issue, resolver-role, production-version, and victim-state gates are resolved.
 
 Audit/known-issue reconciliation and resolver eligibility remain separate OPEN gates for any residual H-E2 interpretation.
