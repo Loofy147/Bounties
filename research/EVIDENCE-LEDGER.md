@@ -31,6 +31,20 @@ A rejected candidate is not deleted; the reason is part of the research dataset.
 
 ### Current continuation — native-order boundary review (2026-09-29)
 
+### Resolver reward total-balance edge (2026-09-29)
+
+A new **OPEN / HYPOTHESIS** was isolated: `NativeOrderImpl._cancelOrder()` pays the resolver reward from the clone's full WETH balance after unwrapping, so third-party WETH donations to a clone become part of the reward source.
+
+Local research control added:
+- `test/BountyResolverRewardBalance.js` — corrected test commit `e2f6b9e982e35c0d2fc75b12b3c84f5c6f5fb0c7`
+- branch workflow includes boundary, isolation, and resolver-reward controls — commit `8804022fdf1b64b59338e76728d7b816e7e1030e`
+- research branch tip observed after these changes: `8804022fdf1b64b59338e76728d7b816e7e1030e`
+
+The test establishes accounting behavior only; it does not establish net attacker profitability or bounty eligibility.
+
+Eligibility remains OPEN because the production resolver access token is permissioned, while the published 1inch scope expressly excludes some privileged-address attacks but does not name the resolver role. The exact role classification must be resolved before promotion.
+
+
 Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vulnerability. The main security invariants currently have direct code support:
 
 - Factory binding: `create()` requires `maker == msg.sender`, derives the clone from the original order hash, and patches the effective order maker to the clone.
