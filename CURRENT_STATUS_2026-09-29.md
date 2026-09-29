@@ -1,79 +1,131 @@
+
 # Bounty Track Current Status — 2026-09-29
 
-**Repository:** `Loofy147/Bounties`
+Repository: Loofy147/Bounties
 
 ## Target
 
-Current B0 target: **1inch Smart Contracts / Limit Order Protocol**.
+Current B0 target: 1inch Smart Contracts / Limit Order Protocol.
 
-Working production line:
-- tag `4.3.4`
-- commit `7da29889efa2e635611e1caf60f85f595ff7f05f`
+Production line under research:
+- tag 4.3.4
+- commit 7da29889efa2e635611e1caf60f85f595ff7f05f
 
-The current Immunefi program lists Limit Order Protocol in scope, requires a PoC, applies to the latest eligible tags/releases, and permits local-fork testing rather than testing deployed mainnet/public-testnet code. citeturn314897view0
+The current Immunefi program lists Limit Order Protocol in scope, requires a PoC, and applies to the latest eligible tags/releases. The program also documents local-fork testing rules rather than testing deployed mainnet/public-testnet code. [Current external scope verified 2026-09-29.]
 
 ## Execution frontier
 
 Research branch:
-`bounty/research-4.3.4`
+bounty/research-4.3.4
 
-Run #32:
-- GitHub Actions: `36522991905`
-- research head: `75f8dfde597a408e28d6e633dad6ea9c805833bc`
-- result: **SUCCESS**
+Current PR:
+- #1
+- draft, open, unmerged
+- current head: e39993268632cc0b758ec7be98cd31048699949c
 
-Four independent controls passed:
-- NativeOrder ERC-1271 boundary — 1 passing
-- NativeOrder clone isolation — 1 passing
-- resolver reward total-balance control — 1 passing
-- undercollateralized resolver reward control — 1 passing
+Latest clean boundary-suite run:
+- GitHub Actions run #51
+- id 36524919906
+- job 109265719467
+- head e39993268632cc0b758ec7be98cd31048699949c
+- result: partial failure due a dedicated new partial-fill harness defect after the economic calibration step succeeded.
 
-Therefore H-E2 execution is now **EXPERIMENTALLY_SUPPORTED**.
+Passed before the final defect:
+- target pin PASS
+- package version 4.3.4 PASS
+- NativeOrder ERC-1271 boundary PASS
+- same-maker clone isolation PASS
+- resolver reward total-balance control PASS
+- undercollateralized resolver reward control PASS
+- economic victim-loss calibration PASS
 
-The reproduced undercollateralized case uses:
-- maker collateral (C=0.0001) ETH;
-- 10 gwei base fee;
-- resolver reward cap (R=0.00077) ETH;
-- resolver WETH top-up (R-C=0.00067) ETH;
-- cancellation after expiry plus the configured delay.
+The remaining failure was classified as HARNESS_DEFECT:
+BountyResolverRewardPartialFillEdge.js encoded makerTraits as {}, which produced an invalid BigNumberish value under ethers v6. The upstream 4.3.4 test constructs the same order through buildOrder(baseOrder, {}) instead.
 
-The test observes zero maker balance delta from the cancellation and resolver proceeds equal to the full reward after gas cost is added back.
+That harness was corrected in commit:
+add07cf4859a7128393129f1e72ccdc8bfd77c60
+
+A new pull-request run was triggered by reopening the draft PR. Latest observed run:
+- run #53 / id 36525043790, head add07cf4859a7128393129f1e72ccdc8bfd77c60
+- status was still in progress at the last poll.
+
+## H-E2 technical behavior
+
+H-E2 local behavior remains EXPERIMENTALLY_SUPPORTED.
+
+The resolver cancellation implementation:
+- requires the resolver access token;
+- requires order expiry plus cancellation delay when rewardLimit > 0;
+- computes a reward from basefee and the 70,000 gas lower bound;
+- reads the clone's full WETH balance;
+- unwraps that balance;
+- pays the resolver reward from that aggregate balance;
+- sends only the remainder to the maker.
+
+For C < R, a resolver can locally provide T = R-C, making total clone balance R and leaving zero maker proceeds from cancellation.
+
+## Victim-impact calibration
+
+Successful economic calibration on run #51:
+
+- maker residual C = 0.0007 ETH
+- reward cap R = 0.00077 ETH
+- resolver top-up T = 0.00007 ETH
+- cancellation gas used = 56,627
+- effective gas price = 11 gwei
+- cancellation gas cost = 0.000622897 ETH
+- maker-side cancellation loss = 0.0007 ETH
+- resolver reward = 0.00077 ETH
+
+This proves the victim-side loss measurement and the reward transfer at the selected local parameters.
+
+It does not prove end-to-end resolver profitability.
+
+## Natural victim state
+
+The upstream 4.3.4 test suite contains a native ETH-maker partial-fill case:
+- 0.3 ETH-equivalent initial WETH collateral;
+- 0.2 partial fill;
+- 0.1 WETH remains in the clone;
+- maker cancellation refunds the residual.
+
+Therefore a residual clone balance below the initial order amount is a normal protocol state.
+
+Our dedicated partial-fill control uses the same protocol path and targets a residual C below R.
 
 ## Resolver adversary model
 
-**ESTABLISHED:** resolver is a permissioned operational actor and the intended caller of resolver cancellation.
+ESTABLISHED:
+resolver is a permissioned operational actor and intended caller of resolver cancellation.
 
-1inch's resolver material says resolvers must register/pass verification and that an Access NFT functions as an access credential for exclusive order-fulfillment functionality. citeturn595204search5turn595204search8
+OPEN / INFERENCE:
+the current bounty scope excludes attacks requiring privileged addresses and names governance and strategist as examples, but does not expressly classify resolver/access-token-holder roles.
 
-**OPEN / INFERENCE:** the current 1inch bounty text excludes attacks requiring privileged addresses and names governance and strategist as examples, but does not expressly classify resolver/access-token-holder roles. citeturn314897view0
+Bounty eligibility therefore remains OPEN.
 
-Consequently, the technical adversary model includes the resolver, while bounty eligibility remains unresolved.
+## Design-intent / known-issue evidence
 
-## Design-intent evidence
+Upstream PR #390 explicitly discussed returning the whole WETH balance to the maker, including accidentally deposited WETH. The maintainer stated that full-balance behavior was intentional.
 
-Upstream `1inch/limit-order-protocol` PR #390 contains an explicit review exchange about returning the **whole WETH balance** to the maker, including accidentally deposited WETH. The maintainer stated that this behavior was intended. The same implementation subtracts resolver reward from that full balance.
+Targeted GitHub searches found no explicit prior disclosure of the tested undercollateralized reward condition.
 
-This is strong evidence that full-balance semantics were consciously designed, but it does not prove that the resolver interaction was previously recognized.
+Neither point is novelty proof. Full audit/known-issue reconciliation remains OPEN.
 
-## Audit / known-issue gate
+## Audit gate
 
-The official 1inch audit archive contains a v4.3.4 OpenZeppelin report file. citeturn812425view0
+The official audit archive contains a v4.3.4 OpenZeppelin report entry. Current archive evidence associates that entry with the Permit2Proxy extension, so present evidence does not establish NativeOrderFactory/NativeOrderImpl coverage by that particular report.
 
-The archive material available to this research identifies that v4.3.4 entry as the Permit2Proxy extension; current evidence therefore does not establish NativeOrderFactory/NativeOrderImpl coverage by that particular audit. This is not evidence that NativeOrder was never reviewed elsewhere.
-
-Targeted GitHub searches over the current Limit Order Protocol repository found the resolver-cancellation implementation and tests, but no explicit prior source-text hit for the reproduced undercollateralized condition.
-
-That absence is **not a novelty proof**. Audit/known-issue reconciliation remains an open gate.
+Do not infer that NativeOrder was never audited.
 
 ## Current status
 
-B0-1INCH overall: **HYPOTHESIS**
+B0-1INCH overall: HYPOTHESIS
 
-H-E2 local behavior: **EXPERIMENTALLY_SUPPORTED**
+H-E2 local behavior: EXPERIMENTALLY_SUPPORTED
 
-Bounty eligibility: **OPEN**
+Bounty eligibility: OPEN
 
-No severity, bounty amount, or submission decision is assigned.
+No severity, bounty amount, or submission decision has been assigned.
 
-Next gate:
-`resolver eligibility → audit/known-issue reconciliation → minimum victim-impact characterization → submission eligibility`
+Next discriminating gate:
+complete partial-fill full-cost execution → reconcile audits/known issues → settle resolver eligibility → characterize minimum production-relevant victim state → only then consider submission eligibility.
