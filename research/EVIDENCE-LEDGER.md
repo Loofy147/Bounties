@@ -137,3 +137,25 @@ No one is a confirmed vulnerability.
 ## Preservation rule
 
 Every significant research step records the exact target version, date, reasoning status, reproduction artifacts and outcome. Do not store credentials or secrets in this repository.
+
+
+## Latest verified execution — run #32 (2026-09-29)
+
+GitHub Actions run `36522991905` (run #32) completed **SUCCESS** on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc`.
+
+All four controls passed independently:
+- `BountyNativeOrderBoundary.js`: **1 passing**
+- `BountyNativeOrderIsolation.js`: **1 passing**
+- `BountyResolverRewardBalance.js`: **1 passing**
+- `BountyResolverUndercollateralizedReward.js`: **1 passing**
+
+This upgrades the execution state as follows:
+- target pin: **EXPERIMENTALLY_SUPPORTED**
+- NativeOrder ERC-1271 boundary: **EXPERIMENTALLY_SUPPORTED**
+- same-maker cross-order isolation: **EXPERIMENTALLY_SUPPORTED**
+- resolver total-balance behavior: **EXPERIMENTALLY_SUPPORTED**
+- undercollateralized reward behavior: **EXPERIMENTALLY_SUPPORTED**
+
+The four tests run against the pinned 4.3.4 code line. This establishes the observed local behavior. It does **not** by itself establish bounty eligibility, severity, real-production liquidity exposure, or absence from prior disclosures/audits.
+
+For the undercollateralized case, the test constructs (C=0.0001) ETH maker collateral and (R=0.00077) ETH resolver reward cap at a 10 gwei base fee, then supplies (R-C=0.00067) ETH of WETH before delayed resolver cancellation. The assertions show zero maker balance delta from the cancellation and resolver proceeds equal to (R) after adding gas cost back. This is the key reproduced H-E2 behavior.
