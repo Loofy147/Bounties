@@ -33,6 +33,25 @@ A rejected candidate is not deleted; the reason is part of the research dataset.
 
 ### Resolver reward total-balance edge (2026-09-29)
 
+### Stronger H-E2 edge — undercollateralized reward (2026-09-29)
+
+The resolver-reward hypothesis was narrowed to a specific condition:
+
+- Let maker collateral be (C).
+- Let the current resolver reward cap be (R).
+- When (C < R), a resolver can add (R-C) WETH to the clone before expiry cancellation.
+- Because the cancellation code pays the reward from the clone's full WETH balance, the resolver then receives (R), while the maker receives (C + (R-C) - R = 0).
+- Before gas, the resolver's reward exceeds its own top-up by exactly (C). Thus the additional amount paid by the resolver is effectively converted into the maker's collateral.
+
+This is a **behavioral hypothesis**, not yet a vulnerability or severity claim.
+
+New local control:
+- `test/BountyResolverUndercollateralizedReward.js` — commit `26e7265a611aeb2c2ad3a5ec83cf803db7f62a3c`
+- workflow includes the control — commit `db8cbdb28f082fc8e31b772c31e41a2082d57c47`
+
+Eligibility remains OPEN. 1inch documents resolver cancellation as a deliberate function requiring a resolver access token and describes resolvers as professional market makers; the published bounty scope excludes some privileged-address attacks but does not name resolvers. This role classification must be settled before any promotion to IN-SCOPE.
+
+
 A new **OPEN / HYPOTHESIS** was isolated: `NativeOrderImpl._cancelOrder()` pays the resolver reward from the clone's full WETH balance after unwrapping, so third-party WETH donations to a clone become part of the reward source.
 
 Local research control added:
