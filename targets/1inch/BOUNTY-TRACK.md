@@ -18,7 +18,7 @@ scope → inspect → hypothesize → reproduce → minimize → document → su
 
 | Priority | Program | Technical fit | Public maximum at snapshot time | Immediate action |
 |---|---|---:|---:|---|
-| B0 | 1inch Smart Contracts | Medium | $500,000 | Pin eligible release; audit map; local-only reproduction |
+| B0 | 1inch Smart Contracts / Limit Order Protocol | Medium | $500,000 | Pin `4.3.4`; map new surface; compare audit; local-only reproduction |
 | A | Cosmos | Very high | $50,000 | Scope + known-issue review |
 | A- | The Graph | High | $50,000 | Graph Node/Indexer scope review |
 | B | Berachain | High | $100,000 | BeaconKit/Rust protocol map |
