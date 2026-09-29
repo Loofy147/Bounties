@@ -107,6 +107,10 @@ Targeted GitHub searches found no explicit prior disclosure of the tested underc
 
 Neither point is novelty proof. Full audit/known-issue reconciliation remains OPEN.
 
+## Production deployment correspondence
+
+At target commit 7da29889efa2e635611e1caf60f85f595ff7f05f, the official mainnet deployment artifact records NativeOrderFactory at `0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01`. Etherscan currently identifies the same address as `NativeOrderFactory` with verified source and Solidity 0.8.30, matching the target release toolchain. Public Etherscan activity also contains `NativeOrderCreated` events for this factory. This establishes that the researched NativeOrderFactory line corresponds to a deployed production address; it does not yet quantify the prevalence of residual partial-fill states on production.
+
 ## Audit gate
 
 The official audit archive contains a v4.3.4 OpenZeppelin report entry. Current archive evidence associates that entry with the Permit2Proxy extension, so present evidence does not establish NativeOrderFactory/NativeOrderImpl coverage by that particular report.
@@ -126,4 +130,4 @@ Bounty eligibility: OPEN.
 No severity, bounty amount, or submission decision has been assigned.
 
 Final remaining gates:
-reconcile applicable audits/known issues → settle resolver-role treatment under the program's privileged-address rule → establish production deployment/version correspondence and minimum real victim state. Do not submit before those gates are closed.
+reconcile applicable audits/known issues → settle resolver-role treatment under the program's privileged-address rule → production deployment/version correspondence is established for the deployed NativeOrderFactory address; minimum production partial-fill prevalence is not yet quantified. Do not submit before those gates are closed.
