@@ -40,8 +40,8 @@ Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vu
 
 New research artifact in the target fork:
 - `test/BountyNativeOrderIsolation.js` — commit `9a5ba30d8375006ad337a285b4dab4608fdff1ae`
-- workflow updated to run both NativeOrder boundary suites — commit `a6dbb981def880534c17d154667f872f7aedc91c`
-- branch tip after these changes: `a6dbb981def880534c17d154667f872f7aedc91c`
+- research-branch workflow updated to run both NativeOrder boundary suites — commit `94aa51f8a4851cd330e998a9547064ab402e51f7`
+- research branch tip after these changes: `94aa51f8a4851cd330e998a9547064ab402e51f7`
 
 Execution remains **UNKNOWN / OPEN** because no GitHub Actions run is currently associated with the branch tip and the local container cannot resolve `github.com`. No passing test result is claimed.
 
