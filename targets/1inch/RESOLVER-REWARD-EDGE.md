@@ -99,4 +99,4 @@ Promote beyond EXPERIMENTALLY_SUPPORTED / ELIGIBILITY OPEN only when all are est
 4. A minimal victim scenario is established under permitted local-fork conditions.
 5. Full end-to-end resolver economics are characterized without incomplete cost assumptions.
 
-Final state: the technical, natural-state, and full-cost gates are ESTABLISHED by run #64. Audit/known-issue, production-version correspondence, and minimum production victim-state gates remain OPEN. Do not assign severity or bounty amount yet.
+Final state: the technical, natural-state, and full-cost gates are ESTABLISHED by run #64. Audit/known-issue and minimum production partial-fill victim-state gates remain OPEN. Production NativeOrderFactory deployment correspondence is ESTABLISHED at `0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01`. Do not assign severity or bounty amount yet.
