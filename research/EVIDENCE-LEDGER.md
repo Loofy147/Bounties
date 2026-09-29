@@ -4,7 +4,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Immunefi boundary re-verified 2026-09-29; tag `4.3.2` resolves through annotated tag `8b8f05736b857129da3a52a37623a40af05e225d` to commit `67c56aee3b6a9f4982bf487084bd8da1f6638da0`; four falsifiable invariant families recorded | execute clean local baseline for `4.3.4`, then run H-E1/H-E2/H-F1 alongside the original H-A1/H-B1/H-C1/H-D1 matrix with mutation controls |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Working target `4.3.4` → `7da29889efa2e635611e1caf60f85f595ff7f05f`; public v4.3.4 audit index entry explicitly describes Permit2Proxy; NativeOrderFactory/Impl audit coverage OPEN/UNKNOWN; static review has not established a bypass | execute the new local isolation + ERC-1271 tests; reconcile all applicable audits/known issues; only then assess impact/scope |
 
 ## Evidence stages
 
@@ -28,6 +28,23 @@ HYPOTHESIS / REPRODUCED / SUBMITTED
 A rejected candidate is not deleted; the reason is part of the research dataset.
 
 ## Current B0 research state
+
+### Current continuation — native-order boundary review (2026-09-29)
+
+Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vulnerability. The main security invariants currently have direct code support:
+
+- Factory binding: `create()` requires `maker == msg.sender`, derives the clone from the original order hash, and patches the effective order maker to the clone.
+- ERC-1271 binding: `isValidSignature()` re-derives the clone from the serialized original order, then patches the maker to `address(this)` before comparing the hash.
+- Same-maker cross-order isolation is now represented by a dedicated adversarial test.
+- Existing upstream tests already cover maker cancellation, resolver cancellation, wrong caller for withdrawal, and partial-fill → cancellation.
+
+New research artifact in the target fork:
+- `test/BountyNativeOrderIsolation.js` — commit `9a5ba30d8375006ad337a285b4dab4608fdff1ae`
+- workflow updated to run both NativeOrder boundary suites — commit `a6dbb981def880534c17d154667f872f7aedc91c`
+- branch tip after these changes: `a6dbb981def880534c17d154667f872f7aedc91c`
+
+Execution remains **UNKNOWN / OPEN** because no GitHub Actions run is currently associated with the branch tip and the local container cannot resolve `github.com`. No passing test result is claimed.
+
 
 ### Audit-coverage gate
 
