@@ -6,7 +6,7 @@
 
 ```text
 repository: https://github.com/1inch/limit-order-protocol
-tag: 4.3.2
+tag: 4.3.4
 tag object: 8b8f05736b857129da3a52a37623a40af05e225d
 commit: 67c56aee3b6a9f4982bf487084bd8da1f6638da0
 ```
