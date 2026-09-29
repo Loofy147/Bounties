@@ -4,7 +4,7 @@
 Snapshot: 2026-09-29
 Target: 1inch Limit Order Protocol 4.3.4
 Commit: 7da29889efa2e635611e1caf60f85f595ff7f05f
-Status: EXPERIMENTALLY_SUPPORTED / ELIGIBILITY OPEN
+Status: EXPERIMENTALLY_SUPPORTED / CANDIDATE OPEN
 
 ## Observation
 
@@ -57,7 +57,7 @@ The upstream 4.3.4 test suite contains an ETH-maker-order partial-fill case:
 
 Therefore residual clone collateral after partial fill is a normal protocol state.
 
-Our dedicated partial-fill control reproduces the same state transition with a residual C below the resolver reward cap, then attempts resolver cancellation after expiry plus the configured delay.
+Our dedicated partial-fill control reproduces the same state transition with a residual C below the resolver reward cap, then successfully executes resolver cancellation after expiry plus the configured delay.
 
 ## Full economic accounting
 
@@ -67,7 +67,7 @@ The resolver's true end-to-end economics must count:
 
 Earlier shorthand based only on cancellation gas was incomplete and is no longer treated as a profitability result.
 
-The dedicated partial-fill control is the remaining discriminating execution for complete resolver-side accounting.
+Run #64 completed the remaining execution and produced complete resolver-side accounting.
 
 ## Design-intent evidence
 
@@ -79,9 +79,7 @@ This is evidence of conscious full-balance semantics. It is not evidence that th
 
 ESTABLISHED: the resolver is a permissioned operational actor and the intended caller of resolver cancellation.
 
-OPEN / INFERENCE: the current bounty scope excludes attacks requiring privileged addresses and names governance and strategist as examples, but does not expressly classify resolver/access-token-holder roles.
-
-Therefore resolver eligibility must be settled explicitly before submission.
+The current program's privileged-address wording names governance and strategist. Current Immunefi guidance states that where a program provides such a list, only the addresses enumerated by that rule are treated as privileged for that exclusion. Resolver is not enumerated. This narrows, but does not by itself finish, the eligibility question.
 
 ## Audit / known-issue gate
 
@@ -101,4 +99,4 @@ Promote beyond EXPERIMENTALLY_SUPPORTED / ELIGIBILITY OPEN only when all are est
 4. A minimal victim scenario is established under permitted local-fork conditions.
 5. Full end-to-end resolver economics are characterized without incomplete cost assumptions.
 
-Until then: do not submit and do not assign severity or bounty amount.
+Final state: the technical, natural-state, and full-cost gates are ESTABLISHED by run #64. Audit/known-issue, production-version correspondence, and minimum production victim-state gates remain OPEN. Do not assign severity or bounty amount yet.
