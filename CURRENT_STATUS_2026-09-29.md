@@ -20,15 +20,15 @@ bounty/research-4.3.4
 
 Current PR:
 - #1
-- draft, open, unmerged
-- current head: e39993268632cc0b758ec7be98cd31048699949c
+- open, unmerged, research-only
+- current head: 8b59d02804de118ac9bd5ee2f18e58a2d5cf8a38
 
-Latest clean boundary-suite run:
-- GitHub Actions run #51
-- id 36524919906
-- job 109265719467
-- head e39993268632cc0b758ec7be98cd31048699949c
-- result: partial failure due a dedicated new partial-fill harness defect after the economic calibration step succeeded.
+Latest complete boundary-suite run:
+- GitHub Actions run #64
+- id 36621806098
+- job 109588790780
+- head 8b59d02804de118ac9bd5ee2f18e58a2d5cf8a38
+- result: SUCCESS — all six controls passed.
 
 Passed before the final defect:
 - target pin PASS
@@ -39,15 +39,11 @@ Passed before the final defect:
 - undercollateralized resolver reward control PASS
 - economic victim-loss calibration PASS
 
-The remaining failure was classified as HARNESS_DEFECT:
-BountyResolverRewardPartialFillEdge.js encoded makerTraits as {}, which produced an invalid BigNumberish value under ethers v6. The upstream 4.3.4 test constructs the same order through buildOrder(baseOrder, {}) instead.
+The dedicated partial-fill harness then exposed two additional harness defects before the final run:
+- an absolute maker DAI balance assertion was used after the fixture pre-funded the maker;
+- the computed expiration timestamp was not encoded into makerTraits, so cancellation correctly reverted with OrderShouldBeExpired.
 
-That harness was corrected in commit:
-add07cf4859a7128393129f1e72ccdc8bfd77c60
-
-A new pull-request run was triggered by reopening the draft PR. Latest observed run:
-- run #53 / id 36525043790, head add07cf4859a7128393129f1e72ccdc8bfd77c60
-- status was still in progress at the last poll.
+These were harness defects, not contract failures. The final corrected head is 8b59d02804de118ac9bd5ee2f18e58a2d5cf8a38.
 
 ## H-E2 technical behavior
 
@@ -79,7 +75,7 @@ Successful economic calibration on run #51:
 
 This proves the victim-side loss measurement and the reward transfer at the selected local parameters.
 
-It does not prove end-to-end resolver profitability.
+The complete partial-fill run also characterized end-to-end resolver economics.
 
 ## Natural victim state
 
@@ -91,7 +87,7 @@ The upstream 4.3.4 test suite contains a native ETH-maker partial-fill case:
 
 Therefore a residual clone balance below the initial order amount is a normal protocol state.
 
-Our dedicated partial-fill control uses the same protocol path and targets a residual C below R.
+Our dedicated partial-fill control reproduced the same state transition and then successfully executed resolver cancellation after expiry plus delay.
 
 ## Resolver adversary model
 
@@ -101,7 +97,7 @@ resolver is a permissioned operational actor and intended caller of resolver can
 OPEN / INFERENCE:
 the current bounty scope excludes attacks requiring privileged addresses and names governance and strategist as examples, but does not expressly classify resolver/access-token-holder roles.
 
-Bounty eligibility therefore remains OPEN.
+Bounty eligibility remains OPEN for final production, audit/known-issue, and program-rule reconciliation.
 
 ## Design-intent / known-issue evidence
 
@@ -123,9 +119,11 @@ B0-1INCH overall: HYPOTHESIS
 
 H-E2 local behavior: EXPERIMENTALLY_SUPPORTED
 
-Bounty eligibility: OPEN
+K-04 undercollateralized resolver reward extraction: REOPENED; the earlier profitability-only kill is retired.
+
+Bounty eligibility: OPEN.
 
 No severity, bounty amount, or submission decision has been assigned.
 
-Next discriminating gate:
-complete partial-fill full-cost execution → reconcile audits/known issues → settle resolver eligibility → characterize minimum production-relevant victim state → only then consider submission eligibility.
+Final remaining gates:
+reconcile applicable audits/known issues → settle resolver-role treatment under the program's privileged-address rule → establish production deployment/version correspondence and minimum real victim state. Do not submit before those gates are closed.
