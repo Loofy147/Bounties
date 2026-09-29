@@ -172,9 +172,12 @@ Compare:
 - full fill;
 - partial fill followed by maker cancellation;
 - expiry + resolver cancellation with and without reward;
+- undercollateralized expiry cancellation where `C < R` and an external WETH top-up brings the clone balance to the reward cap;
 - repeated cancellation;
 - unauthorized withdraw;
 - mutated maker order supplied to validateOrder.
+
+The undercollateralized case is specifically tracked as an economic edge: determine whether the resolver reward can consume maker collateral once a third party supplies only the missing WETH needed to reach the reward cap.
 
 **Falsification condition**
 
