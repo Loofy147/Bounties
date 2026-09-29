@@ -117,6 +117,21 @@ The official audit archive contains a v4.3.4 OpenZeppelin report entry. Current 
 
 Do not infer that NativeOrder was never audited.
 
+## Research endpoint
+
+The technical investigation has reached its current endpoint for H-E2/K-04:
+
+- target pin and package version: ESTABLISHED;
+- ERC-1271 boundary and clone isolation: EXPERIMENTALLY_SUPPORTED;
+- resolver total-balance reward behavior: EXPERIMENTALLY_SUPPORTED;
+- natural partial-fill residual path: EXPERIMENTALLY_SUPPORTED and fully executed;
+- full resolver-side accounting: ESTABLISHED by run #64;
+- production NativeOrderFactory deployment correspondence: ESTABLISHED at the recorded mainnet address;
+- K-04 profitability-only kill: RETIRED as a closure rule;
+- overall bounty finding status: HYPOTHESIS, not submission-ready.
+
+Further technical search on the same mechanism should stop unless new evidence changes one of the remaining gates. The remaining work is evidence reconciliation, not another synthetic variant of the same local flow.
+
 ## Current status
 
 B0-1INCH overall: HYPOTHESIS
