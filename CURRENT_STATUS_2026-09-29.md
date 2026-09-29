@@ -11,39 +11,69 @@ Current public program evidence checked on 2026-09-29:
 - Maximum bounty: $500,000.
 - Proof of concept is required.
 - KYC is required for payout.
-- The program applies only to the latest tags/releases.
+- The program applies to the latest tags/releases.
 - Limit Order Protocol remains an in-scope asset.
 
-The 1inch repository has since published tag `4.3.4` (created 2026-09-24). The official 1inch audit archive now contains a dedicated OpenZeppelin audit entry for Limit Order Protocol v4.3.4. Because the live Immunefi program applies only to the latest tag/releases, `4.3.4` is the current working target; `4.3.2` is retained only as historical baseline context.
+The 1inch repository target is tag `4.3.4`, underlying commit `7da29889efa2e635611e1caf60f85f595ff7f05f`. `4.3.2` is retained only as historical baseline context.
 
-### New NativeOrder economic hypothesis — resolver reward vs undercollateralized balance
+### Execution gate — 2026-09-29
 
-Static review + local harness design now isolate a stronger H-E2 condition: when maker collateral (C) is below the resolver reward cap (R), an external WETH top-up of (R-C) can make the clone balance exactly (R). The resolver can then receive (R), leaving the maker with zero from the cancellation balance. This is a behavioral hypothesis; it is not yet a confirmed vulnerability, profitability claim, severity, or eligibility determination.
+Exact-head CI run `36521751170` (run #22) completed **SUCCESS** on research commit `f0cfc47e1b3593eb01986d8245099f88cbe574e3`.
 
-Artifacts:
-- `Loofy147/limit-order-protocol:test/BountyResolverUndercollateralizedReward.js` — `26e7265a611aeb2c2ad3a5ec83cf803db7f62a3c`
-- research branch CI — `db8cbdb28f082fc8e31b772c31e41a2082d57c47`
-- Bounties research record — `targets/1inch/RESOLVER-REWARD-EDGE.md`
+That run established only:
+- exact target checkout and 4.3.4 package-version verification;
+- `test/BountyNativeOrderBoundary.js`: **1 passing**.
 
-The published 1inch scope excludes some privileged-address attacks but does not explicitly name resolvers; 1inch's Fusion documentation describes resolvers as professional market makers and the access token as a gate. Therefore the role classification remains OPEN.
+It did **not** run the remaining resolver/isolation controls because the workflow at that commit had only the boundary-test step.
+
+The workflow was expanded to run four independent controls:
+1. `BountyNativeOrderBoundary.js`
+2. `BountyNativeOrderIsolation.js`
+3. `BountyResolverRewardBalance.js`
+4. `BountyResolverUndercollateralizedReward.js`
+
+Workflow expansion commit: `c455fe9ae5938b05163c58010052a03b8afa7d1d`.
+
+A harness timing defect was then identified: resolver cancellation with a nonzero reward requires the configured cancellation delay after expiry. Both resolver tests had advanced only to `expiration`. This was a test defect, not a contract result.
+
+The harness was corrected:
+- `BountyResolverRewardBalance.js` → `0f684b3191636d2677d6028e61b14182ec638476`
+- `BountyResolverUndercollateralizedReward.js` → `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+
+The current research branch / PR head is `6fd8f86fc4476ec70d110a62b275bf7b85d19429`.
+
+GitHub Actions run #28 (`36522855418`) is executing the corrected four-control matrix. Latest observed state:
+- target-pin verification: **PASS**
+- dependency installation: **IN PROGRESS**
+- all four assertion steps: **PENDING**
+
+Therefore the resolver experiment remains **UNKNOWN / OPEN**.
+
+### Resolver adversary-model gate
+
+The current public Immunefi scope names Limit Order Protocol as in scope, lists direct theft of user funds as an in-scope Critical impact, and says the program applies only to latest tags/releases. Its privileged-address exclusion explicitly names governance and strategist, but does not name resolver/access-token-holder roles.
+
+1inch Fusion documentation describes resolvers as professional market makers and the KYC/access token as the mechanism gating resolver participation.
+
+Current classification:
+- **ESTABLISHED:** resolver is a permissioned operational actor.
+- **INFERENCE / OPEN:** the published bounty language does not explicitly classify resolver/access-token holders as the excluded privileged-address category.
+
+This is not an `IN-SCOPE` determination. Economic impact, adversary eligibility, and audit/known-issue reconciliation remain separate gates.
+
+### NativeOrder economic hypothesis — resolver reward vs undercollateralized balance
+
+Static review + local harness design isolate H-E2: when maker collateral (C) is below resolver reward cap (R), an external WETH top-up of (R-C) can make the clone balance exactly (R). The cancellation path can then pay (R) to the resolver from the clone balance, leaving zero from that cancellation balance for the maker.
+
+This remains a **behavioral hypothesis**, not a confirmed vulnerability, profitability claim, severity, or eligibility determination.
+
+The production-like gate used by the contract is resolver possession of an access token; the local tests mint the mock token solely to construct the controlled execution environment.
 
 ### Audit coverage correction
 
-The public audit archive entry for v4.3.4 is specifically described as the **Permit2Proxy extension**. NativeOrderFactory and NativeOrderImpl are present in the 4.3.4 code delta, but the current research record does not yet contain enough evidence to mark their audit coverage as established. This is an evidence gap, not a vulnerability claim.
+The public 1inch audit archive evidence currently used in this research identifies the v4.3.4 audit entry with the **Permit2Proxy extension**. NativeOrderFactory and NativeOrderImpl are present in the 4.3.4 code, but current evidence is insufficient to mark their audit coverage as established.
 
-NativeOrder research therefore remains active, with audit/known-issue reconciliation as a mandatory eligibility gate.
-
-Current program constraints re-verified on 2026-09-29 include:
-- testing must be performed on local forks; mainnet/public-testnet deployed code must not be tested;
-- the program applies only to the latest eligible tag/releases;
-- theoretical/speculative exploits without demonstrated business impact are out of scope;
-- a PoC is required for all severities;
-- a discovered vulnerability must be reported no later than 24 hours after initial discovery;
-- AI-generated reports are prohibited.
-
-These constraints are part of the B0 acceptance gate, not optional submission advice.
-
-Sources: https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/ and https://immunefi.com/bug-bounty/1inch-SmartContracts/information/.
+NativeOrder audit/known-issue reconciliation remains mandatory before any submission decision.
 
 ## Local research status
 
@@ -53,33 +83,30 @@ Status remains:
 
 No vulnerability has been established.
 
-Previous snapshot:
-- historical tag: `4.3.2`
-- historical commit: `67c56aee3b6a9f4982bf487084bd8da1f6638da0`
-- current target tag: `4.3.4`
-- current target commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
-- current tag object: `0a40e01befff19d925457b55191900fb456c2dd2`
-- invariant families: fill accounting, invalidation, authorization/domain separation, parser/extensions/callbacks
-- next research gate: executable local harness + mutation controls
+Current target:
+- tag: `4.3.4`
+- commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
+- tag object: `0a40e01befff19d925457b55191900fb456c2dd2`
+
+Current execution frontier:
+`target pin PASS → boundary PASS → full resolver/isolation matrix PENDING`
 
 ## Re-verification gate
 
-Before active testing or submission, re-pin:
-1. current Immunefi program scope;
-2. exact eligible release/tag and commit (`4.3.4` currently);
-3. in-scope asset;
-4. impact category;
-5. known issues/audits;
-6. permitted test environment and techniques;
-7. reporting requirements.
+Before any submission:
+1. re-pin current Immunefi scope;
+2. verify exact eligible release/tag;
+3. verify in-scope asset;
+4. verify impact mapping;
+5. reconcile audits and known issues;
+6. verify permitted test environment and techniques;
+7. preserve the exact reproduction evidence and reporting timeline.
 
-No mainnet/public-testnet testing is authorized merely by this repository's existence. Follow the current program rules.
+Testing remains local-only; the public program prohibits testing mainnet/public-testnet deployed code.
 
 ## Commercial role
 
-Bounties is now an independent revenue channel alongside engineering contracts.
-
-The success metric is not the bounty headline maximum. It is:
+The success metric is:
 
 `RECONNAISSANCE → REPRODUCED → IN-SCOPE → SUBMITTED → ACCEPTED → PAID`
 
