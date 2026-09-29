@@ -89,6 +89,10 @@ Current evidence therefore does not establish that NativeOrderFactory/NativeOrde
 
 No explicit prior source-text disclosure of the tested undercollateralized reward condition has been found in the targeted GitHub search performed so far. Absence is not novelty proof.
 
+## Research endpoint
+
+The technical proof path is complete at run #64. Do not create additional synthetic variants of the same C<R construction unless a new production or program-rule fact creates a discriminating test.
+
 ## Promotion conditions
 
 Promote beyond EXPERIMENTALLY_SUPPORTED / ELIGIBILITY OPEN only when all are established:
