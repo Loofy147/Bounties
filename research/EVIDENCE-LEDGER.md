@@ -110,3 +110,42 @@ No severity, bounty amount, or submission decision has been assigned.
 ## Preservation rule
 
 Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
+
+
+## Economic impact characterization — 2026-09-29
+
+The reproduced H-E2 behavior can be expressed exactly for a clone containing only maker collateral (C) plus resolver top-up (T):
+
+[
+R=min(rewardLimit,;block.basefee	imes70,000	imes1.1)
+]
+
+For (C<R), selecting (T=R-C) makes the clone balance equal (R), so maker proceeds from cancellation are zero.
+
+Therefore:
+[
+	ext{maker loss}=C
+]
+[
+	ext{resolver net after top-up and gas}=C-G
+]
+
+At 10 gwei, using the 56,603-gas figure observed in run #32:
+[
+R=0.00077	ext{ ETH},quad Gapprox0.00056603	ext{ ETH}
+]
+
+The original (C=0.0001) ETH reproduction is therefore behaviorally valid but economically loss-making for the resolver at that fee. Break-even is approximately (C>G). A calibration test with (C=0.0007) ETH was added to the target branch to verify the profitable edge under the same local assumptions.
+
+Calibration artifact:
+`Loofy147/limit-order-protocol:test/BountyResolverRewardEconomicCalibration.js`
+
+Calibration branch commit:
+`64b213a198891854e8b74f5f8fdb530895f48411`
+
+Workflow extension:
+`41d0c3b434233c68d7d38726094e093c2f320e6e`
+
+Current calibration CI: run #38 (`36523930512`), assertion result **PENDING**.
+
+This is impact characterization, not severity classification or bounty-eligibility determination.
