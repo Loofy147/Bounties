@@ -4,7 +4,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Working target `4.3.4` → `7da29889efa2e635611e1caf60f85f595ff7f05f`; public v4.3.4 audit index entry explicitly describes Permit2Proxy; NativeOrderFactory/Impl audit coverage OPEN/UNKNOWN; static review has not established a bypass | complete corrected boundary/isolation/reward matrix in CI; reconcile all applicable audits/known issues; only then assess impact/scope |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 resolver-reward edge is EXPERIMENTALLY_SUPPORTED locally; bounty eligibility and audit/known-issue reconciliation remain OPEN | settle resolver adversary eligibility; reconcile audits/known issues; characterize minimum victim impact |
 
 ## Evidence stages
 
@@ -18,144 +18,95 @@ RECONNAISSANCE
   → PAID
 ```
 
-Negative evidence is preserved:
+Rejected candidates remain recorded with the reason.
 
-```text
-HYPOTHESIS / REPRODUCED / SUBMITTED
-  → REJECTED
-```
+## Current B0 frontier — 2026-09-29
 
-A rejected candidate is not deleted; the reason is part of the research dataset.
+### Target
 
-## Current B0 research state
+- Tag: `4.3.4`
+- Commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
+- Tag object: `0a40e01befff19d925457b55191900fb456c2dd2`
 
-### Execution re-verification — 2026-09-29
+### Execution
 
-The first exact-head CI run, `36521751170` (run #22), completed **SUCCESS** on PR-head commit `f0cfc47e1b3593eb01986d8245099f88cbe574e3`.
+Exact-head run #22 (`36521751170`) established:
+- target pin PASS;
+- package version 4.3.4 PASS;
+- NativeOrder ERC-1271 boundary: 1 passing.
 
-What it actually established:
-- target pin verification **PASS**;
-- package version check **PASS** for 4.3.4;
-- `test/BountyNativeOrderBoundary.js`: **1 passing**;
-- the successful run did **not** execute the isolation or resolver-reward tests because the workflow at that commit still contained only the boundary test.
+The expanded four-control run #28 (`36522855418`) established:
+- boundary: PASS;
+- same-maker clone isolation: PASS;
+- resolver test: HARNESS-FAIL;
+- undercollateralized resolver test: skipped.
 
-The workflow was then expanded in commit `c455fe9ae5938b05163c58010052a03b8afa7d1d` to execute four separate controls:
-1. `BountyNativeOrderBoundary.js`
-2. `BountyNativeOrderIsolation.js`
-3. `BountyResolverRewardBalance.js`
-4. `BountyResolverUndercollateralizedReward.js`
+Run #28 failed at `time.latest` being unavailable through `require('hardhat')`. No contract assertion failed.
 
-Run #28 (`36522855418`) then established:
-- target pin **PASS**;
-- boundary test **PASS**;
-- isolation test **PASS**;
-- resolver reward test **FAIL**, but the failure was entirely in the test harness: `TypeError: Cannot read properties of undefined (reading 'latest')` at `test/BountyResolverRewardBalance.js:39`;
-- undercollateralized test was skipped because the previous step failed.
+The resolver harness was corrected using `ethers.provider.getBlock('latest')` and `evm_increaseTime`/`evm_mine`.
 
-This failure is classified as **HARNESS_DEFECT**, not a contract result.
+### Full corrected reproduction
 
-The resolver tests were corrected to use the project's available provider RPC time controls (`evm_increaseTime` + `evm_mine`) and to advance past the configured cancellation delay:
-- `test/BountyResolverRewardBalance.js` → `1cd6148388902795f2c610ef5ed069feada55528`
-- `test/BountyResolverUndercollateralizedReward.js` → `75f8dfde597a408e28d6e633dad6ea9c805833bc`
+Run #32 (`36522991905`) on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc` completed **SUCCESS**.
 
-Current research branch / PR head:
-`75f8dfde597a408e28d6e633dad6ea9c805833bc`
+All four controls passed:
+- `BountyNativeOrderBoundary.js`: 1 passing
+- `BountyNativeOrderIsolation.js`: 1 passing
+- `BountyResolverRewardBalance.js`: 1 passing
+- `BountyResolverUndercollateralizedReward.js`: 1 passing
 
-GitHub Actions run #32 (`36522991905`) is executing the corrected four-control matrix. Latest observed state:
-- target-pin verification **PASS**;
-- dependency installation **PASS**;
-- `BountyNativeOrderBoundary.js`: **IN PROGRESS**;
-- remaining three assertion steps: **PENDING**.
+Execution evidence state:
+- target pin: **EXPERIMENTALLY_SUPPORTED**
+- ERC-1271 boundary: **EXPERIMENTALLY_SUPPORTED**
+- same-maker cross-order isolation: **EXPERIMENTALLY_SUPPORTED**
+- resolver total-balance behavior: **EXPERIMENTALLY_SUPPORTED**
+- undercollateralized resolver reward: **EXPERIMENTALLY_SUPPORTED**
 
-Therefore the resolver reproduction remains **UNKNOWN / OPEN**.
+### H-E2 reproduced condition
 
-### Resolver adversary-model gate — 2026-09-29
+At a local base fee of 10 gwei:
+- maker collateral (C = 0.0001) ETH;
+- resolver reward cap (R = 0.00077) ETH;
+- resolver top-up (R-C = 0.00067) ETH.
 
-Current public 1inch bounty scope:
-- Limit Order Protocol is an in-scope asset.
-- The program applies to latest tags/releases.
-- Direct theft of user funds is an in-scope Critical impact.
-- The privileged-address exclusion explicitly names governance and strategist, but does not name resolver/access-token-holder roles.
+After expiry plus the configured cancellation delay, the resolver cancellation path transfers the full reward from the clone balance. The test observes zero maker balance delta from the cancellation and resolver proceeds equal to (R) after adding gas cost back.
 
-Current 1inch Fusion repository material describes resolvers as professional market makers, with the access token used to gate resolver/settlement participation. `KycNFT` mint/ordinary transfer paths are owner-controlled or owner-signature-authorized.
+This is a reproduced local behavior, not yet an eligible finding.
 
-**Established:** resolver is a permissioned operational role.
+### Resolver adversary model
 
-**Inference / OPEN:** the published bounty language does not explicitly classify resolver/access-token holders as the excluded privileged-address category.
+**ESTABLISHED:** resolver is a permissioned operational actor and the intended caller of resolver cancellation.
 
-This does not promote H-E2 to `IN-SCOPE`; economic impact, exact adversary eligibility, and audit/known-issue reconciliation remain separate gates.
+**OPEN / INFERENCE:** the published 1inch bounty language does not explicitly state whether resolver/access-token holders are excluded by the privileged-address rule. The scope gives governance and strategist as its named examples. The role therefore cannot be auto-promoted to IN-SCOPE solely from its operational nature. citeturn314897view0
 
-### Stronger H-E2 edge — undercollateralized reward
+1inch's current resolver material states that resolvers must register/pass verification and that an Access NFT functions as an access credential for exclusive order-fulfillment functionality. citeturn595204search5turn595204search8
 
-The resolver-reward hypothesis is narrowed to:
+### Design-intent / known-issue investigation
 
-- maker collateral = (C);
-- resolver reward cap = (R);
-- when (C < R), an external WETH transfer of (R-C) can make the clone balance exactly (R);
-- `_cancelOrder()` then pays (R) from the clone balance to the resolver, leaving zero from that cancellation balance for the maker;
-- before gas, the resolver receives exactly its top-up plus (C).
+Upstream `1inch/limit-order-protocol` PR #390 explicitly discussed whether the **whole WETH balance** should be returned to the maker, including accidentally deposited WETH. The maintainer stated that this was intended, while the same implementation subtracts resolver reward from the clone's full balance before paying the maker.
 
-This remains a **behavioral hypothesis**, not a confirmed vulnerability, severity, profitability claim, or eligibility determination.
+This is evidence of a consciously designed full-balance semantic, not proof that H-E2 was recognized.
 
-### NativeOrder boundary review
+Current search over the upstream code/PR material found no explicit prior disclosure using the tested formulation (resolver reward funded by an undercollateralized clone balance via external WETH top-up). That absence is not proof of novelty.
 
-Static review of the pinned 4.3.4 NativeOrder surface did **not** establish a vulnerability.
+### Audit gate
 
-The exact-head boundary test is **EXPERIMENTALLY_SUPPORTED** by run #22 (1 passing).
+The official 1inch audit archive contains a v4.3.4 OpenZeppelin report file. citeturn812425view0
 
-The same-maker cross-order isolation test is also **EXPERIMENTALLY_SUPPORTED** by run #28.
+The archive material currently available in this research describes the v4.3.4 entry as the Permit2Proxy extension; therefore the present evidence does not establish NativeOrderFactory/NativeOrderImpl coverage by that particular v4.3.4 audit.
 
-The resolver reward controls remain **UNKNOWN / OPEN** pending the corrected run #32.
+Do not infer “never audited.” Earlier Limit Order / Fusion audits cover other code snapshots and components. Applicable audit and known-issue reconciliation remains OPEN.
 
-### Audit-coverage gate
+## Current decision state
 
-The public 1inch audit archive entry currently used in this research describes the v4.3.4 audit entry as the **Permit2Proxy extension**. This does not prove NativeOrderFactory/NativeOrderImpl were never reviewed elsewhere.
+B0-1INCH overall: **HYPOTHESIS**
 
-Therefore:
-- Permit2Proxy: audit coverage evidenced.
-- NativeOrderFactory / NativeOrderImpl: audit coverage **OPEN / UNKNOWN**.
-- Any eventual report must reconcile reproduced behavior against applicable audit/known-issue material before promotion to `IN-SCOPE`.
+H-E2 local behavior: **EXPERIMENTALLY_SUPPORTED**
 
-The canonical hypothesis register is `targets/1inch/HYPOTHESES.md`.
+Bounty eligibility: **OPEN**
 
-Target pin:
-- tag `4.3.4`
-- commit `7da29889efa2e635611e1caf60f85f595ff7f05f`
-- tag object `0a40e01befff19d925457b55191900fb456c2dd2`
-
-Tracked families:
-- H-A1: mixed partial-fill accounting;
-- H-B1: invalidation composition;
-- H-C1: authorization/domain equivalence;
-- H-D1: dynamic calldata interpretation;
-- H-E1: native-order clone / patched-hash equivalence;
-- H-E2: native-order collateral / cancellation accounting;
-- H-F1: Permit2Proxy authorization boundary.
-
-No one is a confirmed vulnerability.
+No severity, bounty amount, or submission decision has been assigned.
 
 ## Preservation rule
 
-Every significant research step records the exact target version, date, reasoning status, reproduction artifacts and outcome. Do not store credentials or secrets in this repository.
-
-
-## Latest verified execution — run #32 (2026-09-29)
-
-GitHub Actions run `36522991905` (run #32) completed **SUCCESS** on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc`.
-
-All four controls passed independently:
-- `BountyNativeOrderBoundary.js`: **1 passing**
-- `BountyNativeOrderIsolation.js`: **1 passing**
-- `BountyResolverRewardBalance.js`: **1 passing**
-- `BountyResolverUndercollateralizedReward.js`: **1 passing**
-
-This upgrades the execution state as follows:
-- target pin: **EXPERIMENTALLY_SUPPORTED**
-- NativeOrder ERC-1271 boundary: **EXPERIMENTALLY_SUPPORTED**
-- same-maker cross-order isolation: **EXPERIMENTALLY_SUPPORTED**
-- resolver total-balance behavior: **EXPERIMENTALLY_SUPPORTED**
-- undercollateralized reward behavior: **EXPERIMENTALLY_SUPPORTED**
-
-The four tests run against the pinned 4.3.4 code line. This establishes the observed local behavior. It does **not** by itself establish bounty eligibility, severity, real-production liquidity exposure, or absence from prior disclosures/audits.
-
-For the undercollateralized case, the test constructs (C=0.0001) ETH maker collateral and (R=0.00077) ETH resolver reward cap at a 10 gwei base fee, then supplies (R-C=0.00067) ETH of WETH before delayed resolver cancellation. The assertions show zero maker balance delta from the cancellation and resolver proceeds equal to (R) after adding gas cost back. This is the key reproduced H-E2 behavior.
+Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
