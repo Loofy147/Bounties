@@ -15,7 +15,7 @@ fi
 
 cd "$TARGET_DIR"
 
-EXPECTED_COMMIT="67c56aee3b6a9f4982bf487084bd8da1f6638da0"
+EXPECTED_COMMIT="7da29889efa2e635611e1caf60f85f595ff7f05f"
 ACTUAL_COMMIT="$(git rev-parse HEAD)"
 
 echo "target_commit=$ACTUAL_COMMIT"
