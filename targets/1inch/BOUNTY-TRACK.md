@@ -12,7 +12,7 @@ scope → inspect → hypothesize → reproduce → minimize → document → su
 
 ## B0 — 1inch Smart Contracts
 
-1inch is the current first reconnaissance target because it provides a concrete PoC-based external feedback loop and a published low-tier path. Before any submission or active testing, re-verify the live program page for the exact eligible release, asset, impact wording, known-issue exclusions, reporting deadline and permitted test environment.
+1inch is the current first reconnaissance target because it provides a concrete PoC-based external feedback loop and a published low-tier path. Before any submission or active testing, re-verify the live program page for the exact eligible release, asset, impact wording, known-issue exclusions, reporting deadline, responsible-publication rules, and permitted test environment. The current page requires local-fork testing rather than testing deployed mainnet/public-testnet code and requires a PoC.
 
 ### Candidate set
 
