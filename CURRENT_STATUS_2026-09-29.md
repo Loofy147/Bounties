@@ -16,6 +16,18 @@ Current public program evidence checked on 2026-09-29:
 
 The 1inch Limit Order Protocol repository currently identifies tag `4.3.2` as the latest production version that has passed security audits and explicitly warns not to use `master` as the production target.
 
+Current program constraints re-verified on 2026-09-29 include:
+- testing must be performed on local forks; mainnet/public-testnet deployed code must not be tested;
+- the program applies only to the latest eligible tag/releases;
+- theoretical/speculative exploits without demonstrated business impact are out of scope;
+- a PoC is required for all severities;
+- a discovered vulnerability must be reported no later than 24 hours after initial discovery;
+- AI-generated reports are prohibited.
+
+These constraints are part of the B0 acceptance gate, not optional submission advice.
+
+Sources: https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/ and https://immunefi.com/bug-bounty/1inch-SmartContracts/information/.
+
 ## Local research status
 
 Status remains:
