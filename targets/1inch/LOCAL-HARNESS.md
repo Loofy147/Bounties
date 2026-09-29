@@ -23,6 +23,9 @@ cd limit-order-protocol-4.3.2
 
 test "$(git rev-parse HEAD)" = "67c56aee3b6a9f4982bf487084bd8da1f6638da0"
 
+# Or invoke the repository's pinned baseline runner:
+# bash /path/to/Bounties/targets/1inch/tools/run-baseline.sh "$PWD"
+
 yarn install --frozen-lockfile
 yarn test:ci
 ```
