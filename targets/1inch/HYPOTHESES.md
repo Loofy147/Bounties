@@ -2,7 +2,9 @@
 
 **Snapshot:** 2026-09-29  
 **Target:** `1inch/limit-order-protocol`  
-**Eligible working release:** tag `4.3.2` → tag object `8b8f05736b857129da3a52a37623a40af05e225d` → commit `67c56aee3b6a9f4982bf487084bd8da1f6638da0`
+**Current working release:** tag `4.3.4` → tag object `0a40e01befff19d925457b55191900fb456c2dd2` → commit `7da29889efa2e635611e1caf60f85f595ff7f05f`
+
+**Historical baseline:** tag `4.3.2` → commit `67c56aee3b6a9f4982bf487084bd8da1f6638da0`
 
 ## Status vocabulary
 
