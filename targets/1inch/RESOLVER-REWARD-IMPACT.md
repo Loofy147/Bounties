@@ -95,8 +95,9 @@ Established:
 Still open:
 
 - whether the behavior is already disclosed by an applicable audit/known issue;
-- exact production deployment/version correspondence;
-- exact production-scale victim-state prevalence;
+- exact production-scale prevalence of the partial-fill residual state;
 - final submission eligibility under the current program.
+
+Production deployment correspondence is established at the NativeOrderFactory address: the 4.3.4 mainnet deployment artifact records `0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01`, the same address Etherscan identifies as NativeOrderFactory.
 
 This remains an impact characterization, not a severity or bounty determination.
