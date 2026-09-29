@@ -4,7 +4,7 @@ set -euo pipefail
 TARGET_DIR="${1:-}"
 
 if [[ -z "$TARGET_DIR" ]]; then
-  echo "usage: $0 /path/to/limit-order-protocol-4.3.2" >&2
+  echo "usage: $0 /path/to/limit-order-protocol-4.3.4" >&2
   exit 2
 fi
 
