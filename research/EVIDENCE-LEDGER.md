@@ -5,7 +5,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 resolver-reward edge is EXPERIMENTALLY_SUPPORTED locally; victim-loss calibration succeeded; full partial-fill economics and eligibility/audit reconciliation remain OPEN | complete partial-fill full-cost execution; reconcile audits/known issues; settle resolver adversary eligibility; characterize minimum victim impact |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
 
 ## Evidence stages
 
@@ -75,6 +75,8 @@ The calibration intentionally isolates victim loss from resolver profitability.
 
 The upstream 4.3.4 test suite includes a native ETH-maker-order partial-fill case in which a 0.3 ETH-equivalent native order is filled for 0.2 and the clone retains 0.1 WETH. A subsequent maker cancellation refunds that residual.
 
+Run #64 additionally reproduced a natural residual of 0.0007 ETH, then completed resolver cancellation with the reward cap at 0.00077 ETH.
+
 Therefore residual clone collateral after partial fill is a normal protocol state.
 
 A dedicated bounty control targets the same transition with a residual C below the resolver reward cap and complete resolver-side accounting.
@@ -121,6 +123,9 @@ This does not establish coverage of NativeOrderFactory/NativeOrderImpl by that p
 Applicable audit and known-issue reconciliation remains OPEN.
 
 ## Economic interpretation
+
+The completed natural partial-fill run measured resolverNetTotal = -0.00006743195654982 ETH against victimResidualLoss = 0.0007 ETH. This is negative-EV for the measured local scenario, but it is not used as an impact-kill gate; current Immunefi guidance treats attacker financial risk/ROI as a feasibility consideration rather than an automatic invalidation of the underlying impact.
+
 
 For C<R and T=R-C:
 
