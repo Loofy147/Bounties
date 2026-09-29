@@ -93,3 +93,42 @@ Promote only if all are established:
 5. A minimal victim-impact scenario exists under the permitted local-fork testing model.
 
 Otherwise record the reason and kill the candidate.
+
+
+## Latest verified execution — run #32
+
+Run `36522991905` (run #32) completed **SUCCESS** on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc`.
+
+All four controls passed:
+- boundary: **1 passing**
+- clone isolation: **1 passing**
+- resolver reward balance: **1 passing**
+- undercollateralized resolver reward: **1 passing**
+
+The resolver behavior is therefore now **EXPERIMENTALLY_SUPPORTED** as a local execution property.
+
+### Reproduced undercollateralized condition
+
+At a 10 gwei base fee:
+- maker collateral (C = 0.0001) ETH;
+- reward cap (R = 0.00077) ETH;
+- resolver top-up (R-C = 0.00067) ETH.
+
+The test then waits for expiration plus the configured cancellation delay and invokes resolver cancellation.
+
+Observed assertions:
+- maker balance delta from the cancellation = 0;
+- resolver balance delta + gas cost = (R);
+- resolver contribution = (R-C).
+
+The arithmetic therefore isolates (C) ETH of maker collateral as the amount recovered by the resolver beyond its own top-up, before gas.
+
+This remains a **local reproduced behavior**, not yet a bounty finding.
+
+### Gate status
+
+The next discriminating gates are:
+1. determine whether the resolver/access-token-holder adversary is accepted under the published bounty model;
+2. reconcile the behavior against v4.3.4 audits and known issues;
+3. characterize the minimum real victim condition and whether it creates the published in-scope impact;
+4. only then consider submission.
