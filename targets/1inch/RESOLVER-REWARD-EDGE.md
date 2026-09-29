@@ -11,7 +11,7 @@ Status: **OPEN / HYPOTHESIS**
 
 Therefore an external WETH transfer into a native-order clone can become part of the same balance from which a resolver reward is paid.
 
-## Discriminating experiment
+## Discriminating experiments
 
 Two local controls are used on `Loofy147/limit-order-protocol`:
 
@@ -26,34 +26,47 @@ Two local controls are used on `Loofy147/limit-order-protocol`:
 
 These are local-flow tests only. They do not, by themselves, claim attacker profitability or bounty eligibility.
 
-### Harness correction
+## Harness corrections
 
 The resolver cancellation path requires the configured cancellation delay to have elapsed after order expiration when `rewardLimit > 0`.
 
-The initial resolver tests advanced only to `expiration`; this was a test-harness defect. The contract was not changed.
+The initial resolver tests advanced only to expiration. That was a harness defect.
+
+A second harness defect then surfaced in CI: the project does not expose `time.latest` from `require('hardhat')`. Run #28 failed with:
+
+`TypeError: Cannot read properties of undefined (reading 'latest')`
+
+at `test/BountyResolverRewardBalance.js:39`.
+
+No contract assertion failed in that run.
+
+The resolver tests were corrected to derive the latest block timestamp from `ethers.provider.getBlock('latest')` and to advance local time with `evm_increaseTime` + `evm_mine`.
 
 Correction commits:
-- `BountyResolverRewardBalance.js` → `0f684b3191636d2677d6028e61b14182ec638476`
-- `BountyResolverUndercollateralizedReward.js` → `6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+- `BountyResolverRewardBalance.js` → `1cd6148388902795f2c610ef5ed069feada55528`
+- `BountyResolverUndercollateralizedReward.js` → `75f8dfde597a408e28d6e633dad6ea9c805833bc`
 
 ## Current execution evidence
 
 Exact-head CI run `36521751170` (run #22) completed successfully on research commit `f0cfc47e1b3593eb01986d8245099f88cbe574e3` and proved the target-pin checks plus the ERC-1271 boundary test (`1 passing`).
 
-That run did not execute the resolver controls.
-
-The branch workflow was expanded to four independent test steps in commit `c455fe9ae5938b05163c58010052a03b8afa7d1d`.
+Run #28 (`36522855418`) proved:
+- boundary test: **PASS**
+- isolation test: **PASS**
+- resolver reward test: **HARNESS-FAIL**
+- undercollateralized test: **SKIPPED**
 
 Current PR head:
-`6fd8f86fc4476ec70d110a62b275bf7b85d19429`
+`75f8dfde597a408e28d6e633dad6ea9c805833bc`
 
 Current GitHub Actions run:
-`36522855418` (run #28)
+`36522991905` (run #32)
 
 Latest observed state:
 - target pin: **PASS**
-- dependency installation: **IN PROGRESS**
-- boundary/isolation/reward/undercollateralized assertion steps: **PENDING**
+- dependency installation: **PASS**
+- boundary test: **IN PROGRESS**
+- isolation/resolver tests: **PENDING**
 
 Therefore no resolver reproduction result is yet claimed.
 
@@ -64,7 +77,6 @@ The current 1inch Immunefi scope excludes attacks requiring privileged addresses
 1inch Fusion documentation describes resolvers as professional market makers and states that the access token gates resolver/settlement participation. The production KycNFT restricts ordinary mint/transfer paths to the contract owner, with owner-signature authorization as an alternate path.
 
 Current classification:
-
 - **ESTABLISHED:** resolver is a permissioned operational actor.
 - **INFERENCE / OPEN:** the published bounty text does not explicitly classify resolver/access-token holders as the excluded privileged-address category.
 
