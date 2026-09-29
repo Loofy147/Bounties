@@ -129,3 +129,82 @@ No hypothesis may advance to `IN-SCOPE` without a fresh comparison against the c
 ## Current disposition
 
 No vulnerability is established. The next discriminating action is an executable local harness against the pinned release, with mutation controls around the four probe families.
+
+
+## H-E1 — Native-order clone / patched-hash equivalence
+
+**Why this is new in 4.3.4**
+
+4.3.4 introduces NativeOrderFactory + NativeOrderImpl. The order is initially hashed with the maker's EOA, the factory derives a deterministic clone address from that hash, then the effective order used by the Limit Order Protocol replaces maker with the clone address. NativeOrderImpl.isValidSignature() reconstructs the original order from the ERC-1271 signature bytes, re-derives the clone, patches maker, and hashes again.
+
+**Security property**
+
+The ERC-1271 acceptance relation must be one-to-one with the exact native order committed by the factory.
+
+**Probe family**
+
+For one created clone, compare:
+
+- exact original order encoded in the signature;
+- individual mutations of salt, maker, receiver, makerAsset, takerAsset, makingAmount, takingAmount, and makerTraits;
+- boundary values for packed address/trait fields;
+- exact patched-order hash vs factory event hash;
+- malformed/truncated signature byte strings.
+
+**Falsification condition**
+
+A mutated or malformed order/signature pair is accepted by the clone as a valid signature for an order whose security-relevant fields differ from the factory-committed order.
+
+A rejection, including a clean 0x00000000 ERC-1271 response for malformed input, is expected behavior.
+
+**Status:** HYPOTHESIS
+
+## H-E2 — Native-order collateral / cancellation accounting
+
+**Security property**
+
+For a native order, collateral deposited into the deterministic clone must not become withdrawable by an unauthorized caller, and cancellation must distribute only the clone's actual collateral subject to the documented resolver reward rules.
+
+**Probe family**
+
+Compare:
+
+- full fill;
+- partial fill followed by maker cancellation;
+- expiry + resolver cancellation with and without reward;
+- repeated cancellation;
+- unauthorized withdraw;
+- mutated maker order supplied to validateOrder.
+
+**Falsification condition**
+
+A deterministic local sequence permits an unauthorized withdrawal, over-reward, collateral duplication, or cancellation of a different order's clone.
+
+**Status:** HYPOTHESIS
+
+## H-F1 — Permit2Proxy authorization boundary
+
+**Why this is new in 4.3.4**
+
+Permit2Proxy exposes a deliberately unusual function selector equal to IERC20.transferFrom, allowing it to be used as a maker-asset endpoint while delegating the transfer to Permit2.
+
+**Security property**
+
+Only the Limit Order Protocol can invoke the proxy transfer entry point, and the parameters ultimately authorized by Permit2 remain bound to the signed permit.
+
+**Probe family**
+
+Use local-only negative controls for:
+
+- direct non-LOP caller;
+- permitted token differing from the order maker asset;
+- requested amount greater than the signed permitted amount;
+- expired permit;
+- reused permit nonce;
+- malformed suffix/extension combinations.
+
+**Falsification condition**
+
+A caller outside the LOP, or an order path with mismatched authorization parameters, can make the proxy transfer assets without a corresponding valid Permit2 authorization.
+
+**Status:** HYPOTHESIS
