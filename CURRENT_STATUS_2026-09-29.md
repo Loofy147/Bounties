@@ -16,6 +16,17 @@ Current public program evidence checked on 2026-09-29:
 
 The 1inch repository has since published tag `4.3.4` (created 2026-09-24). The official 1inch audit archive now contains a dedicated OpenZeppelin audit entry for Limit Order Protocol v4.3.4. Because the live Immunefi program applies only to the latest tag/releases, `4.3.4` is the current working target; `4.3.2` is retained only as historical baseline context.
 
+### New NativeOrder economic hypothesis — resolver reward vs undercollateralized balance
+
+Static review + local harness design now isolate a stronger H-E2 condition: when maker collateral (C) is below the resolver reward cap (R), an external WETH top-up of (R-C) can make the clone balance exactly (R). The resolver can then receive (R), leaving the maker with zero from the cancellation balance. This is a behavioral hypothesis; it is not yet a confirmed vulnerability, profitability claim, severity, or eligibility determination.
+
+Artifacts:
+- `Loofy147/limit-order-protocol:test/BountyResolverUndercollateralizedReward.js` — `26e7265a611aeb2c2ad3a5ec83cf803db7f62a3c`
+- research branch CI — `db8cbdb28f082fc8e31b772c31e41a2082d57c47`
+- Bounties research record — `targets/1inch/RESOLVER-REWARD-EDGE.md`
+
+The published 1inch scope excludes some privileged-address attacks but does not explicitly name resolvers; 1inch's Fusion documentation describes resolvers as professional market makers and the access token as a gate. Therefore the role classification remains OPEN.
+
 ### Audit coverage correction
 
 The public audit archive entry for v4.3.4 is specifically described as the **Permit2Proxy extension**. NativeOrderFactory and NativeOrderImpl are present in the 4.3.4 code delta, but the current research record does not yet contain enough evidence to mark their audit coverage as established. This is an evidence gap, not a vulnerability claim.
