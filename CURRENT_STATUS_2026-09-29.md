@@ -128,3 +128,23 @@ The first monetary milestone is one legitimate paid finding.
 - `Open-System-One`: research laboratory.
 
 Security research findings are never represented as client engineering experience unless independently applicable and accurately described.
+
+
+## Latest verified execution — run #32
+
+Run `36522991905` (run #32) completed **SUCCESS** on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc`.
+
+All four research controls passed:
+- NativeOrder ERC-1271 boundary: **1 passing**
+- NativeOrder clone isolation: **1 passing**
+- resolver reward total-balance control: **1 passing**
+- undercollateralized resolver reward control: **1 passing**
+
+Therefore the local behavior behind H-E2 is now **EXPERIMENTALLY_SUPPORTED**.
+
+The test uses a mock resolver access token and a local Hardhat deployment. It does not establish that an arbitrary external account can obtain the production resolver role, nor that the behavior is bounty-eligible.
+
+The next gates are now:
+`resolver adversary eligibility → audit/known-issue reconciliation → minimal victim-impact characterization → submission eligibility`
+
+No severity or bounty amount is assigned yet.
