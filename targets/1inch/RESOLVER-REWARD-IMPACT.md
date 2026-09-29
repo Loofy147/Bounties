@@ -32,7 +32,7 @@ B=R
 ]
 
 [
-	ext{resolver capital spent on top-up}=R-C
+	ext{resolver top-up}=R-C
 ]
 
 Before gas:
@@ -41,17 +41,25 @@ Before gas:
 	ext{resolver net}=R-(R-C)=C
 ]
 
-So the reproduced victim loss is exactly (C), while resolver net economics are:
+Therefore:
 
 [
-	ext{resolver net}=C-G
+oxed{	ext{maker loss}=C}
+]
+
+and
+
+[
+oxed{	ext{resolver net after top-up and gas}=C-G}
 ]
 
 where (G) is the actual cancellation transaction gas cost.
 
+In other words, the reproduced mechanism can consume **100% of the maker's residual clone collateral** when (C<R).
+
 ## 10 gwei calibration
 
-For the current 4.3.4 cap:
+For the current 4.3.4 reward cap:
 
 [
 R=70,000	imes10	ext{ gwei}	imes1.1
@@ -67,44 +75,55 @@ G=56,603	imes10	ext{ gwei}
 =0.00056603	ext{ ETH}
 ]
 
-Therefore:
+Representative points:
 
-- (C=0.0001) ETH → resolver net (approx-0.00046603) ETH;
-- (C=0.0006) ETH → resolver net (approx+0.00003397) ETH;
-- (C=0.0007) ETH → resolver net (approx+0.00013397) ETH;
-- as (C	o R), resolver net approaches (R-G=0.00020397) ETH.
+| Maker collateral (C) | Resolver top-up (R-C) | Maker loss | Resolver net after gas* |
+|---:|---:|---:|---:|
+| 0.0001 ETH | 0.00067 ETH | 0.0001 ETH | -0.00046603 ETH |
+| 0.0006 ETH | 0.00017 ETH | 0.0006 ETH | +0.00003397 ETH |
+| 0.0007 ETH | 0.00007 ETH | 0.0007 ETH | +0.00013397 ETH |
+| (C	o R) | (R-C	o0) | (C	o0.00077) ETH | (	o0.00020397) ETH |
 
-The (C=0.0001) scenario used for behavioral reproduction is therefore **not economically profitable** for the resolver at 10 gwei. It establishes the transfer mechanism, not economic viability.
+*Using the observed 56,603-gas calibration at 10 gwei; the exact net depends on the transaction's effective gas price.
 
-## General break-even condition
+The original (C=0.0001) behavioral reproduction is therefore deliberately **not profitable** at 10 gwei. It proves the transfer mechanism. Economic viability begins when (C>G).
 
-With actual gas cost (G):
+## General break-even
+
+In the pure undercollateralized/top-up model:
 
 [
-C>G
+oxed{C>G}
 ]
 
-is the resolver profitability condition in the pure undercollateralized/top-up model.
+is the resolver-profitability condition.
 
-Using the contract's reward cap and actual gas consumption, the approximate headroom before priority-fee effects is:
+If the effective gas price is approximately the base fee, the reward-cap headroom is approximately:
 
 [
-R-G
-approx
-(77,000-56,603)	imes block.basefee
+R-Gapprox(77,000-56,603)	imes block.basefee
 =20,397	imes block.basefee
 ]
 
-Thus the maximum gross victim loss from one clone under a fixed base fee is bounded by the resolver reward cap (R), while maximum resolver net from the attack is approximately (R-G) before any priority fee and top-up capital opportunity cost.
+Thus under this model:
+
+- maximum gross maker loss for one targeted residual balance is bounded by (R);
+- maximum resolver net is approximately (R-G), before priority fees and any other capital/opportunity cost;
+- across multiple independently cancellable clones, the aggregate loss is the sum of each targeted (C_i) satisfying the attack conditions.
 
 ## Important boundary
 
 This is an **impact characterization**, not a severity determination.
 
-Whether the observed maker loss constitutes an eligible bounty impact depends on:
-- whether the resolver role is an allowed adversary;
-- whether resolver reward funding from maker balance is considered an unintended privilege/use of the resolver role;
-- whether the same behavior is already disclosed in applicable audits or known issues;
-- whether a production-relevant victim state can be reached without relying on artificial assumptions.
+Eligibility still depends on:
+- whether a resolver/access-token holder is an allowed adversary;
+- whether this use of the resolver reward path is an unintended security property;
+- whether the same behavior appears in applicable audits or prior disclosures;
+- whether a real victim state is reachable under permitted local-fork conditions.
+
+The dedicated economic-calibration test was added at:
+`Loofy147/limit-order-protocol:test/BountyResolverRewardEconomicCalibration.js`
+
+Its CI execution is pending run #38.
 
 No severity or bounty amount is assigned here.
