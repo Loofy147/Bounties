@@ -1,22 +1,21 @@
+
 # Bounty Evidence Ledger
 
 This ledger prevents loss of work and prevents hypotheses from being mistaken for findings.
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 resolver-reward edge is EXPERIMENTALLY_SUPPORTED locally; bounty eligibility and audit/known-issue reconciliation remain OPEN | settle resolver adversary eligibility; reconcile audits/known issues; characterize minimum victim impact |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 resolver-reward edge is EXPERIMENTALLY_SUPPORTED locally; victim-loss calibration succeeded; full partial-fill economics and eligibility/audit reconciliation remain OPEN | complete partial-fill full-cost execution; reconcile audits/known issues; settle resolver adversary eligibility; characterize minimum victim impact |
 
 ## Evidence stages
 
-```text
 RECONNAISSANCE
-  → HYPOTHESIS
-  → REPRODUCED
-  → IN-SCOPE
-  → SUBMITTED
-  → ACCEPTED
-  → PAID
-```
+  -> HYPOTHESIS
+  -> REPRODUCED
+  -> IN-SCOPE
+  -> SUBMITTED
+  -> ACCEPTED
+  -> PAID
 
 Rejected candidates remain recorded with the reason.
 
@@ -24,128 +23,126 @@ Rejected candidates remain recorded with the reason.
 
 ### Target
 
-- Tag: `4.3.4`
-- Commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
-- Tag object: `0a40e01befff19d925457b55191900fb456c2dd2`
-
-### Execution
-
-Exact-head run #22 (`36521751170`) established:
-- target pin PASS;
-- package version 4.3.4 PASS;
-- NativeOrder ERC-1271 boundary: 1 passing.
-
-The expanded four-control run #28 (`36522855418`) established:
-- boundary: PASS;
-- same-maker clone isolation: PASS;
-- resolver test: HARNESS-FAIL;
-- undercollateralized resolver test: skipped.
-
-Run #28 failed at `time.latest` being unavailable through `require('hardhat')`. No contract assertion failed.
-
-The resolver harness was corrected using `ethers.provider.getBlock('latest')` and `evm_increaseTime`/`evm_mine`.
+- Tag: 4.3.4
+- Commit: 7da29889efa2e635611e1caf60f85f595ff7f05f
+- Tag object: 0a40e01befff19d925457b55191900fb456c2dd2
 
 ### Full corrected reproduction
 
-Run #32 (`36522991905`) on research commit `75f8dfde597a408e28d6e633dad6ea9c805833bc` completed **SUCCESS**.
+Run #32 (36522991905) on research commit 75f8dfde597a408e28d6e633dad6ea9c805833bc completed SUCCESS.
 
-All four controls passed:
-- `BountyNativeOrderBoundary.js`: 1 passing
-- `BountyNativeOrderIsolation.js`: 1 passing
-- `BountyResolverRewardBalance.js`: 1 passing
-- `BountyResolverUndercollateralizedReward.js`: 1 passing
+Four controls passed:
+- BountyNativeOrderBoundary.js
+- BountyNativeOrderIsolation.js
+- BountyResolverRewardBalance.js
+- BountyResolverUndercollateralizedReward.js
 
 Execution evidence state:
-- target pin: **EXPERIMENTALLY_SUPPORTED**
-- ERC-1271 boundary: **EXPERIMENTALLY_SUPPORTED**
-- same-maker cross-order isolation: **EXPERIMENTALLY_SUPPORTED**
-- resolver total-balance behavior: **EXPERIMENTALLY_SUPPORTED**
-- undercollateralized resolver reward: **EXPERIMENTALLY_SUPPORTED**
+- target pin: EXPERIMENTALLY_SUPPORTED
+- ERC-1271 boundary: EXPERIMENTALLY_SUPPORTED
+- same-maker cross-order isolation: EXPERIMENTALLY_SUPPORTED
+- resolver total-balance behavior: EXPERIMENTALLY_SUPPORTED
+- undercollateralized resolver reward: EXPERIMENTALLY_SUPPORTED
 
 ### H-E2 reproduced condition
 
 At a local base fee of 10 gwei:
-- maker collateral (C = 0.0001) ETH;
-- resolver reward cap (R = 0.00077) ETH;
-- resolver top-up (R-C = 0.00067) ETH.
+- maker residual C = 0.0001 ETH in the initial undercollateralized reproduction;
+- resolver reward cap R = 0.00077 ETH;
+- resolver top-up T = R-C = 0.00067 ETH.
 
-After expiry plus the configured cancellation delay, the resolver cancellation path transfers the full reward from the clone balance. The test observes zero maker balance delta from the cancellation and resolver proceeds equal to (R) after adding gas cost back.
+After expiry plus the configured delay, the resolver cancellation path transfers the full reward from the aggregate clone balance. The maker receives zero cancellation proceeds in that constructed state.
 
 This is a reproduced local behavior, not yet an eligible finding.
 
+### Victim-loss calibration
+
+A dedicated calibration control succeeded in GitHub Actions run #51 (36524919906), job 109265719467, on head e39993268632cc0b758ec7be98cd31048699949c.
+
+Observed:
+- maker residual C = 0.0007 ETH
+- reward cap R = 0.00077 ETH
+- resolver top-up T = 0.00007 ETH
+- cancellation gas used = 56,627
+- effective gas price = 11 gwei
+- cancellation gas cost = 0.000622897 ETH
+- victim cancellation loss = 0.0007 ETH
+- resolver reward = 0.00077 ETH
+
+The calibration intentionally isolates victim loss from resolver profitability.
+
+### Natural victim-state evidence
+
+The upstream 4.3.4 test suite includes a native ETH-maker-order partial-fill case in which a 0.3 ETH-equivalent native order is filled for 0.2 and the clone retains 0.1 WETH. A subsequent maker cancellation refunds that residual.
+
+Therefore residual clone collateral after partial fill is a normal protocol state.
+
+A dedicated bounty control targets the same transition with a residual C below the resolver reward cap and complete resolver-side accounting.
+
+### Harness history
+
+Run #28 (36522855418) failed only because time.latest was unavailable through require('hardhat'). The contract itself did not fail an assertion.
+
+Later fixes used ethers.provider.getBlock('latest') plus evm_increaseTime/evm_mine and produced run #32 SUCCESS.
+
+The new partial-fill control initially had a second HARNESS_DEFECT: makerTraits was encoded as {} instead of constructing the order with buildOrder(baseOrder, {}), causing an ethers v6 invalid BigNumberish error.
+
+That defect was corrected in commit:
+add07cf4859a7128393129f1e72ccdc8bfd77c60
+
+A new PR run for that head was initiated after reopening the draft PR; the last observed run was still in progress.
+
 ### Resolver adversary model
 
-**ESTABLISHED:** resolver is a permissioned operational actor and the intended caller of resolver cancellation.
+ESTABLISHED:
+resolver is a permissioned operational actor and the intended caller of resolver cancellation.
 
-**OPEN / INFERENCE:** the published 1inch bounty language does not explicitly state whether resolver/access-token holders are excluded by the privileged-address rule. The scope gives governance and strategist as its named examples. The role therefore cannot be auto-promoted to IN-SCOPE solely from its operational nature. citeturn314897view0
+OPEN / INFERENCE:
+the current bounty language excludes attacks requiring privileged addresses and names governance and strategist as examples, but does not expressly classify resolver/access-token-holder roles.
 
-1inch's current resolver material states that resolvers must register/pass verification and that an Access NFT functions as an access credential for exclusive order-fulfillment functionality. citeturn595204search5turn595204search8
+Therefore technical reachability by the resolver role does not by itself establish bounty eligibility.
 
 ### Design-intent / known-issue investigation
 
-Upstream `1inch/limit-order-protocol` PR #390 explicitly discussed whether the **whole WETH balance** should be returned to the maker, including accidentally deposited WETH. The maintainer stated that this was intended, while the same implementation subtracts resolver reward from the clone's full balance before paying the maker.
+Upstream PR #390 explicitly discussed whether the whole WETH balance should be returned to the maker, including accidentally deposited WETH. The maintainer stated that this full-balance behavior was intentional.
 
-This is evidence of a consciously designed full-balance semantic, not proof that H-E2 was recognized.
+This establishes conscious full-balance semantics, not that the undercollateralized reward interaction was previously recognized.
 
-Current search over the upstream code/PR material found no explicit prior disclosure using the tested formulation (resolver reward funded by an undercollateralized clone balance via external WETH top-up). That absence is not proof of novelty.
+Targeted GitHub issue/PR/source searches found no explicit prior disclosure of the tested undercollateralized resolver-reward condition.
+
+Absence is not novelty proof.
 
 ### Audit gate
 
-The official 1inch audit archive contains a v4.3.4 OpenZeppelin report file. citeturn812425view0
+The official 1inch audit archive contains a v4.3.4 OpenZeppelin report entry. Current archive evidence associates that entry with the Permit2Proxy extension.
 
-The archive material currently available in this research describes the v4.3.4 entry as the Permit2Proxy extension; therefore the present evidence does not establish NativeOrderFactory/NativeOrderImpl coverage by that particular v4.3.4 audit.
+This does not establish coverage of NativeOrderFactory/NativeOrderImpl by that particular report, and does not prove that NativeOrder was never audited elsewhere.
 
-Do not infer “never audited.” Earlier Limit Order / Fusion audits cover other code snapshots and components. Applicable audit and known-issue reconciliation remains OPEN.
+Applicable audit and known-issue reconciliation remains OPEN.
+
+## Economic interpretation
+
+For C<R and T=R-C:
+
+- total clone balance becomes R;
+- resolver reward is R;
+- maker receives zero cancellation proceeds;
+- maker loss attributable to the reward path is C.
+
+Thus the mechanism can consume 100% of the maker's residual clone collateral in the tested model.
+
+Do not use the earlier shorthand C > cancellation-gas as a full profitability condition. Complete resolver economics must include top-up cost and the gas to acquire and transfer the top-up.
 
 ## Current decision state
 
-B0-1INCH overall: **HYPOTHESIS**
+B0-1INCH overall: HYPOTHESIS
 
-H-E2 local behavior: **EXPERIMENTALLY_SUPPORTED**
+H-E2 local behavior: EXPERIMENTALLY_SUPPORTED
 
-Bounty eligibility: **OPEN**
+Bounty eligibility: OPEN
 
 No severity, bounty amount, or submission decision has been assigned.
 
 ## Preservation rule
 
 Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
-
-
-## Economic impact characterization — 2026-09-29
-
-The reproduced H-E2 behavior can be expressed exactly for a clone containing only maker collateral (C) plus resolver top-up (T):
-
-[
-R=min(rewardLimit,;block.basefee	imes70,000	imes1.1)
-]
-
-For (C<R), selecting (T=R-C) makes the clone balance equal (R), so maker proceeds from cancellation are zero.
-
-Therefore:
-[
-	ext{maker loss}=C
-]
-[
-	ext{resolver net after top-up and gas}=C-G
-]
-
-At 10 gwei, using the 56,603-gas figure observed in run #32:
-[
-R=0.00077	ext{ ETH},quad Gapprox0.00056603	ext{ ETH}
-]
-
-The original (C=0.0001) ETH reproduction is therefore behaviorally valid but economically loss-making for the resolver at that fee. Break-even is approximately (C>G). A calibration test with (C=0.0007) ETH was added to the target branch to verify the profitable edge under the same local assumptions.
-
-Calibration artifact:
-`Loofy147/limit-order-protocol:test/BountyResolverRewardEconomicCalibration.js`
-
-Calibration branch commit:
-`64b213a198891854e8b74f5f8fdb530895f48411`
-
-Workflow extension:
-`41d0c3b434233c68d7d38726094e093c2f320e6e`
-
-Current calibration CI: run #38 (`36523930512`), assertion result **PENDING**.
-
-This is impact characterization, not severity classification or bounty-eligibility determination.
