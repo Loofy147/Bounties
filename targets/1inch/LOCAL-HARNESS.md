@@ -2,26 +2,28 @@
 
 **Snapshot:** 2026-09-29
 
-## Target pin
+## Current target pin
 
 ```text
 repository: https://github.com/1inch/limit-order-protocol
 tag: 4.3.4
-tag object: 8b8f05736b857129da3a52a37623a40af05e225d
-commit: 67c56aee3b6a9f4982bf487084bd8da1f6638da0
+tag object: 0a40e01befff19d925457b55191900fb456c2dd2
+commit: 7da29889efa2e635611e1caf60f85f595ff7f05f
 ```
 
-The official repository states that `master` is work-in-progress and directs researchers to tagged production versions; the `4.3.2` package declares version `4.3.2` and uses Hardhat with `yarn test` / `yarn test:ci` scripts.
+Historical baseline: `4.3.2` → commit `67c56aee3b6a9f4982bf487084bd8da1f6638da0`.
+
+The official repository warns that `master` is work-in-progress and directs researchers to tagged production versions. The `4.3.4` package uses Hardhat with `yarn test` / `yarn test:ci` scripts.
 
 ## Local-only setup
 
 Run from a clean working directory:
 
 ```bash
-git clone --branch 4.3.2 --depth 1 https://github.com/1inch/limit-order-protocol.git limit-order-protocol-4.3.2
-cd limit-order-protocol-4.3.2
+git clone --branch 4.3.4 --depth 1 https://github.com/1inch/limit-order-protocol.git limit-order-protocol-4.3.4
+cd limit-order-protocol-4.3.4
 
-test "$(git rev-parse HEAD)" = "67c56aee3b6a9f4982bf487084bd8da1f6638da0"
+test "$(git rev-parse HEAD)" = "7da29889efa2e635611e1caf60f85f595ff7f05f"
 
 # Or invoke the repository's pinned baseline runner:
 # bash /path/to/Bounties/targets/1inch/tools/run-baseline.sh "$PWD"
