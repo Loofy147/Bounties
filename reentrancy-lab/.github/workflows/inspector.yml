@@ -1,0 +1,41 @@
+name: Contract Security Inspector
+
+on:
+  pull_request:
+    paths:
+      - '**/*.sol'
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          npm install solc
+          pip install slither-analyzer --break-system-packages
+
+      - name: Install the solc-js wrapper (see TOOLING.md for why this exists)
+        run: |
+          sudo cp solc-wrapper.sh /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+
+      - name: Inspect every changed .sol file
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- '*.sol' | while read -r file; do
+            [ -f "$file" ] || continue
+            echo "::group::Inspecting $file"
+            python3 inspector.py "$file" || true
+            echo "::endgroup::"
+          done
