@@ -1,6 +1,6 @@
 # LayerZero V2 Boundary Benchmark
 
-Status: **EXPERIMENTALLY_SUPPORTED** after local benchmark implementation; not a statement about any USDT0 target.
+Status: **OPEN / UNVERIFIED**; implementation exists, but no successful execution result has yet been observed from an authoritative CI run. This is not a statement about any USDT0 target.
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Expected invariant failure:
 
 ## Acceptance criteria
 
-The benchmark is considered valid only if:
+The benchmark is considered **experimentally supported** only after an authoritative CI run records all of the following:
 
 - secure baseline accepts the valid packet;
 - direct attacker call is rejected;
