@@ -589,18 +589,44 @@ E. PR #22: `lab: add LayerZero V2 boundary benchmark`
 
 Do not start target-level security claims yet.
 
-First establish:
+The correspondence chain has been partially narrowed:
 
-`scope address -> proxy -> implementation -> deployment/version -> applicable audit/known-issue coverage`
+`scope address -> EIP-1967 proxy -> implementation -> EndpointV2`
 
-for the IOTA Ethereum Lockbox.
+Current secondary live-RPC evidence identifies:
+
+- proxy: EIP-1967;
+- implementation: `0x1ab288f49e18884b3a5358f4079ca0f40b891d99`;
+- Ethereum EndpointV2: `0x1a44076050125825900e736c501f859c50fE728c`;
+- adapter role: wraps Ethereum USDT;
+- pinned 2026-09-28 00:00-12:00 UTC observation: 5 OFTSent events.
+
+Still open:
+
+`implementation address -> exact source commit/version -> applicable audit coverage`
+
+and:
+
+`live peer -> effective receive library -> effective DVN/executor configuration`.
+
+### New lab capability
+
+Added `LayerZero Effective Configuration Resolver`.
+
+Its key rule is:
+
+`empty app config != zero effective DVNs`
+
+It reconstructs explicit-vs-default configuration with provenance and returns `UNRESOLVED` rather than inventing an effective trust set when the resolution chain is incomplete.
+
+This responds directly to the public USDT0/LayerZero configuration investigations, which reported that empty application-level ULN configurations can require default-library tracing and historical reconciliation before the effective trust model is known.
 
 ### Next discriminating artifacts
 
 A. Authoritative CI result for `LayerZeroV2Boundary`.
-B. Custom-detector regression suite.
-C. Exact USDT0 IOTA Lockbox proxy/implementation correspondence.
-D. LayerZero endpoint/peer/DVN configuration snapshot for that deployment.
+B. Authoritative CI result for `LayerZeroEffectiveConfigResolver`.
+C. Exact implementation-to-source-commit correspondence.
+D. Historical `PeerSet` / `ReceiveLibrarySet` / `UlnConfigSet` / `DefaultUlnConfigsSet` reconstruction for the IOTA route.
 E. First local-fork invariant suite for lock/unlock + amount conversion.
 
 ### Stop condition for the USDT0 phase
