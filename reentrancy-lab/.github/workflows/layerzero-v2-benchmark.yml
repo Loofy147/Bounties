@@ -9,6 +9,9 @@ on:
       - 'reentrancy-lab/tools/layerzero_effective_config.py'
       - 'reentrancy-lab/test/test_layerzero_config_resolver.py'
       - 'reentrancy-lab/test/data/layerzero_config_*.json'
+      - 'reentrancy-lab/tools/validate_layerzero_snapshot.py'
+      - 'reentrancy-lab/test/test_layerzero_snapshot_validator.py'
+      - 'reentrancy-lab/test/data/iota_lockbox_snapshot_template.json'
       - '.github/workflows/layerzero-v2-benchmark.yml'
   pull_request:
     paths:
@@ -42,5 +45,7 @@ jobs:
         run: npm test
 
       - name: Run effective LayerZero configuration resolver regression
-        working-directory: reentrancy-lab
         run: python3 test/test_layerzero_config_resolver.py
+
+      - name: Run local-fork snapshot validator regression
+        run: python3 test/test_layerzero_snapshot_validator.py
