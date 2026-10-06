@@ -43,12 +43,16 @@ research_status:
   scope: ESTABLISHED
   deployment_address: ESTABLISHED
   production_code_version: UNKNOWN
-  implementation_address: UNKNOWN
-  proxy_type: UNKNOWN
+  implementation_address: ESTABLISHED_SECONDARY
+  implementation_address_value: "0x1ab288f49e18884b3a5358f4079ca0f40b891d99"
+  proxy_type: ESTABLISHED_SECONDARY
+  proxy_type_value: EIP-1967
   peer_configuration: UNKNOWN
-  endpoint_address: UNKNOWN
+  endpoint_address: ESTABLISHED_SECONDARY
+  endpoint_address_value: "0x1a44076050125825900e736c501f859c50fE728c"
   dvn_configuration: UNKNOWN
-  audit_coverage: UNKNOWN
+  audit_coverage: PARTIAL
+  audit_version_correspondence: UNKNOWN
   prior_disclosure: UNKNOWN
   vulnerability_status: NONE_CLAIMED
   testing_authorization: "Do not test this deployed address directly; construct only permitted local-fork reproductions."
@@ -62,6 +66,30 @@ priority:
   p2:
     - "compose/callback boundary if present"
     - "DVN/Executor configuration semantics when code-enforced"
+evidence:
+  implementation:
+    source: "Dedaub LayerZero V2 reference, live-RPC verification rechecked 2026-09-29"
+    source_url: "https://github.com/Dedaub/monitoring-cli/blob/9638b65aba28471ee2b0f81cfcf3f3ed10b686a3/packages/dedaub-skills/dedaub_skills/skills/dedaub-monitoring/references/protocols/layerzero/v2.md"
+    value: "0x1ab288f49e18884b3a5358f4079ca0f40b891d99"
+    note: "Secondary evidence; exact implementation-to-source commit still UNKNOWN."
+  endpoint:
+    source: "Dedaub LayerZero V2 reference; Ethereum EndpointV2 deployment"
+    value: "0x1a44076050125825900e736c501f859c50fE728c"
+  activity:
+    source: "Dedaub LayerZero V2 reference"
+    pinned_window_utc: "2026-09-28 00:00-12:00"
+    oft_sent_events: 5
+    oft_received_events: "not in top-50 emitter table; do not interpret as zero"
+  audits:
+    paladin:
+      reviewed_repo_commit: "e6cffe572e7d173daf76a53ae5822b102f11ccd6"
+      resolution_commit_1: "a53ae5822b71a091ab07decccbf4f3801965d31b"
+    openzeppelin_transaction_helper:
+      reviewed_repo_commit: "2ddcf81"
+    openzeppelin_erc7802_upgrade:
+      reviewed_repo: "Everdawn-Labs/usdt0-oft-contracts"
+      reviewed_change: "pull request #63"
+    note: "These establish historical audits of the USDT0 OFT codebase; they do not by themselves prove coverage of this exact deployed implementation/version."
 notes:
   - "This target is the Ethereum-side IOTA Lockbox adapter, not the native IOTA Move OApp."
   - "USDT0 states the IOTA route is dedicated to Ethereum only."
