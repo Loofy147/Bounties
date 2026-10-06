@@ -43,15 +43,15 @@ research_status:
   scope: ESTABLISHED
   deployment_address: ESTABLISHED
   production_code_version: UNKNOWN
-  implementation_address: ESTABLISHED_SECONDARY
+  implementation_address: ESTABLISHED
   implementation_address_value: "0x1ab288f49e18884b3a5358f4079ca0f40b891d99"
-  proxy_type: ESTABLISHED_SECONDARY
+  proxy_type: ESTABLISHED
   proxy_type_value: EIP-1967
   peer_configuration: UNKNOWN
-  endpoint_address: ESTABLISHED_SECONDARY
+  endpoint_address: ESTABLISHED
   endpoint_address_value: "0x1a44076050125825900e736c501f859c50fE728c"
   dvn_configuration: UNKNOWN
-  audit_coverage: PARTIAL
+  audit_coverage: UNKNOWN
   audit_version_correspondence: UNKNOWN
   prior_disclosure: UNKNOWN
   vulnerability_status: NONE_CLAIMED
