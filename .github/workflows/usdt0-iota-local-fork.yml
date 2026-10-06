@@ -6,6 +6,7 @@ on:
       - "research/usdt0-lab-frontier-v0.1"
     paths:
       - "reentrancy-lab/test/iota_lockbox_fork.js"
+      - "reentrancy-lab/test/iota_lockbox_economic_baseline.js"
       - "reentrancy-lab/package.json"
       - "reentrancy-lab/package-lock.json"
       - "targets/usdt0/**"
@@ -55,6 +56,9 @@ jobs:
         run: node test/iota_lockbox_fork.js
         env:
           TEST_MODE: config
+
+      - name: Run historical Lockbox accounting invariant sample
+        run: node test/iota_lockbox_economic_baseline.js
 
       - name: Execute local-fork authorization and unlock invariants
         run: node test/iota_lockbox_fork.js
