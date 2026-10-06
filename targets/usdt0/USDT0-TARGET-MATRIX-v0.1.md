@@ -23,8 +23,8 @@ Program scope revision: 2026-09-30
 | Production implementation | `OAdapterUpgradeable` @ `0x1ab288...1dd3414`, Sourcify exact-match | ESTABLISHED |
 | Proxy type | EIP-1967 TransparentUpgradeableProxy, Sourcify exact-match | ESTABLISHED |
 | Endpoint address | `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED |
-| Peer mapping | Documentation: only EID 30423; current bytes32 value not yet pinned | UNKNOWN |
-| DVN configuration | Documentation: 3/3 LayerZero Labs + USDT0 + Canary; effective on-chain state not yet pinned | PARTIAL / UNKNOWN_VALUE |
+| Peer mapping | `30423 -> 0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902` at block 25,989,160; exact official IOTA OFT package | ESTABLISHED |
+| DVN configuration | Target-specific app override: 3 required, 1500 confirmations, no optional DVNs; two provider identities established, third remains UNKNOWN | ESTABLISHED_STATE / PARTIAL_IDENTITY |
 | Audit coverage for this exact deployment | — | UNKNOWN |
 | Prior disclosure/known issue | — | UNKNOWN |
 | Vulnerability | None claimed | ESTABLISHED |
@@ -100,7 +100,7 @@ G8 human review
 
 ## Current blocker
 
-The first blocker is not a security hypothesis. It is **production correspondence** beyond the currently observed proxy/Endpoint layer:
+The first blocker is not a security hypothesis. It is **local-fork reproduction plus exact provenance/audit correspondence** beyond the now-pinned direct state:
 
 ```
 scope address
