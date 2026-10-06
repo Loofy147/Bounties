@@ -26,13 +26,14 @@ function artifact(compiled, name) {
   };
 }
 
-async function expectRevert(promise, label) {
+async function expectRevert(callPromise, label) {
+  let reverted = false;
   try {
-    await promise;
-    throw new Error(label + ": expected revert");
-  } catch (err) {
-    if (String(err.message).includes("expected revert")) throw err;
+    await callPromise;
+  } catch (_) {
+    reverted = true;
   }
+  assert.strictEqual(reverted, true, label + ": expected revert");
 }
 
 async function main() {
@@ -117,7 +118,7 @@ async function main() {
 
   // Secure boundary: direct caller cannot impersonate Endpoint.
   await expectRevert(
-    secure.connect(attacker).lzReceive(
+    secure.connect(attacker).callStatic.lzReceive(
       originGood, guid, message, executor, extraData
     ),
     "secure endpoint gate"
@@ -125,7 +126,7 @@ async function main() {
 
   // Secure boundary: even the real Endpoint cannot spoof the configured peer.
   await expectRevert(
-    endpoint.deliver(
+    endpoint.callStatic.deliver(
       secure.address, originWrongPeer, guid, message, executor, extraData
     ),
     "secure peer gate"
@@ -133,7 +134,7 @@ async function main() {
 
   // Secure channel: the same (receiver, srcEid, sender, nonce) cannot deliver twice.
   await expectRevert(
-    endpoint.deliver(
+    endpoint.callStatic.deliver(
       secure.address, originGood, guid, message, executor, extraData
     ),
     "secure replay guard"
