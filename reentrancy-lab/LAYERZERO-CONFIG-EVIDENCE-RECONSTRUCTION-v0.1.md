@@ -14,7 +14,7 @@ The reconstruction must explain both current state and the state transitions tha
 
 ## Protocol facts used by this specification
 
-LayerZero V2's `MessageLibManager` resolves an OApp's receive library from an application-specific value and, when unset, the default receive library for the source EID. It also supports a grace-period timeout for a previous receive library.
+LayerZero V2's MessageLibManager resolves an OApp's receive library from an application-specific value and, when unset, the default receive library for the source EID. During message-library migration, an older receive library may remain valid until its block-number expiry. Therefore a correct snapshot must preserve the current library, the timeout library, the expiry block, and the pinned observation block.
 
 The receive library `ReceiveUln302` exposes the ULN configuration through `getConfig(eid, oapp, CONFIG_TYPE_ULN)`.
 
@@ -156,11 +156,13 @@ Do not assume an event exists merely because a current source revision contains 
 3. Read direct state for current values.
 4. Determine application-selected receive library.
 5. Resolve default receive library when application value is unset.
-6. Apply only a valid grace-period override when the deployed protocol version supports it and the pinned state proves it is active.
+6. Read the receive-library timeout for the same OApp/EID and determine whether the previous library remains valid at the pinned block.
+7. Apply only a valid grace-period override when the deployed protocol version supports it and the pinned state proves it is active.
 7. Query the effective receive library's ULN configuration.
 8. Separately query send-side Executor/ULN configuration.
 9. Compare current state with event-folded state.
-10. If any required input is missing, return **UNRESOLVED**.
+10. Validate the complete snapshot with reentrancy-lab/tools/validate_layerzero_snapshot.py.
+11. If any required input is missing, return **UNRESOLVED** or **CONFLICTED**; never synthesize a value.
 
 ## Evidence states
 
@@ -197,3 +199,20 @@ Stop target escalation when:
 - ReceiveUln302: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/messagelib/contracts/uln/uln302/ReceiveUln302.sol
 - SendUln302: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/messagelib/contracts/uln/uln302/SendUln302.sol
 - EndpointV2: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/EndpointV2.sol
+
+
+## Fail-closed snapshot validator
+
+reentrancy-lab/tools/validate_layerzero_snapshot.py validates a JSON snapshot produced by a permitted local-fork acquisition process. It does not perform RPC access.
+
+The validator requires:
+- pinned block number/hash and RPC provenance;
+- proxy/implementation identity fields;
+- Endpoint identity;
+- application/default/effective receive library;
+- receive-library timeout and expiry when present;
+- peer bytes32 for EID 30423;
+- resolved receive-side ULN quorum with provenance, or explicit UNRESOLVED/CONFLICTED status;
+- separate send-side Executor context.
+
+An unpopulated template is intentionally rejected. This is an evidence gate, not a security conclusion.
