@@ -6,6 +6,9 @@ on:
       - 'reentrancy-lab/contracts/layerzero_v2/**'
       - 'reentrancy-lab/test/layerzero_v2_boundary.js'
       - 'reentrancy-lab/package.json'
+      - 'reentrancy-lab/tools/layerzero_effective_config.py'
+      - 'reentrancy-lab/test/test_layerzero_config_resolver.py'
+      - 'reentrancy-lab/test/data/layerzero_config_*.json'
       - '.github/workflows/layerzero-v2-benchmark.yml'
   pull_request:
     paths:
