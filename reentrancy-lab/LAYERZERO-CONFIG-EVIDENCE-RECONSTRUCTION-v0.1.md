@@ -48,8 +48,19 @@ effective receive library
 ReceiveUln302.getConfig(srcEid, oapp, CONFIG_TYPE_ULN)
         |
         v
-required DVNs / optional DVNs / threshold / confirmations
+UlnBase field-level merge
+        |
+        +--> required DVNs
+        +--> optional DVNs / threshold
+        +--> confirmations
 ```
+
+`UlnBase` semantics must be preserved during reconstruction:
+- DVN count `0` = DEFAULT / inherit;
+- DVN count `255` = NONE / literal empty;
+- confirmations `0` = DEFAULT / inherit;
+- confirmations `uint64.max` = literal zero;
+- final effective config must contain at least one DVN.
 
 ### Send-side context
 
