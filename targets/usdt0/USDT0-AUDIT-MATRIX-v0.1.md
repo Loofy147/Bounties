@@ -3,7 +3,7 @@
 Captured: 2026-10-06
 Target: Ethereum IOTA Lockbox
 Address: `0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414`
-Current implementation evidence: `0x1ab288f49e18884b3a5358f4079ca0f40b891d99`
+Current implementation evidence: `0x1ab288f49e18884b3a5358f4079ca0f40b891d99` (Sourcify exact_match, Solidity 0.8.22)
 
 ## Purpose
 
@@ -20,7 +20,7 @@ must both be established before an old finding can be treated as applicable to t
 | Source | Reviewed code/change | Relevant coverage | Target correspondence | State |
 |---|---|---|---|---|
 | Paladin — Everdawn Final Report, Jan 2025 | `usdt0-oft-contracts` preliminary commit `e6cffe572e9c92e9778c465c04cfae3526a06109`, resolution `a53ae5822b71a091ab07decccbf4f3801965d31b` | Explicitly assessed `OAdapterUpgradeable` on Ethereum and `OUpgradeable` on Ink | Paladin lists canonical Ethereum proxy `0x6C96...` with implementation `0xCD979...`, not the current IOTA lockbox implementation `0x1ab2...` | KNOWN_HISTORICAL, exact-current coverage OPEN |
-| Paladin finding 01 | Implementation initializers callable by anyone | `OUpgradeable` / `OAdapterUpgradeable` implementation constructors | Resolution marked RESOLVED in the audited code | Do not treat as a fresh hypothesis without proving regression |
+| Paladin finding 01 | Implementation initializers callable by anyone | `OUpgradeable` / `OAdapterUpgradeable` implementation constructors | Historical resolution marked RESOLVED; current IOTA implementation exact-match source explicitly calls `_disableInitializers()` | KILLED AS CURRENT HYPOTHESIS unless deployment/source correspondence changes |
 | OpenZeppelin — Transaction Helper Audit, Nov 2025 | `usdt0-oft-contracts` commit `2ddcf81`, but in-scope files were helper/mixins | System context only for core USDT0 flow | Does not establish review of the current IOTA lockbox implementation | CONTEXT ONLY |
 | OpenZeppelin — ERC-7802 Upgrade Audit, Nov 2025 | `usdt0-oft-contracts` PR #63; `OUpgradeable.sol` + `IERC7802.sol` | Differential audit of upgrade changes | Does not directly establish coverage of the Ethereum IOTA `OAdapterUpgradeable` implementation | CONTEXT ONLY |
 | Guardian — USDT0 reviews | Multiple `usdt0-oft-contracts` scopes, including later 2026 operational/configuration reviews | Chain/configuration/security context | Exact current IOTA lockbox implementation correspondence not yet established | OPEN |
@@ -88,3 +88,10 @@ mapping.
 - OpenZeppelin Everdawn USDT0 ERC-7802 Upgrade Audit, Nov 2025.
 - Guardian USDT0 public review archive.
 - Everdawn-Labs/usdt0-audit-reports public issues.
+
+
+## Current implementation code identity
+
+Sourcify v2 reports the current implementation address as `exact_match`, with Solidity `0.8.22+commit.4fc1097e` and contract name `OAdapterUpgradeable`. The deployed USDT0-specific contract contains no custom override of the receive, debit, credit, peer, or conversion paths; those are inherited from LayerZero's `OFTAdapterUpgradeable` / `OFTCoreUpgradeable` stack.
+
+This is strong code identity evidence but not repository-commit provenance. Exact audit-version correspondence therefore remains UNKNOWN.
