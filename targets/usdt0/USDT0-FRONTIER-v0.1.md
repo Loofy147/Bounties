@@ -335,3 +335,29 @@ Reproduce the pinned production state on the local fork and compare:
 `direct RPC state == event-folded state == fork state`
 
 Only after that gate passes, run target-specific message-boundary and lock/unlock accounting mutations.
+
+## First empirical economic baseline — 2026-10-06
+
+The first target-specific economic invariant has now been exercised against 10 already-mined Lockbox outflow transactions using read-only Alchemy receipt retrieval.
+
+### LZ-ACCOUNT-UNLOCK-01 — sampled Ethereum-side execution path
+
+Each sampled outflow contained:
+
+```text
+ERC20 Transfer: Lockbox -> recipient
+        == exact amount ==
+OFTReceived: srcEid 30423 -> same recipient
+        +
+Endpoint PacketDelivered: srcEid 30423, sender == configured IOTA peer, receiver == Lockbox
+```
+
+Result: 10/10 PASS.
+
+Status: EXPERIMENTALLY_SUPPORTED (sampled).
+
+This is deliberately not promoted to a universal invariant proof: the sample is not exhaustive, it does not reconcile the corresponding IOTA-side burn/mint state, and it does not test privileged recovery paths.
+
+Evidence: `targets/usdt0/evidence/2026-10-06-iota-lockbox-economic-baseline.json`.
+
+The corresponding executable check is `reentrancy-lab/test/iota_lockbox_economic_baseline.js`; its JavaScript syntax was independently parser-checked and the same 10 receipts were evaluated through the connected Alchemy read path. CI execution remains OPEN until an authoritative GitHub Actions run is observed.
