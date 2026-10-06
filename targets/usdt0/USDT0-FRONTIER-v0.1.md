@@ -211,7 +211,7 @@ Required properties:
 - no unlock without an authorized source-side state;
 - no duplicate economic effect from the same authenticated message;
 - amount conversion stays within documented dust semantics;
-- `minAmountLD` is enforced on the receive/send path where applicable.
+- `minAmountLD` is enforced on the source-side debit path; it is not a destination receive-path parameter.
 
 This is the first target-specific semantic lane; no live mainnet testing.
 
