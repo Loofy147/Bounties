@@ -21,8 +21,8 @@ Program scope revision: 2026-09-30
 | PoC | Required | ESTABLISHED |
 | Mainnet/public-testnet testing | Prohibited | ESTABLISHED |
 | Production implementation | — | UNKNOWN |
-| Proxy type | — | UNKNOWN |
-| Endpoint address | — | UNKNOWN |
+| Proxy type | EIP-1967 | ESTABLISHED |
+| Endpoint address | `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED |
 | Peer mapping | — | UNKNOWN |
 | DVN configuration | — | UNKNOWN |
 | Audit coverage for this exact deployment | — | UNKNOWN |
@@ -100,15 +100,18 @@ G8 human review
 
 ## Current blocker
 
-The first blocker is not a security hypothesis. It is **production correspondence**:
+The first blocker is not a security hypothesis. It is **production correspondence** beyond the currently observed proxy/Endpoint layer:
 
 ```
 scope address
 → proxy
 → implementation
+→ implementation bytecode/source
 → implementation commit/version
 → LayerZero deployment/version
 → applicable audits
 ```
 
-Until that chain is established, target-level conclusions remain UNKNOWN.
+Current proxy/Endpoint observations are recorded as ESTABLISHED from secondary evidence, but target-level code conclusions remain UNKNOWN until the full chain is established.
+
+See `targets/usdt0/USDT0-FRONTIER-v0.1.md` for the current frontier and evidence ledger.
