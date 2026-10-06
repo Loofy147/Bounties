@@ -37,3 +37,7 @@ jobs:
 
       - name: Run LayerZero V2 boundary benchmark
         run: npm test
+
+      - name: Run effective LayerZero configuration resolver regression
+        working-directory: reentrancy-lab
+        run: python3 test/test_layerzero_config_resolver.py
