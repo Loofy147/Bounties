@@ -92,6 +92,24 @@
         "0xf9d2c0915cac4c75b7ae359089333c8ac258e12c": "UNKNOWN"
       },
       "status": "ESTABLISHED_STATE / PARTIAL_PROVIDER_IDENTITY"
+    },
+    "pre_override_at_block_25989159": {
+      "confirmations": 5,
+      "required_dvn_count": 3,
+      "optional_dvn_count": 0,
+      "required_dvns": [
+        "0x380275805876ff19055ea900cdb2b46a94ecf20d",
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+        "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+      ],
+      "status": "ESTABLISHED"
+    },
+    "transition": {
+      "block": 25989160,
+      "before": "default inherited configuration: 5 confirmations / 3 required DVNs / Horizen + LayerZero Labs + Nethermind",
+      "after": "OApp override: 1500 confirmations / 3 required DVNs / USDT0 + LayerZero Labs + UNKNOWN third provider",
+      "transaction": "0xaaaf4662b26c2fa21777fdd2ae13dddf2d957d9cf71baa92f8407eae90706069",
+      "status": "ESTABLISHED"
     }
   },
   "history": {
@@ -137,5 +155,29 @@
     "third_required_dvn_identity": "UNKNOWN",
     "current_vulnerability": "NONE_CLAIMED",
     "next_discriminating_test": "Reproduce the pinned snapshot locally and compare direct state to event-folded state; then exercise target-specific invariants only on the local fork."
+  },
+  "current_state_check": {
+    "receive_library": "0xc02ab410f0734efa3f14628780e6e695156024c2",
+    "default_receive_library": "0xc02ab410f0734efa3f14628780e6e695156024c2",
+    "timeout_library": "0x0000000000000000000000000000000000000000",
+    "timeout_expiry": 0,
+    "effective_uln_confirmations": 1500,
+    "effective_required_dvn_count": 3,
+    "effective_required_dvns": [
+      "0x3b0531eb02ab4ad72e7a531180beef9493a00dd2",
+      "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+      "0xf9d2c0915cac4c75b7ae359089333c8ac258e12c"
+    ],
+    "latest_state_matches_pinned_config": "ESTABLISHED"
+  },
+  "economic_baseline": {
+    "usdt_contract": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "decimals": 6,
+    "lockbox_usdt_balance_at_pinned_block_raw": "0",
+    "lockbox_usdt_balance_at_pinned_block": "0",
+    "current_observed_lockbox_usdt_balance_raw": "161245710241",
+    "current_observed_lockbox_usdt_balance": "161245.710241",
+    "status": "ESTABLISHED_OBSERVATION",
+    "caveat": "Current balance is a live observation and is not an exploit finding; cross-chain IOTA-side accounting has not yet been reconciled."
   }
 }
