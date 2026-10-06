@@ -296,3 +296,12 @@ The repository commit that produced this implementation remains **UNKNOWN**.
 Security consequence: the unexplored surface shifts from custom Ethereum adapter logic toward deployment/configuration state: peer, receive library, effective ULN/DVN configuration, history, and cross-chain state correspondence.
 
 See `targets/usdt0/USDT0-IOTA-LOCKBOX-CODE-MODEL-v0.1.md`.
+
+
+## Newly eliminated ambiguity: receive-library grace period
+
+A current receive-library address alone is insufficient. LayerZero MessageLibManager can temporarily accept a previous receive library during a block-bounded grace period. Therefore the target snapshot must include:
+
+app receive library + default receive library + effective/current library + timeout library + expiry block + pinned block.
+
+This is now enforced structurally by reentrancy-lab/tools/validate_layerzero_snapshot.py.
