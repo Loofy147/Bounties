@@ -1,0 +1,70 @@
+name: USDT0 IOTA Lockbox Local Fork
+
+on:
+  push:
+    branches:
+      - "research/usdt0-lab-frontier-v0.1"
+    paths:
+      - "reentrancy-lab/test/iota_lockbox_fork.js"
+      - "reentrancy-lab/package.json"
+      - "reentrancy-lab/package-lock.json"
+      - "targets/usdt0/**"
+      - ".github/workflows/usdt0-iota-local-fork.yml"
+  pull_request:
+    paths:
+      - "reentrancy-lab/test/iota_lockbox_fork.js"
+      - "reentrancy-lab/package.json"
+      - "reentrancy-lab/package-lock.json"
+      - "targets/usdt0/**"
+      - ".github/workflows/usdt0-iota-local-fork.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  local-fork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: reentrancy-lab
+    env:
+      ALCHEMY_ETH_RPC: ${{ secrets.ALCHEMY_ETH_RPC }}
+      CONFIG_FORK_BLOCK: "25989160"
+      UNLOCK_FORK_BLOCK: "26133519"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: reentrancy-lab/package-lock.json
+
+      - name: Setup Foundry / Anvil
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Install lab dependencies
+        run: npm ci
+
+      - name: Reproduce pinned configuration state
+        run: node test/iota_lockbox_fork.js
+        env:
+          TEST_MODE: config
+
+      - name: Execute local-fork authorization and unlock invariants
+        run: node test/iota_lockbox_fork.js
+        env:
+          TEST_MODE: unlock
+
+      - name: Upload fork evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usdt0-iota-local-fork-evidence
+          path: reentrancy-lab/artifacts/iota-lockbox-fork
+          if-no-files-found: warn
