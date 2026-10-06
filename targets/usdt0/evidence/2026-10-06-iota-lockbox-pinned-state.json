@@ -1,0 +1,141 @@
+{
+  "captured_at": "2026-10-06",
+  "provenance": {
+    "rpc_provider": "Alchemy Ethereum Mainnet",
+    "observation_method": "eth_call / eth_getStorageAt via connected Alchemy tool",
+    "pinned_block": 25989160,
+    "pinned_block_hex": "0x18c9028",
+    "block_hash": "0x4cb7c5d69459a8a7c6c816d27e377638d1949ea15096e04bfc9e9dbf3d857698"
+  },
+  "target": {
+    "address": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+    "chain_id": 1,
+    "local_eid": 30101,
+    "remote_eid": 30423
+  },
+  "proxy": {
+    "type": "EIP-1967 TransparentUpgradeableProxy",
+    "implementation_slot": {
+      "slot": "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+      "value": "0x1ab288f49e18884b3a5358f4079ca0f40b891d99",
+      "status": "ESTABLISHED"
+    },
+    "admin_slot": {
+      "slot": "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103",
+      "value": "0xa7d54c767364fff0e31199dd65f0a4243054ae52",
+      "status": "ESTABLISHED"
+    },
+    "beacon_slot": {
+      "slot": "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee3860d1fa0a2b6b1f5f4d",
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "ESTABLISHED"
+    },
+    "proxy_admin_owner": {
+      "address": "0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8",
+      "identity": "USDT0 Safe",
+      "identity_status": "ESTABLISHED",
+      "source": "USDT0 deployment docs + explorer identification"
+    }
+  },
+  "application_state": {
+    "endpoint": {
+      "address": "0x1a44076050125825900e736c501f859c50fe728c",
+      "status": "ESTABLISHED"
+    },
+    "peer_30423": {
+      "value": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902",
+      "status": "ESTABLISHED",
+      "corresponds_to": "Official USDT0 IOTA OFT package"
+    },
+    "owner": {
+      "address": "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+      "identity": "USDT0 Deployer",
+      "identity_status": "ESTABLISHED"
+    },
+    "oapp_version": {
+      "sender_version": 1,
+      "receiver_version": 2,
+      "status": "ESTABLISHED"
+    }
+  },
+  "receive_configuration": {
+    "current_receive_library": {
+      "address": "0xc02ab410f0734efa3f14628780e6e695156024c2",
+      "is_default": false,
+      "status": "ESTABLISHED"
+    },
+    "default_receive_library_30423": {
+      "address": "0xc02ab410f0734efa3f14628780e6e695156024c2",
+      "status": "ESTABLISHED"
+    },
+    "receive_library_timeout": {
+      "library": "0x0000000000000000000000000000000000000000",
+      "expiry": 0,
+      "status": "ESTABLISHED"
+    },
+    "app_specific_uln_override": {
+      "event_block": 25989160,
+      "event_tx": "0xaaaf4662b26c2fa21777fdd2ae13dddf2d957d9cf71baa92f8407eae90706069",
+      "src_eid": 30423,
+      "confirmations": 1500,
+      "required_dvn_count": 3,
+      "optional_dvn_count": 255,
+      "optional_dvn_threshold": 0,
+      "required_dvns": [
+        "0x3b0531eb02ab4ad72e7a531180beef9493a00dd2",
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+        "0xf9d2c0915cac4c75b7ae359089333c8ac258e12c"
+      ],
+      "provider_identity": {
+        "0x3b0531eb02ab4ad72e7a531180beef9493a00dd2": "USDT0 DVN",
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b": "LayerZero Labs DVN",
+        "0xf9d2c0915cac4c75b7ae359089333c8ac258e12c": "UNKNOWN"
+      },
+      "status": "ESTABLISHED_STATE / PARTIAL_PROVIDER_IDENTITY"
+    }
+  },
+  "history": {
+    "peer_set_event": {
+      "block": 25989129,
+      "tx": "0x31516347791d9301ea88a4f0f0edfe08d1a203047aceb91569960759d7174fdf",
+      "status": "ESTABLISHED"
+    },
+    "default_receive_library_set_for_eid_30423": {
+      "block": 23871945,
+      "tx": "0xa413160dd20354a2cc8bb8235d3dea1e7de61379df6ba0cff3cfd4a3ff533807",
+      "library": "0xc02ab410f0734efa3f14628780e6e695156024c2",
+      "status": "ESTABLISHED"
+    },
+    "default_uln_config_history": [
+      {
+        "block": 23871943,
+        "confirmations": 5,
+        "required_dvn_count": 1,
+        "optional_dvn_count": 255,
+        "required_dvns": [
+          "0x747c741496a507e4b404b50463e691a8d692f6ac"
+        ],
+        "status": "ESTABLISHED"
+      },
+      {
+        "block": 25495907,
+        "confirmations": 5,
+        "required_dvn_count": 3,
+        "optional_dvn_count": 255,
+        "required_dvns": [
+          "0x380275805876ff19055ea900cdb2b46a94ecf20d",
+          "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+          "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+        ],
+        "status": "ESTABLISHED"
+      }
+    ]
+  },
+  "frontier": {
+    "peer_hypothesis": "KILLED_AS_CURRENT_HYPOTHESIS",
+    "effective_receive_config": "APP_OVERRIDE_CONFIRMED",
+    "third_required_dvn_identity": "UNKNOWN",
+    "current_vulnerability": "NONE_CLAIMED",
+    "next_discriminating_test": "Reproduce the pinned snapshot locally and compare direct state to event-folded state; then exercise target-specific invariants only on the local fork."
+  }
+}
