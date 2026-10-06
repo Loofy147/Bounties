@@ -15,7 +15,7 @@
   "implementation": {
     "address": "0x1ab288f49e18884b3a5358f4079ca0f40b891d99",
     "address_provenance": "Dedaub live-RPC reference rechecked 2026-09-29",
-    "dedaub_provenance_status": "ESTABLISHED_SECONDARY",
+    "dedaub_provenance_status": "ESTABLISHED",
     "sourcify_match": "exact_match",
     "compiler": "0.8.22+commit.4fc1097e",
     "contract_name": "OAdapterUpgradeable",
@@ -34,7 +34,7 @@
   },
   "endpoint": {
     "address": "0x1a44076050125825900e736c501f859c50fE728c",
-    "status": "ESTABLISHED_SECONDARY"
+    "status": "ESTABLISHED"
   },
   "documented_route": {
     "peer_eid": 30423,
