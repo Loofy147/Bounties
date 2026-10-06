@@ -20,11 +20,11 @@ Program scope revision: 2026-09-30
 | Critical minimum | $50K | ESTABLISHED |
 | PoC | Required | ESTABLISHED |
 | Mainnet/public-testnet testing | Prohibited | ESTABLISHED |
-| Production implementation | — | UNKNOWN |
-| Proxy type | EIP-1967 | ESTABLISHED |
+| Production implementation | `OAdapterUpgradeable` @ `0x1ab288...1dd3414`, Sourcify exact-match | ESTABLISHED |
+| Proxy type | EIP-1967 TransparentUpgradeableProxy, Sourcify exact-match | ESTABLISHED |
 | Endpoint address | `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED |
-| Peer mapping | — | UNKNOWN |
-| DVN configuration | — | UNKNOWN |
+| Peer mapping | Documentation: only EID 30423; current bytes32 value not yet pinned | PARTIAL / UNKNOWN_VALUE |
+| DVN configuration | Documentation: 3/3 LayerZero Labs + USDT0 + Canary; effective on-chain state not yet pinned | PARTIAL / UNKNOWN_VALUE |
 | Audit coverage for this exact deployment | — | UNKNOWN |
 | Prior disclosure/known issue | — | UNKNOWN |
 | Vulnerability | None claimed | ESTABLISHED |
@@ -77,7 +77,7 @@ Every authorized mint on IOTA corresponds to the corresponding Ethereum lock sta
 Shared/local-decimal conversion does not create or destroy material value outside the documented dust/conversion rules.
 
 ### LZ-AMOUNT-02
-A user-specified `minAmountLD` cannot be bypassed by the receive path.
+On the source send path, `minAmountLD` must be enforced against the actual `amountReceivedLD`; it is not a destination receive-path parameter.
 
 ### LZ-UPGRADE-01
 Proxy implementation, initializer state, admin/delegate authority, and storage layout remain mutually consistent.
@@ -115,3 +115,10 @@ scope address
 Current proxy/Endpoint observations are recorded as ESTABLISHED from secondary evidence, but target-level code conclusions remain UNKNOWN until the full chain is established.
 
 See `targets/usdt0/USDT0-FRONTIER-v0.1.md` for the current frontier and evidence ledger.
+
+
+## Current exact-code evidence
+
+See `targets/usdt0/USDT0-IOTA-LOCKBOX-CODE-MODEL-v0.1.md` and `targets/usdt0/evidence/2026-10-06-iota-lockbox-code-identity.json`.
+
+The deployed implementation is a thin `OAdapterUpgradeable` wrapper over LayerZero's `OFTAdapterUpgradeable`; the current source match is exact, so custom USDT0-specific receive/debit logic is not the primary unexplored surface.
