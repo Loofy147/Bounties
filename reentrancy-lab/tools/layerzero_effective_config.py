@@ -65,20 +65,27 @@ def _merge_uln(
     default: dict[str, Any] | None,
     provenance: list[str],
 ) -> tuple[dict[str, Any] | None, list[str]]:
-    if default is None:
-        return None, ["receive-library default ULN config unavailable"]
-
     app = app or {}
     warnings: list[str] = []
 
     required_count = _count(app, "required_dvn_count", "required_dvns")
     optional_count = _count(app, "optional_dvn_count", "optional_dvns")
+    app_confirmations = int(app.get("confirmations", DEFAULT))
 
     if not _validate_explicit_list(app, required_count, "required_dvns"):
         return None, ["application required DVN list/count is inconsistent"]
     if not _validate_explicit_list(app, optional_count, "optional_dvns"):
         return None, ["application optional DVN list/count is inconsistent"]
 
+    needs_default = (
+        required_count == DEFAULT
+        or optional_count == DEFAULT
+        or app_confirmations == DEFAULT
+    )
+    if needs_default and default is None:
+        return None, ["receive-library default ULN config unavailable for inherited fields"]
+
+    default = default or {}
     default_required = [
         _norm_addr(x) for x in default.get("required_dvns", [])
     ]
@@ -106,7 +113,6 @@ def _merge_uln(
         optional_dvns = [_norm_addr(x) for x in app.get("optional_dvns", [])]
         optional_threshold = int(app.get("optional_threshold", 0))
 
-    app_confirmations = int(app.get("confirmations", DEFAULT))
     if app_confirmations == DEFAULT:
         confirmations = default_confirmations
     elif app_confirmations == NIL_CONFIRMATIONS:
