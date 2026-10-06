@@ -12,14 +12,15 @@
     "id": "LZ-ACCOUNT-UNLOCK-01",
     "statement": "For sampled Ethereum Lockbox USDT outflows, the ERC20 transfer from the Lockbox must co-occur in the same successful receipt with a matching OFTReceived event and Endpoint PacketDelivered event, with the same recipient and amount, source EID 30423, and configured peer.",
     "status": "EXPERIMENTALLY_SUPPORTED",
-    "sample_size": 10,
-    "passed": 10,
+    "sample_size": 15,
+    "passed": 15,
     "failed": 0,
     "limitations": [
       "Sampling is not an exhaustive proof over all historical outflows.",
       "This verifies the Ethereum-side execution/accounting path only; it does not reconcile the corresponding IOTA-side burn state.",
       "It does not prove the absence of alternate privileged recovery paths outside the sampled execution pattern."
-    ]
+    ],
+    "sample_design": "10 recent outflows + 5 earliest observed outflows after deployment, spanning blocks 25,997,621 through 26,132,886"
   },
   "event_semantics": {
     "OFTReceived_topic": "0xefed6d3500546b29533b128a29e3a94d70788727f0507505ac12eaf2e578fd9c",
@@ -90,6 +91,41 @@
       26127199,
       "0xf51cff050f1079e9db735090731c33d39d768ece",
       "5000000"
-    ]
+    ],
+    {
+      "hash": "0x544d1a917c2ca55d5548aa0698355d890396035ef0b997200d9efba12b9522b5",
+      "block": 25997621,
+      "recipient": "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+      "amountRaw": "100000",
+      "amountUSDT": "0.1"
+    },
+    {
+      "hash": "0x689918ddb4f667a21ab03959383c67f0d1ec28927f3894c4165184d52fa23446",
+      "block": 25997754,
+      "recipient": "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76",
+      "amountRaw": "1",
+      "amountUSDT": "0.000001"
+    },
+    {
+      "hash": "0x7baa027dc4bd35574c0f3a539114f76161f5b12406cc8f37905b2f820ced44be",
+      "block": 25997757,
+      "recipient": "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76",
+      "amountRaw": "1",
+      "amountUSDT": "0.000001"
+    },
+    {
+      "hash": "0x4b84e628e2c0ccb50a67a6db08fae93ba82152b11c721af00fa28442968f0ae4",
+      "block": 26002149,
+      "recipient": "0x6821ec1fcd40ad5268d3b5607e49441d4e7eb4e7",
+      "amountRaw": "500",
+      "amountUSDT": "0.0005"
+    },
+    {
+      "hash": "0x747dc0e5594dd9ac1af414d0ed366e5135e100de73f7061da4654d50e3f9ab2b",
+      "block": 26003474,
+      "recipient": "0xdb6da94fedef11b2119b4088b89664fb9a3cb658",
+      "amountRaw": "1",
+      "amountUSDT": "0.000001"
+    }
   ]
 }
