@@ -6,7 +6,6 @@ on:
       - 'reentrancy-lab/contracts/layerzero_v2/**'
       - 'reentrancy-lab/test/layerzero_v2_boundary.js'
       - 'reentrancy-lab/package.json'
-      - 'reentrancy-lab/package-lock.json'
       - '.github/workflows/layerzero-v2-benchmark.yml'
   pull_request:
     paths:
@@ -29,8 +28,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: reentrancy-lab/package.json
 
       - name: Install dependencies
         run: npm install
