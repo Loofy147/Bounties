@@ -1,0 +1,24 @@
+{
+  "local_eid": 30101,
+  "remote_eid": 30423,
+  "oapp": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+  "app_receive_library": "0xreceive-explicit",
+  "endpoint_default_receive_library": "0xreceive-default",
+  "app_uln_config": {
+    "confirmations": 20,
+    "required_dvn_count": 1,
+    "required_dvns": ["0xdvn-a"],
+    "optional_dvn_count": 1,
+    "optional_dvns": ["0xdvn-b"],
+    "optional_threshold": 1
+  },
+  "receive_library_defaults": {
+    "0xreceive-explicit": {
+      "confirmations": 12,
+      "required_dvns": ["0xdvn-default"],
+      "optional_dvns": [],
+      "optional_threshold": 0
+    }
+  },
+  "executor_config": {"executor": "0xexecutor"}
+}

@@ -1,0 +1,77 @@
+{
+  "captured": "2026-10-06",
+  "target": {
+    "program": "USDT0 / Immunefi",
+    "name": "OApp Adapter Ethereum (IOTA)",
+    "address": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+    "chain_id": 1,
+    "local_eid": 30101,
+    "remote_eid": 30423
+  },
+  "deployment_authority": {
+    "official_docs": "https://docs.usdt0.to/technical-documentation/deployments",
+    "status": "ESTABLISHED"
+  },
+  "implementation": {
+    "address": "0x1ab288f49e18884b3a5358f4079ca0f40b891d99",
+    "address_provenance": "Dedaub live-RPC reference rechecked 2026-09-29",
+    "dedaub_provenance_status": "ESTABLISHED",
+    "sourcify_match": "exact_match",
+    "compiler": "0.8.22+commit.4fc1097e",
+    "contract_name": "OAdapterUpgradeable",
+    "creation_match": "exact_match",
+    "runtime_match": "exact_match",
+    "source_entry": "contracts/OAdapterUpgradeable.sol",
+    "source_identifier": "0xf5cbedef1bcf90f87780f3b15ba0df4c07b2edace2c0fd84a681f5372fbc2f2a",
+    "repository_commit": "UNKNOWN"
+  },
+  "proxy": {
+    "type": "EIP-1967 TransparentUpgradeableProxy",
+    "sourcify_match": "exact_match",
+    "compiler": "0.8.10+commit.fc410830",
+    "source_entry": "solc_0.8/proxy/OptimizedTransparentUpgradeableProxy.sol",
+    "source_repository_commit": "UNKNOWN"
+  },
+  "endpoint": {
+    "address": "0x1a44076050125825900e736c501f859c50fE728c",
+    "status": "ESTABLISHED"
+  },
+  "documented_route": {
+    "peer_eid": 30423,
+    "peer_scope": "IOTA-only peer",
+    "status": "ESTABLISHED_DOCUMENTED",
+    "current_peer_value": "UNKNOWN"
+  },
+  "documented_dvn_policy": {
+    "required": 3,
+    "optional": 0,
+    "providers": [
+      "LayerZero Labs",
+      "USDT0",
+      "Canary Protocol"
+    ],
+    "status": "ESTABLISHED_DOCUMENTED",
+    "effective_onchain_state": "UNKNOWN"
+  },
+  "audit_correspondence": {
+    "exact_current_scope": "UNKNOWN",
+    "historical_paladin_implementation": "0xCD979B10A55FCdAC23ec785CE3066c6ef8a479A4",
+    "current_iota_lockbox_implementation": "0x1ab288f49e18884b3a5358f4079ca0f40b891d99",
+    "decision": "Historical audit findings are not promoted to current findings without exact version correspondence."
+  },
+  "security_status": {
+    "vulnerability": "NONE_CLAIMED",
+    "lab_benchmark": "OPEN / UNVERIFIED",
+    "effective_config_resolver": "OPEN / UNVERIFIED"
+  },
+  "next_observations": [
+    "Pin permitted local-fork block.",
+    "Verify proxy implementation slot against the Sourcify/Dedaub implementation address.",
+    "Read peers(30423).",
+    "Resolve effective receive library for source EID 30423.",
+    "Read receive-side ULN config from the effective ReceiveUln library.",
+    "Reconstruct PeerSet, ReceiveLibrarySet and receive-side UlnConfigSet history.",
+    "Compare direct state against folded event state.",
+    "Only then instantiate target-specific economic invariants."
+  ]
+}
