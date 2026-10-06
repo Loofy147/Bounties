@@ -309,3 +309,29 @@ A current receive-library address alone is insufficient. LayerZero MessageLibMan
 app receive library + default receive library + effective/current library + timeout library + expiry block + pinned block.
 
 This is now enforced structurally by reentrancy-lab/tools/validate_layerzero_snapshot.py.
+
+
+## Configuration closure — 2026-10-06
+
+The receive-side configuration is now block-pinned and independently reconstructed from LayerZero events.
+
+### Established
+- At block `25,989,159`, effective receive ULN for EID `30423` was inherited from the default configuration: 5 confirmations, 3 required DVNs, Horizen Labs + LayerZero Labs + Nethermind.
+- At block `25,989,160`, an app-specific `UlnConfigSet` changed the effective configuration to 1500 confirmations, 3 required DVNs, no optional quorum, with USDT0 + LayerZero Labs + one provider whose identity remains UNKNOWN.
+- `ReceiveLibrarySet` for the OApp occurred at block `25,989,131`, explicitly selecting `0xc02Ab410...6024C2`, the same address as the default receive library at that time.
+- `ReceiveLibraryTimeoutSet` in the same transaction set the timeout library to zero and expiry to zero; no active grace period exists at the pinned block.
+- The configuration-changing transactions were sent by `0x1a6362ad64ccff5902d46d875b36e8798267d154`, the target owner/deployer identity already established from the deployment state.
+- The latest observed effective ULN configuration still matches the 1500-confirmation / 3-required-DVN app override.
+- The third DVN provider address `0xf9d2c091...c258e12c` remains UNKNOWN after checking the official LayerZero DVN registry, USDT0 documentation, Canary documentation, and indexed source material. It must not be relabeled as Canary by elimination.
+
+### Boundary decision
+
+The receive-library / ULN configuration hypothesis is **not currently a vulnerability**. The observed state is internally coherent and the configuration change is attributable to the authorized owner path. Any security claim must therefore come from a separate invariant failure on the permitted local fork.
+
+### Next discriminating test
+
+Reproduce the pinned production state on the local fork and compare:
+
+`direct RPC state == event-folded state == fork state`
+
+Only after that gate passes, run target-specific message-boundary and lock/unlock accounting mutations.
