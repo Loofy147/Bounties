@@ -179,5 +179,36 @@
     "current_observed_lockbox_usdt_balance": "161245.710241",
     "status": "ESTABLISHED_OBSERVATION",
     "caveat": "Current balance is a live observation and is not an exploit finding; cross-chain IOTA-side accounting has not yet been reconciled."
+  },
+  "authority_transition": {
+    "status": "ESTABLISHED",
+    "sequence": [
+      {
+        "block": 25989160,
+        "tx": "0xaaaf4662b26c2fa21777fdd2ae13dddf2d957d9cf71baa92f8407eae90706069",
+        "action": "setConfig",
+        "effect": "app-specific ULN override for EID 30423: 1500 confirmations, 3 required DVNs, optional NONE"
+      },
+      {
+        "block": 25989162,
+        "tx": "0xd5564fcee42ae16c03ef62c0ed0799b071b018cb4a0c265c45f1e990ecb1c9da",
+        "action": "setDelegate",
+        "effect": "Endpoint delegate for the Lockbox set to USDT0 Safe 0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8"
+      },
+      {
+        "block": 25989163,
+        "tx": "0x2da50fd3a6e9aedfc779ee00f572f0f8db6c4397d916e52fbab48ec6c309e16c",
+        "action": "transferOwnership",
+        "effect": "Lockbox owner transferred from 0x1a6362ad64ccff5902d46d875b36e8798267d154 to USDT0 Safe 0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8"
+      }
+    ],
+    "interpretation": "The deployer EOA was a transient administrative principal immediately around the IOTA configuration hardening. The delegate was moved to the Safe one block before ownership transfer, then ownership was transferred to the same Safe. This is a coherent handoff, not evidence of an unauthorized owner.",
+    "bounty_relevance": "LOW / NOT_A_CLAIM: privileged configuration and ownership transition are not by themselves an in-scope vulnerability."
+  },
+  "live_authority": {
+    "current_lockbox_owner": "0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8",
+    "current_endpoint_delegate": "0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8",
+    "current_main_adapter_owner": "0x4dff9b5b0143e642a3f63a5bcf2d1c328e600bf8",
+    "status": "ESTABLISHED"
   }
 }
