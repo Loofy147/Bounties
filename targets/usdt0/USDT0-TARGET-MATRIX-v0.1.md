@@ -23,7 +23,7 @@ Program scope revision: 2026-09-30
 | Production implementation | `OAdapterUpgradeable` @ `0x1ab288...1dd3414`, Sourcify exact-match | ESTABLISHED |
 | Proxy type | EIP-1967 TransparentUpgradeableProxy, Sourcify exact-match | ESTABLISHED |
 | Endpoint address | `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED |
-| Peer mapping | Documentation: only EID 30423; current bytes32 value not yet pinned | PARTIAL / UNKNOWN_VALUE |
+| Peer mapping | Documentation: only EID 30423; current bytes32 value not yet pinned | UNKNOWN |
 | DVN configuration | Documentation: 3/3 LayerZero Labs + USDT0 + Canary; effective on-chain state not yet pinned | PARTIAL / UNKNOWN_VALUE |
 | Audit coverage for this exact deployment | — | UNKNOWN |
 | Prior disclosure/known issue | — | UNKNOWN |
@@ -112,7 +112,7 @@ scope address
 → applicable audits
 ```
 
-Current proxy/Endpoint observations are recorded as ESTABLISHED from secondary evidence, but target-level code conclusions remain UNKNOWN until the full chain is established.
+Current proxy/Endpoint observations are ESTABLISHED, and the implementation bytecode/source identity is ESTABLISHED. The remaining UNKNOWN links are repository commit/version provenance and exact audit correspondence.
 
 See `targets/usdt0/USDT0-FRONTIER-v0.1.md` for the current frontier and evidence ledger.
 
