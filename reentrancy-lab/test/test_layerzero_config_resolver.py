@@ -17,21 +17,38 @@ def main():
     explicit = resolve(load("layerzero_config_explicit.json"))
     assert explicit.status == "RESOLVED"
     assert explicit.required_dvns == ["0xdvn-a"]
-    assert "explicit application ULN config" in explicit.provenance
+    assert explicit.optional_dvns == ["0xdvn-b"]
+    assert explicit.optional_threshold == 1
+    assert explicit.confirmations == 20
+    assert "receive ULN resolved with field-level inheritance semantics" in explicit.provenance
 
     inherited = resolve(load("layerzero_config_inherited.json"))
     assert inherited.status == "RESOLVED"
     assert inherited.required_dvns == ["0xdvn-default"]
-    assert "application ULN config queried but empty/incomplete" in inherited.provenance
-    assert "receive-library default ULN config" in inherited.provenance
+    assert inherited.optional_dvns == []
+    assert inherited.confirmations == 15
+    assert "receive ULN resolved with field-level inheritance semantics" in inherited.provenance
+
+    partial = resolve(load("layerzero_config_partial_override.json"))
+    assert partial.status == "RESOLVED"
+    assert partial.required_dvns == ["0xdvn-default"]
+    assert partial.optional_dvns == ["0xdvn-custom-a", "0xdvn-custom-b"]
+    assert partial.optional_threshold == 1
+    assert partial.confirmations == 15
 
     unresolved = resolve(load("layerzero_config_unresolved.json"))
     assert unresolved.status == "UNRESOLVED"
     assert "effective receive configuration could not be reconstructed" in unresolved.warnings
 
-    print("PASS explicit configuration precedence")
-    print("PASS empty app config resolves through receive-library default")
-    print("PASS unresolved configuration remains UNKNOWN/UNRESOLVED")
+    invalid = resolve(load("layerzero_config_invalid_no_dvn.json"))
+    assert invalid.status == "UNRESOLVED"
+    assert any("would reject" in warning for warning in invalid.warnings)
+
+    print("PASS explicit application configuration")
+    print("PASS inherited default configuration")
+    print("PASS partial field-level override")
+    print("PASS unresolved configuration remains UNRESOLVED")
+    print("PASS zero-DVN result is rejected by modeled UlnBase invariant")
     print("RESULT LayerZeroEffectiveConfigResolver = PASS")
 
 if __name__ == "__main__":
