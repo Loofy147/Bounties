@@ -559,19 +559,49 @@ This frontier does not authorize or imply:
 
 Primary target: USDT0.
 
+Selected P0 target: `OApp Adapter Ethereum (IOTA)` at `0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414` on Ethereum (Chain ID 1 / LayerZero EID 30101), paired to the IOTA L1 route (LayerZero EID 30423).
+
 Primary technical gap: LayerZero-aware semantic testing.
 
 Primary lab gap: semantic detector correctness + invariant harness + fail-closed evidence pipeline.
 
 Secondary target: Pareto.
 
+### Current implementation state
+
+- LayerZero V2 boundary benchmark added under `reentrancy-lab/contracts/layerzero_v2/`.
+- Benchmark test added under `reentrancy-lab/test/layerzero_v2_boundary.js`.
+- `npm test` now points at the benchmark.
+- Dedicated CI workflow added at `reentrancy-lab/.github/workflows/layerzero-v2-benchmark.yml`.
+- PR #22 opened as draft against `feat/reentrancy-lab`.
+- CI execution is not yet observed from the connected environment. Local execution is `ENVIRONMENT_NOT_READY` because required Node modules are absent and outbound DNS cannot resolve raw.githubusercontent.com.
+- Therefore LayerZero benchmark status remains `OPEN / UNVERIFIED`, not `EXPERIMENTALLY_SUPPORTED`.
+
+### P0 target artifacts
+
+A. `research/BOUNTY-LAB-FRONTIER-v0.1.md`
+B. `targets/usdt0/USDT0-TARGET-MATRIX-v0.1.md`
+C. `targets/usdt0/ethereum-iota-lockbox.yaml`
+D. `reentrancy-lab/LAYERZERO-V2.md`
+E. PR #22: `lab: add LayerZero V2 boundary benchmark`
+
+### Immediate blocker
+
+Do not start target-level security claims yet.
+
+First establish:
+
+`scope address -> proxy -> implementation -> deployment/version -> applicable audit/known-issue coverage`
+
+for the IOTA Ethereum Lockbox.
+
 ### Next discriminating artifacts
 
-A. `LayerZeroV2Boundary` benchmark module.
+A. Authoritative CI result for `LayerZeroV2Boundary`.
 B. Custom-detector regression suite.
-C. USDT0 deployment/scope/audit matrix for one EVM target.
-D. First target package with exact deployment provenance.
-E. First invariant suite for supply/amount/message conservation.
+C. Exact USDT0 IOTA Lockbox proxy/implementation correspondence.
+D. LayerZero endpoint/peer/DVN configuration snapshot for that deployment.
+E. First local-fork invariant suite for lock/unlock + amount conversion.
 
 ### Stop condition for the USDT0 phase
 
