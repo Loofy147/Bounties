@@ -19,8 +19,8 @@ Target address: `0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414`
 | Proxy is EIP-1967 TransparentUpgradeableProxy | ESTABLISHED | Sourcify exact_match of proxy source; live linkage bundle still uses secondary deployment evidence |
 | Current implementation is `0x1ab288f49e18884b3a5358f4079ca0f40b891d99` | ESTABLISHED | Dedaub live-RPC linkage + Sourcify exact_match; repository commit UNKNOWN |
 | Endpoint is `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED | Secondary live-RPC reference |
-| Current IOTA peer value | UNKNOWN | Must be read from the target/fork and pinned to a block |
-| Documented DVN policy | ESTABLISHED | USDT0 docs specify 3/3: LayerZero Labs + USDT0 + Canary; effective on-chain state still UNKNOWN |
+| Current IOTA peer value | ESTABLISHED | Alchemy eth_call at pinned block 25,989,160 returns the official IOTA OFT peer package `0xe6a11eb6...60b5902` |
+| Documented DVN policy | ESTABLISHED | USDT0 docs specify 3/3: LayerZero Labs + USDT0 + Canary; target has an app-specific 3/3 override with 1500 confirmations; third provider identity remains UNKNOWN |
 | Exact audit coverage for current implementation | UNKNOWN | Historical reports do not yet establish exact code correspondence |
 | Current vulnerability | NONE_CLAIMED | No target-level exploit has been established |
 
@@ -55,13 +55,17 @@ USDT0 scope
   -> applicable audit scope
 ```
 
-The chain currently breaks at:
+The remaining provenance gaps are:
 
 ```
 implementation address
   -> exact source/commit       UNKNOWN
   -> applicable audit version  UNKNOWN
+third required DVN address
+  -> independent provider identity UNKNOWN
 ```
+
+The current peer and app-specific receive ULN override are no longer unknown.
 
 ## Lab state
 
@@ -159,7 +163,7 @@ Kill condition:
 
 ### E2 — Peer/config snapshot
 
-Pin one block in a permitted fork.
+Direct state is now pinned at block 25,989,160 via Alchemy. Local-fork reproduction remains OPEN.
 
 Collect:
 - `peers(30423)` from the Ethereum lockbox;
@@ -238,7 +242,7 @@ A historical finding cannot be reused merely because the contract family has the
 
 Current decision: **RESEARCH CONTINUES**
 
-The highest-value next artifact is the block-pinned target evidence bundle, not an exploit.
+The highest-value next artifact is the local-fork reproduction of the pinned evidence bundle and direct-state/event-fold comparison, not an exploit.
 
 The first reportable security conclusion requires all of:
 
