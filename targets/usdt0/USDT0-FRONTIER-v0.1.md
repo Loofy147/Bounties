@@ -16,11 +16,11 @@ Target address: `0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414`
 | Route is Ethereum <-> IOTA only | ESTABLISHED | Official USDT0 deployment + technical docs |
 | Ethereum LZ EID is 30101 | ESTABLISHED | Official USDT0 deployment docs |
 | IOTA LZ EID is 30423 | ESTABLISHED | Official USDT0 deployment docs |
-| Proxy is EIP-1967 | ESTABLISHED | Secondary live-RPC reference; exact source/proof bundle still OPEN |
-| Current implementation is `0x1ab288f49e18884b3a5358f4079ca0f40b891d99` | ESTABLISHED | Secondary live-RPC reference; exact source commit UNKNOWN |
+| Proxy is EIP-1967 TransparentUpgradeableProxy | ESTABLISHED | Sourcify exact_match of proxy source; live linkage bundle still uses secondary deployment evidence |
+| Current implementation is `0x1ab288f49e18884b3a5358f4079ca0f40b891d99` | ESTABLISHED | Dedaub live-RPC linkage + Sourcify exact_match; repository commit UNKNOWN |
 | Endpoint is `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED | Secondary live-RPC reference |
 | Current IOTA peer value | UNKNOWN | Must be read from the target/fork and pinned to a block |
-| Effective receive-library / ULN configuration | UNKNOWN | Resolver exists; production acquisition not yet executed |
+| Documented DVN policy | ESTABLISHED | USDT0 docs specify 3/3: LayerZero Labs + USDT0 + Canary; effective on-chain state still UNKNOWN |
 | Exact audit coverage for current implementation | UNKNOWN | Historical reports do not yet establish exact code correspondence |
 | Current vulnerability | NONE_CLAIMED | No target-level exploit has been established |
 
@@ -278,3 +278,21 @@ Therefore:
 - benchmark: OPEN / UNVERIFIED
 - resolver: OPEN / UNVERIFIED
 - target vulnerability status: NONE_CLAIMED
+
+
+## Exact-code finding
+
+The current implementation is now **ESTABLISHED at the bytecode/source level**:
+
+- Sourcify v2: `exact_match`
+- compiler: Solidity `0.8.22+commit.4fc1097e`
+- contract: `OAdapterUpgradeable`
+- creation and runtime matches: `exact_match`
+- USDT0-specific implementation is a thin wrapper over LayerZero `OFTAdapterUpgradeable`
+- constructor explicitly calls `_disableInitializers()`
+
+The repository commit that produced this implementation remains **UNKNOWN**.
+
+Security consequence: the unexplored surface shifts from custom Ethereum adapter logic toward deployment/configuration state: peer, receive library, effective ULN/DVN configuration, history, and cross-chain state correspondence.
+
+See `targets/usdt0/USDT0-IOTA-LOCKBOX-CODE-MODEL-v0.1.md`.
