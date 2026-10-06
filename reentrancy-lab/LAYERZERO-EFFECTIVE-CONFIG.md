@@ -6,13 +6,15 @@ Status: **OPEN / UNVERIFIED** as a production-data tool; the deterministic resol
 
 LayerZero V2 permits OApp-specific configuration overrides and default-library inheritance. Therefore:
 
-`app getConfig == empty`
+`getAppUlnConfig == zero/default values`
 
 does **not** imply:
 
-`requiredDVNCount == 0`
+`effective receive ULN == zero DVNs`
 
-An empty application-level configuration can inherit effective settings from the selected/default receive library.
+LayerZero `UlnBase` uses field-level inheritance: a required/optional DVN count of `0` means DEFAULT, while `255` means literal NONE. Confirmations `0` means DEFAULT and `uint64.max` means literal zero. The final effective configuration must still contain at least one DVN.
+
+Therefore a configuration can be partially customized: for example, an OApp may inherit required DVNs from the default while overriding only optional DVNs.
 
 ## Resolver contract
 
@@ -25,7 +27,7 @@ Input snapshot:
 - Endpoint default receive library, if applicable
 - application ULN config
 - receive-library defaults
-- executor config
+- optional send-side executor context
 - optional historical reconstruction
 
 Output:
@@ -40,19 +42,28 @@ Output:
 - provenance chain
 - warnings
 
-## Precedence
+## Resolution semantics
+
+Receive-library selection:
 
 ```
-explicit OApp config
+OApp receive-library override
         ↓
-selected receive library
-        ↓
-receive-library default ULN config
-        ↓
-historical reconstruction
-        ↓
-UNRESOLVED
+Endpoint default receive library
 ```
+
+Receive ULN field resolution:
+
+```
+OApp ULN field
+  ├─ 0 / DEFAULT  → inherit library default
+  ├─ 255 / NONE   → literal empty field
+  └─ explicit     → use OApp value
+```
+
+Then validate the resulting quorum. Historical reconstruction is a separate provenance path, not a higher-precedence override.
+
+Send-side Executor configuration is recorded separately and is never used to resolve receive-side DVN quorum.
 
 Historical reconstruction is kept separate because an RPC snapshot alone cannot prove past state.
 
