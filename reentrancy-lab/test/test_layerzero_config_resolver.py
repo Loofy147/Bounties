@@ -29,6 +29,11 @@ def main():
     assert inherited.confirmations == 15
     assert "receive ULN resolved with field-level inheritance semantics" in inherited.provenance
 
+    explicit_no_default = resolve(load("layerzero_config_explicit_no_default.json"))
+    assert explicit_no_default.status == "RESOLVED"
+    assert explicit_no_default.required_dvns == ["0xdvn-a"]
+    assert explicit_no_default.confirmations == 20
+
     partial = resolve(load("layerzero_config_partial_override.json"))
     assert partial.status == "RESOLVED"
     assert partial.required_dvns == ["0xdvn-default"]
@@ -46,6 +51,7 @@ def main():
 
     print("PASS explicit application configuration")
     print("PASS inherited default configuration")
+    print("PASS fully explicit configuration does not require defaults")
     print("PASS partial field-level override")
     print("PASS unresolved configuration remains UNRESOLVED")
     print("PASS zero-DVN result is rejected by modeled UlnBase invariant")
