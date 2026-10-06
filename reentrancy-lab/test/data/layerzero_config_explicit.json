@@ -6,7 +6,9 @@
   "endpoint_default_receive_library": "0xreceive-default",
   "app_uln_config": {
     "confirmations": 20,
+    "required_dvn_count": 1,
     "required_dvns": ["0xdvn-a"],
+    "optional_dvn_count": 1,
     "optional_dvns": ["0xdvn-b"],
     "optional_threshold": 1
   },
