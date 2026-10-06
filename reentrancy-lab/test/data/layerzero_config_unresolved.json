@@ -1,0 +1,15 @@
+{
+  "local_eid": 30101,
+  "remote_eid": 30423,
+  "oapp": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+  "app_receive_library": null,
+  "endpoint_default_receive_library": null,
+  "app_uln_config": {
+    "confirmations": 0,
+    "required_dvns": [],
+    "optional_dvns": [],
+    "optional_threshold": 0
+  },
+  "receive_library_defaults": {},
+  "executor_config": {"executor": "0xexecutor"}
+}
