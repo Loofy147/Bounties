@@ -271,8 +271,8 @@ scope
 PR #22 is a draft against `feat/reentrancy-lab`.
 
 As of capture:
-- PR head: `bcf5b3a4f7f7d424f3724ecf162c3ad5d30c6fc7`
-- workflow runs observed for that head: none
+- PR head: `bbc08fb07df04deeef5b25447da9259442ceaf95`
+- workflow runs observed for that head: none returned by the GitHub connector
 
 Therefore:
 - benchmark: OPEN / UNVERIFIED
