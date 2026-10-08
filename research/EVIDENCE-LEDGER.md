@@ -1,11 +1,24 @@
-
 # Bounty Evidence Ledger
 
 This ledger prevents loss of work and prevents hypotheses from being mistaken for findings.
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH; production source correspondence for NativeOrderFactory is now ESTABLISHED | reconcile complete applicable audits/known issues; settle resolver-role eligibility; passive production evidence for real partial-fill residual state |
+
+## External gate update — 2026-10-08
+
+See [targets/1inch/EXTERNAL-GATES_2026-10-08.md](../targets/1inch/EXTERNAL-GATES_2026-10-08.md).
+
+New evidence recorded since the 2026-09-29 frontier:
+
+- The recorded production NativeOrderFactory address is 0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01.
+- The verified Etherscan source identifies `contracts/extensions/NativeOrderFactory.sol`, compiler v0.8.30, and matches the 4.3.4 target source exactly after normalization.
+- The live 1inch Immunefi program remains latest-tag/release scoped and currently lists governance and strategist in the privileged-address exclusion; resolver is not expressly named there. Eligibility is therefore narrowed but not closed.
+- The official audit archive's dedicated v4.3.4 report is described as a Permit2Proxy review. This does not establish NativeOrderFactory/NativeOrderImpl coverage and does not prove absence of other applicable audits.
+- Passive production evidence establishes deployed NativeOrderFactory activity, but the minimum real-world prevalence of an ordinary partial-fill residual state followed by resolver cancellation remains OPEN.
+
+No severity, bounty amount, or submission decision is assigned.
 
 ## Evidence stages
 
@@ -125,7 +138,6 @@ Applicable audit and known-issue reconciliation remains OPEN.
 ## Economic interpretation
 
 The completed natural partial-fill run measured resolverNetTotal = -0.00006743195654982 ETH against victimResidualLoss = 0.0007 ETH. This is negative-EV for the measured local scenario, but it is not used as an impact-kill gate; current Immunefi guidance treats attacker financial risk/ROI as a feasibility consideration rather than an automatic invalidation of the underlying impact.
-
 
 For C<R and T=R-C:
 
