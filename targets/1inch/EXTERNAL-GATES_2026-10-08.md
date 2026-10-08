@@ -9,7 +9,7 @@ Working branch: research/b0-1inch-external-gates-2026-10-08
 
 Record the external evidence work performed after the 2026-09-29 H-E2 research endpoint.
 
-The technical local reproduction is not being extended. The remaining work is evidence reconciliation and eligibility closure.
+The technical local reproduction is not being extended. The remaining work is evidence reconciliation, production-state characterization, and eligibility closure.
 
 ## Gate 1 — production deployment/source correspondence
 
@@ -36,9 +36,30 @@ Result: exact_source_match = true.
 
 This establishes source-level correspondence for the researched NativeOrderFactory implementation at the recorded production address.
 
-It does not establish production prevalence of the H-E2 state.
+## Gate 2 — H-E2 source semantics
 
-## Gate 2 — audit coverage
+Status: ESTABLISHED at source level
+
+The tagged 4.3.4 NativeOrderImpl source was inspected directly.
+
+The resolver cancellation path:
+
+- is gated by a non-zero balance of the configured access token for msg.sender;
+- requires the maker order to be expired;
+- when rewardLimit > 0, requires the configured cancellation delay and computes resolverReward from block.basefee and the 70,000 gas lower bound;
+- calls _cancelOrder(makerOrder, resolverReward);
+- _cancelOrder first reads the clone's full WETH balance;
+- it withdraws that full balance;
+- it subtracts resolverReward from that balance;
+- it pays the resolver the reward;
+- it sends the remainder to the maker.
+
+This is the implementation basis for H-E2. It is not a claim that the behavior is a security vulnerability.
+
+Primary target source:
+https://github.com/1inch/limit-order-protocol/blob/4.3.4/contracts/extensions/NativeOrderImpl.sol
+
+## Gate 3 — audit coverage
 
 Status: OPEN
 
@@ -63,11 +84,11 @@ Do not infer that NativeOrder was never audited elsewhere. Full audit/known-issu
 Primary archive:
 https://github.com/1inch/1inch-audits
 
-## Gate 3 — current bounty scope / role eligibility
+## Gate 4 — current bounty scope / role eligibility
 
 Status: NARROWED, NOT CLOSED
 
-Current 1inch Smart Contracts Immunefi scope states:
+Current 1inch Smart Contracts Immunefi rules state:
 
 - only the latest eligible tags/releases apply;
 - PoC is required;
@@ -86,21 +107,68 @@ https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/
 Primary information page:
 https://immunefi.com/bug-bounty/1inch-SmartContracts/information/
 
-## Gate 4 — production victim-state prevalence
+## Gate 5 — real production residual-state evidence
 
-Status: OPEN
+Status: PARTIALLY ESTABLISHED; prevalence UNKNOWN
 
-Passive production evidence establishes that NativeOrderFactory is deployed and has emitted NativeOrderCreated events.
+A concrete public-chain NativeOrder clone provides a useful production state-transition example:
 
-Public-chain evidence also shows resolver-cancellation activity for NativeOrder clones.
+Clone:
+0xb3eea3d5e2ef2728e40f9783fc781bf21f2de58f
 
-What is not yet established is the minimum production population of ordinary partial-fill states that leave residual clone WETH below the resolver reward amount before resolver cancellation.
+Creation / funding:
+- block 25365981
+- factory transferred 4,000,000,000,000,000,000 wei to the clone
+- the clone deposited the same 4 ETH-equivalent amount into WETH
 
-This gate is an evidence question only. No production testing is authorized or implied.
+Subsequent WETH transfers out of the clone:
+- block 25365982: 2.0 WETH
+- block 25366000: 0.2 WETH
+- block 25366001: 0.45 WETH
+
+These three transfers total 2.65 WETH.
+
+Resolver cancellation:
+- transaction 0x9d6db312e6e58187b8f3c9da6e78c2a9545230b2b94413570db209a6e1a136a1
+- block 25366005
+- NativeOrderCancelledByResolver event reports balance = 1.35 ETH-equivalent
+- resolverReward = 0
+
+Accounting reconciles exactly:
+
+4.00 - 2.00 - 0.20 - 0.45 = 1.35 ETH
+
+This is strong evidence that an ordinary production native order can have a residual clone balance after multiple outbound WETH transfers before resolver cancellation.
+
+Because the public transfer records were not decoded into the full order-fill call graph, record the state as production residual/partial-fill evidence rather than as a complete transaction-level proof of the exact order-fill semantic.
+
+Prevalence is not quantified.
+
+No production contract was tested or modified.
+
+## Gate 6 — search for production resolver rewards
+
+Status: OBSERVED NO POSITIVE SAMPLE IN CHECKED WINDOW
+
+A passive Etherscan log search for NativeOrderCancelledByResolver events over blocks 24,000,000–26,000,000 returned 5,272 events across six populated pages.
+
+Within that checked window, every decoded event returned resolverReward = 0.
+
+This does not invalidate the H-E2 model because the modeled condition concerns a resolver cancellation with rewardLimit > 0 and a residual balance below the computed reward. It does, however, mean that the current passive production sample does not yet demonstrate a real on-chain instance of a non-zero resolver reward.
 
 ## Current H-E2 state
 
 Technical local behavior: EXPERIMENTALLY_SUPPORTED
+
+Source semantics: ESTABLISHED
+
+Natural production residual state: PARTIALLY_ESTABLISHED
+
+Production non-zero resolver-reward occurrence: UNKNOWN / no positive sample in checked window
+
+Audit/known-issue eligibility: OPEN
+
+Resolver-role eligibility: OPEN
 
 Overall bounty finding: HYPOTHESIS
 
@@ -110,11 +178,11 @@ No severity, payout, or submission decision is assigned.
 
 STOP NEW SYNTHETIC H-E2 VARIANTS.
 
-The next discriminating work should be limited to:
+The remaining discriminating work is external to the existing local reproduction:
 
-1. audit/known-issue reconciliation against the complete applicable archive;
-2. formal role-eligibility reading against current Immunefi rules;
-3. passive production-state evidence sufficient to establish whether the modeled residual state occurs in real usage.
+1. reconcile the complete applicable audit / known-issue history;
+2. settle resolver-role treatment under the current program rules;
+3. continue passive production analysis only far enough to determine whether a non-zero resolver reward with a naturally low residual balance occurs in real usage.
 
 Do not test the deployed production contract or public networks for exploit reproduction. All executable validation remains on permitted local forks.
 
@@ -123,14 +191,20 @@ Do not test the deployed production contract or public networks for exploit repr
 1. 1inch Limit Order Protocol 4.3.4 target source:
 https://github.com/1inch/limit-order-protocol/tree/4.3.4
 
-2. 1inch audit archive:
+2. NativeOrderImpl 4.3.4:
+https://github.com/1inch/limit-order-protocol/blob/4.3.4/contracts/extensions/NativeOrderImpl.sol
+
+3. 1inch audit archive:
 https://github.com/1inch/1inch-audits
 
-3. 1inch Smart Contracts Immunefi scope:
+4. 1inch Smart Contracts Immunefi scope:
 https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/
 
-4. 1inch Smart Contracts Immunefi information:
+5. 1inch Smart Contracts Immunefi information:
 https://immunefi.com/bug-bounty/1inch-SmartContracts/information/
 
-5. Verified NativeOrderFactory address:
+6. Verified NativeOrderFactory address:
 https://etherscan.io/address/0xe12e0f117d23a5ccc57f8935cd8c4e80cd91ff01
+
+7. Example production resolver-cancellation transaction:
+https://etherscan.io/tx/0x9d6db312e6e58187b8f3c9da6e78c2a9545230b2b94413570db209a6e1a136a1
