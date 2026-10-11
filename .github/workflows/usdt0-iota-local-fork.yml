@@ -7,6 +7,7 @@ on:
     paths:
       - "reentrancy-lab/test/iota_lockbox_fork.js"
       - "reentrancy-lab/test/iota_lockbox_economic_baseline.js"
+      - "reentrancy-lab/test/iota_source_guid_correlation.js"
       - "reentrancy-lab/package.json"
       - "reentrancy-lab/package-lock.json"
       - "targets/usdt0/**"
@@ -59,6 +60,11 @@ jobs:
 
       - name: Run historical Lockbox accounting invariant sample
         run: node test/iota_lockbox_economic_baseline.js
+
+      - name: Correlate sampled unlocks to IOTA L1 sends by LayerZero GUID (read-only)
+        run: node test/iota_source_guid_correlation.js
+        env:
+          IOTA_L1_GRAPHQL_URL: https://graphql.mainnet.iota.cafe/graphql
 
       - name: Execute local-fork authorization and unlock invariants
         run: node test/iota_lockbox_fork.js
