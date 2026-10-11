@@ -1,0 +1,107 @@
+{
+  "captured_at": "2026-10-06",
+  "target": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+  "pinned_block": 25989160,
+  "findings": [
+    {
+      "type": "ReceiveLibrarySet",
+      "emitter": "0x1a44076050125825900e736c501f859c50fe728c",
+      "block": 25989131,
+      "block_hash": "0x4893bbbc1051162372093ab65f22b7877fbc30e2d2b61923f7085dd662144e8b",
+      "tx": "0x88b303f363482b2c295394bf2da1c16a3ca75087a3bbf2a10c830dfd4a01e6f0",
+      "sender": "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+      "eid": 30423,
+      "new_library": "0xc02Ab410f0734EFa3F14628780e6e695156024C2",
+      "status": "ESTABLISHED",
+      "interpretation": "OApp-specific receive library was explicitly set to the same address as the then-current/default receive library; isDefault remains false because app storage is explicit."
+    },
+    {
+      "type": "ReceiveLibraryTimeoutSet",
+      "emitter": "0x1a44076050125825900e736c501f859c50fe728c",
+      "block": 25989131,
+      "tx": "0x88b303f363482b2c295394bf2da1c16a3ca75087a3bbf2a10c830dfd4a01e6f0",
+      "sender": "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+      "eid": 30423,
+      "library": "0x0000000000000000000000000000000000000000",
+      "expiry": 0,
+      "status": "ESTABLISHED",
+      "interpretation": "No grace-period receive library is active for this OApp at the pinned block."
+    },
+    {
+      "type": "UlnConfigSet",
+      "emitter": "0xc02Ab410f0734EFa3F14628780e6e695156024C2",
+      "block": 25989160,
+      "block_hash": "0x4cb7c5d69459a8a7c6c816d27e377638d1949ea15096e04bfc9e9dbf3d857698",
+      "tx": "0xaaaf4662b26c2fa21777fdd2ae13dddf2d957d9cf71baa92f8407eae90706069",
+      "sender": "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+      "eid": 30423,
+      "confirmations": 1500,
+      "required_dvn_count": 3,
+      "optional_dvn_count": 255,
+      "optional_dvn_threshold": 0,
+      "required_dvns": [
+        "0x3b0531eb02ab4ad72e7a531180beef9493a00dd2",
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+        "0xf9d2c0915cac4c75b7ae359089333c8ac258e12c"
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "type": "DefaultReceiveLibrarySet",
+      "emitter": "0x1a44076050125825900e736c501f859c50fe728c",
+      "block": 23871945,
+      "tx": "0xa413160dd20354a2cc8bb8235d3dea1e7de61379df6ba0cff3cfd4a3ff533807",
+      "eid": 30423,
+      "new_library": "0xc02Ab410f0734EFa3F14628780e6e695156024C2",
+      "status": "ESTABLISHED"
+    },
+    {
+      "type": "DefaultReceiveLibraryTimeoutSet",
+      "emitter": "0x1a44076050125825900e736c501f859c50fe728c",
+      "block": 23871945,
+      "tx": "0xa413160dd20354a2cc8bb8235d3dea1e7de61379df6ba0cff3cfd4a3ff533807",
+      "eid": 30423,
+      "library": "0x0000000000000000000000000000000000000000",
+      "expiry": 0,
+      "status": "ESTABLISHED"
+    },
+    {
+      "type": "DefaultUlnConfigsSet",
+      "emitter": "0xc02Ab410f0734EFa3F14628780e6e695156024C2",
+      "block": 23871943,
+      "tx": "0xdc30935fd65deea8a18c00e612b6c9578cd3f653f80904d9ed19e1646ce5bd70",
+      "eid": 30423,
+      "confirmations": 5,
+      "required_dvn_count": 1,
+      "optional_dvn_count": 0,
+      "required_dvns": [
+        "0x747c741496a507e4b404b50463e691a8d692f6ac"
+      ],
+      "status": "ESTABLISHED"
+    },
+    {
+      "type": "DefaultUlnConfigsSet",
+      "emitter": "0xc02Ab410f0734EFa3F14628780e6e695156024C2",
+      "block": 25495907,
+      "tx": "0x58135baba53f4011917e1a6ece69a616b21b2b493e1bc2a756b614b7a44db794",
+      "eid": 30423,
+      "confirmations": 5,
+      "required_dvn_count": 3,
+      "optional_dvn_count": 0,
+      "required_dvns": [
+        "0x380275805876ff19055ea900cdb2b46a94ecf20d",
+        "0x589dedbd617e0cbcb916a9223f4d1300c294236b",
+        "0xa59ba433ac34d2927232918ef5b2eaafcf130ba5"
+      ],
+      "status": "ESTABLISHED"
+    }
+  ],
+  "conclusions": [
+    "Current OApp-specific receive library is explicit even though it equals the current default library.",
+    "No receive-library grace-period timeout is active at the pinned block.",
+    "Effective receive ULN configuration is supplied by the OApp-specific override, not inherited from the default for the required-DVN set.",
+    "Configuration-changing transactions observed here were sent by the target owner/deployer address 0x1a6362ad64ccff5902d46d875b36e8798267d154.",
+    "Third current required DVN provider identity at 0xf9d2...e12c remains UNKNOWN."
+  ],
+  "next_gate": "Reproduce the direct snapshot and event-fold state on the permitted local fork before testing economic/message invariants."
+}

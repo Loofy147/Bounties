@@ -1,0 +1,509 @@
+# USDT0 / IOTA Lockbox Frontier v0.1
+
+Captured: 2026-10-06
+Repository: `Loofy147/Bounties`
+Branch: `research/usdt0-lab-frontier-v0.1`
+PR: #22 (draft)
+Primary target: Ethereum OApp Adapter (IOTA) / IOTA Lockbox
+Target address: `0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414`
+
+## Frontier status
+
+| Claim | Status | Evidence / decision |
+|---|---|---|
+| Target is in current USDT0 scope | ESTABLISHED | USDT0 deployment + Immunefi scope revision 2026-09-30 |
+| Target address is the Ethereum IOTA Lockbox | ESTABLISHED | Official USDT0 deployment docs |
+| Route is Ethereum <-> IOTA only | ESTABLISHED | Official USDT0 deployment + technical docs |
+| Ethereum LZ EID is 30101 | ESTABLISHED | Official USDT0 deployment docs |
+| IOTA LZ EID is 30423 | ESTABLISHED | Official USDT0 deployment docs |
+| Proxy is EIP-1967 TransparentUpgradeableProxy | ESTABLISHED | Sourcify exact_match of proxy source; live linkage bundle still uses secondary deployment evidence |
+| Current implementation is `0x1ab288f49e18884b3a5358f4079ca0f40b891d99` | ESTABLISHED | Dedaub live-RPC linkage + Sourcify exact_match; repository commit UNKNOWN |
+| Endpoint is `0x1a44076050125825900e736c501f859c50fE728c` | ESTABLISHED | Secondary live-RPC reference |
+| Current IOTA peer value | ESTABLISHED | Alchemy eth_call at pinned block 25,989,160 returns the official IOTA OFT peer package `0xe6a11eb6...60b5902` |
+| Documented DVN policy | ESTABLISHED | USDT0 docs specify 3/3: LayerZero Labs + USDT0 + Canary; target has an app-specific 3/3 override with 1500 confirmations; third provider identity remains UNKNOWN |
+| Exact audit coverage for current implementation | UNKNOWN | Historical reports do not yet establish exact code correspondence |
+| Current vulnerability | NONE_CLAIMED | No target-level exploit has been established |
+
+## Evidence hierarchy
+
+1. **Primary target/program authority**
+   - Immunefi scope
+   - USDT0 deployment and technical documentation
+2. **Primary protocol implementation**
+   - LayerZero V2 source code at an identified revision
+3. **Live deployment observation**
+   - block-pinned RPC/fork observations
+4. **Secondary verification**
+   - Dedaub and other independent deployment references
+5. **Historical audit material**
+   - Paladin, OpenZeppelin, Guardian
+6. **Research claims**
+   - public GitHub issues, community reports, unvalidated bounty submissions
+
+Repetition never upgrades a lower-level source into a higher-level evidence class.
+
+## Current correspondence chain
+
+```
+USDT0 scope
+  -> official deployment address
+  -> proxy
+  -> implementation
+  -> exact bytecode/source
+  -> repository commit
+  -> LayerZero library/config revision
+  -> applicable audit scope
+```
+
+The remaining provenance gaps are:
+
+```
+implementation address
+  -> exact source/commit       UNKNOWN
+  -> applicable audit version  UNKNOWN
+third required DVN address
+  -> independent provider identity UNKNOWN
+```
+
+The current peer and app-specific receive ULN override are no longer unknown.
+
+## Lab state
+
+### LayerZero V2 boundary benchmark
+
+Artifact:
+`reentrancy-lab/LAYERZERO-V2.md`
+
+Status: OPEN / UNVERIFIED
+
+Modelled invariants:
+- only configured Endpoint may enter the OApp receiver boundary;
+- Origin peer must match the configured peer for the source EID;
+- the modeled channel rejects duplicate packet effects.
+
+Controlled mutants:
+- missing Endpoint gate;
+- missing Peer gate;
+- missing replay guard.
+
+No authoritative CI run has been observed for PR #22, so the benchmark is not marked EXPERIMENTALLY_SUPPORTED.
+
+### Effective configuration resolver
+
+Artifact:
+`reentrancy-lab/tools/layerzero_effective_config.py`
+
+Status: OPEN / UNVERIFIED
+
+Purpose:
+- prevent the false inference `empty app config == zero DVNs`;
+- resolve application override versus default receive-library inheritance;
+- retain provenance and unresolved state;
+- separate current-state resolution from historical reconstruction.
+
+The resolver is deterministic and has regression fixtures, but an authoritative CI execution is still missing.
+
+## New architectural constraint
+
+LayerZero configuration is not one flat object.
+
+At minimum, preserve separate evidence domains:
+
+```
+A. receive path
+   OApp receive-library selection
+   -> ReceiveUln configuration
+   -> DVN quorum / confirmations
+
+B. send path
+   OApp send-library selection
+   -> SendUln configuration
+   -> Executor configuration / send-side ULN
+
+C. application boundary
+   Endpoint caller
+   -> Origin.srcEid
+   -> Origin.sender / peer
+   -> nonce / GUID / payload
+
+D. deployment authority
+   proxy / implementation / owner / delegate
+   -> upgrade and configuration mutation rights
+```
+
+Do not merge send-side Executor configuration into a claim about the receive-side DVN quorum.
+
+## Discriminating experiments
+
+### E0 — CI execution gate
+
+Run:
+- LayerZero V2 boundary benchmark
+- effective configuration resolver regression
+
+Acceptance:
+- all expected positive/negative benchmark assertions pass;
+- resolver explicit/inherited/unresolved fixtures pass.
+
+Failure action:
+- keep status OPEN / UNVERIFIED and repair the lab before target analysis.
+
+### E1 — Exact implementation correspondence
+
+Input:
+- target implementation bytecode from a permitted fork;
+- candidate USDT0 repository revisions.
+
+Output:
+- exact bytecode match or deterministic mismatch;
+- source commit if verified.
+
+Kill condition:
+- no exact correspondence -> no claim based on a historical implementation review.
+
+### E2 — Peer/config snapshot
+
+Direct state is now pinned at block 25,989,160 via Alchemy. Local-fork reproduction remains OPEN.
+
+Collect:
+- `peers(30423)` from the Ethereum lockbox;
+- effective receive library for source EID 30423;
+- ReceiveUln ULN config;
+- send-library / Executor config separately.
+
+Record:
+- chain ID;
+- LZ EID;
+- block number;
+- RPC provenance;
+- target code hash;
+- decoded values.
+
+### E3 — Historical configuration reconstruction
+
+Reconstruct only the events required to explain state transitions:
+- `PeerSet`;
+- `ReceiveLibrarySet`;
+- `DefaultReceiveLibrarySet`;
+- `ReceiveLibraryTimeoutSet`;
+- receive-side `UlnConfigSet`;
+- default receive-library / ULN changes where emitted by the deployed protocol version.
+
+Each event record must preserve:
+- transaction hash;
+- block number;
+- block hash;
+- emitter;
+- event signature/topic;
+- decoded parameters;
+- source ABI/revision;
+- observation timestamp.
+
+Kill condition:
+- incomplete event history -> status UNKNOWN, not an inferred configuration.
+
+### E4 — Lock/mint accounting invariant
+
+On a permitted local fork, establish a small state machine:
+
+```
+Ethereum lock -> IOTA mint
+IOTA burn     -> Ethereum unlock
+```
+
+Required properties:
+- no unlock without an authorized source-side state;
+- no duplicate economic effect from the same authenticated message;
+- amount conversion stays within documented dust semantics;
+- `minAmountLD` is enforced on the source-side debit path; it is not a destination receive-path parameter.
+
+This is the first target-specific semantic lane; no live mainnet testing.
+
+### E5 — Known-issue / audit gate
+
+For every candidate:
+1. exact implementation/source correspondence;
+2. audited scope correspondence;
+3. historical finding status;
+4. current deployment/version delta;
+5. novelty after the above.
+
+A historical finding cannot be reused merely because the contract family has the same name.
+
+## Negative / killed work retained
+
+- Generic signature-replay reasoning from M6 is **not** a LayerZero V2 target model.
+- Empty LayerZero ULN config is **not** treated as a zero-DVN security failure.
+- Public USDT0 issue #4 is **not** treated as a validated vulnerability.
+- Historical Paladin initializer finding is **not** treated as a current regression without code correspondence.
+- No live target probing is performed.
+
+## Decision frontier
+
+Current decision: **RESEARCH CONTINUES**
+
+The highest-value next artifact is the local-fork reproduction of the pinned evidence bundle and direct-state/event-fold comparison, not an exploit.
+
+The first reportable security conclusion requires all of:
+
+```
+scope
++ exact code/version
++ invariant violation
++ isolated reproduction
++ in-scope impact
++ permitted attacker preconditions
++ novelty
++ minimal PoC
+```
+
+## Source index
+
+- USDT0 deployments: https://docs.usdt0.to/technical-documentation/deployments
+- USDT0 technical docs: https://docs.usdt0.to/
+- LayerZero EndpointV2: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/EndpointV2.sol
+- LayerZero OAppCore: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oapp/OAppCore.sol
+- LayerZero OFTCore: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/OFTCore.sol
+- LayerZero MessageLibManager: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/MessageLibManager.sol
+- LayerZero ReceiveUln302: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/messagelib/contracts/uln/uln302/ReceiveUln302.sol
+- LayerZero SendUln302: https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/messagelib/contracts/uln/uln302/SendUln302.sol
+- Dedaub LayerZero V2 reference: https://github.com/Dedaub/monitoring-cli/blob/9638b65aba28471ee2b0f81cfcf3f3ed10b686a3/packages/dedaub-skills/dedaub_skills/skills/dedaub-monitoring/references/protocols/layerzero/v2.md
+- USDT0 audit repository: https://github.com/Everdawn-Labs/usdt0-audit-reports
+
+## Repository state
+
+PR #22 is a draft against `feat/reentrancy-lab`.
+
+As of capture:
+- PR head: `bbc08fb07df04deeef5b25447da9259442ceaf95`
+- workflow runs observed for that head: none returned by the GitHub connector
+
+Therefore:
+- benchmark: OPEN / UNVERIFIED
+- resolver: OPEN / UNVERIFIED
+- target vulnerability status: NONE_CLAIMED
+
+
+## Exact-code finding
+
+The current implementation is now **ESTABLISHED at the bytecode/source level**:
+
+- Sourcify v2: `exact_match`
+- compiler: Solidity `0.8.22+commit.4fc1097e`
+- contract: `OAdapterUpgradeable`
+- creation and runtime matches: `exact_match`
+- USDT0-specific implementation is a thin wrapper over LayerZero `OFTAdapterUpgradeable`
+- constructor explicitly calls `_disableInitializers()`
+
+The repository commit that produced this implementation remains **UNKNOWN**.
+
+Security consequence: the unexplored surface shifts from custom Ethereum adapter logic toward deployment/configuration state: peer, receive library, effective ULN/DVN configuration, history, and cross-chain state correspondence.
+
+See `targets/usdt0/USDT0-IOTA-LOCKBOX-CODE-MODEL-v0.1.md`.
+
+
+## Newly eliminated ambiguity: receive-library grace period
+
+A current receive-library address alone is insufficient. LayerZero MessageLibManager can temporarily accept a previous receive library during a block-bounded grace period. Therefore the target snapshot must include:
+
+app receive library + default receive library + effective/current library + timeout library + expiry block + pinned block.
+
+This is now enforced structurally by reentrancy-lab/tools/validate_layerzero_snapshot.py.
+
+
+## Configuration closure — 2026-10-06
+
+The receive-side configuration is now block-pinned and independently reconstructed from LayerZero events.
+
+### Established
+- At block `25,989,159`, effective receive ULN for EID `30423` was inherited from the default configuration: 5 confirmations, 3 required DVNs, Horizen Labs + LayerZero Labs + Nethermind.
+- At block `25,989,160`, an app-specific `UlnConfigSet` changed the effective configuration to 1500 confirmations, 3 required DVNs, no optional quorum, with USDT0 + LayerZero Labs + one provider whose identity remains UNKNOWN.
+- `ReceiveLibrarySet` for the OApp occurred at block `25,989,131`, explicitly selecting `0xc02Ab410...6024C2`, the same address as the default receive library at that time.
+- `ReceiveLibraryTimeoutSet` in the same transaction set the timeout library to zero and expiry to zero; no active grace period exists at the pinned block.
+- The configuration-changing transactions were sent by `0x1a6362ad64ccff5902d46d875b36e8798267d154`, the target owner/deployer identity already established from the deployment state.
+- The latest observed effective ULN configuration still matches the 1500-confirmation / 3-required-DVN app override.
+- The third DVN provider address `0xf9d2c091...c258e12c` remains UNKNOWN after checking the official LayerZero DVN registry, USDT0 documentation, Canary documentation, and indexed source material. It must not be relabeled as Canary by elimination.
+
+### Boundary decision
+
+The receive-library / ULN configuration hypothesis is **not currently a vulnerability**. The observed state is internally coherent and the configuration change is attributable to the authorized owner path. Any security claim must therefore come from a separate invariant failure on the permitted local fork.
+
+### Next discriminating test
+
+Reproduce the pinned production state on the local fork and compare:
+
+`direct RPC state == event-folded state == fork state`
+
+Only after that gate passes, run target-specific message-boundary and lock/unlock accounting mutations.
+
+## Empirical economic baseline — 2026-10-11
+
+### LZ-ACCOUNT-UNLOCK-01 — sampled Ethereum-side execution path
+
+The executable test now checks **15 mined Lockbox outflows**: 10 recent outflows plus 5 earliest observed outflows after deployment, spanning blocks 25,997,621 through 26,132,886.
+
+Each sampled receipt must contain:
+```
+USDT Transfer: Lockbox -> recipient
+  == exact amount ==
+OFTReceived: srcEid 30423 -> same recipient
+  +
+Endpoint PacketDelivered: srcEid 30423, sender == configured IOTA peer, receiver == Lockbox
+```
+
+Result: **15/15 PASS** in GitHub Actions run [#24](https://github.com/Loofy147/Bounties/actions/runs/38139695620), head `543ea3d9ec7b681a8118279308e8c14ed01eafce`.
+
+Status: EXPERIMENTALLY_SUPPORTED (sampled).
+
+Limitations:
+- This is not an exhaustive proof over all historical outflows.
+- It proves the Ethereum-side receipt pattern, not the corresponding IOTA-side burn/mint state.
+- It does not test privileged recovery paths.
+- No production contract was modified or sent a test transaction.
+
+Evidence remains at `targets/usdt0/evidence/2026-10-06-iota-lockbox-economic-baseline.json`. The executable test now contains the same 15 samples; a malformed 32-byte transaction hash in the former list was corrected against the read-only receipt/log record.
+
+## Local-fork config / receiver-boundary run — 2026-10-11
+
+GitHub Actions run [#24](https://github.com/Loofy147/Bounties/actions/runs/38139695620) completed **SUCCESS** after the following checks:
+
+- pinned config block number and block hash match the stored snapshot;
+- deployed implementation, owner, peer, Endpoint, Endpoint EID, receive library, default receive library and timeout match the pinned evidence;
+- direct receive-side ULN state equals the event-folded configuration at the pinned block;
+- the recorded `optionalDVNCount=255` event value is retained as the raw `NIL_DVN_COUNT` sentinel, whose semantic meaning is “no optional DVNs”; the getter correctly returns an effective optional-DVN count/list length of zero;
+- unauthorized `setPeer` rejected on the local fork;
+- wrong-origin peer rejected at the OApp receiver boundary;
+- a valid Endpoint+peer origin released exactly 1 USDT in the **local fork**.
+
+The LayerZero source defines `Origin` in this order: `uint32 srcEid; bytes32 sender; uint64 nonce`. The test ABI was corrected to match the source. Source: [ILayerZeroEndpointV2.sol](https://github.com/LayerZero-Labs/LayerZero-v2/blob/9c741e7f9790639537b1710a203bcdfd73b0b9ac/packages/layerzero-v2/evm/protocol/contracts/interfaces/ILayerZeroEndpointV2.sol).
+
+Test-boundary caveat: the local-fork test impersonates the Endpoint to exercise the OApp's caller/peer checks and token-accounting response. It does **not** exercise Endpoint packet proof verification or establish a target-level replay vulnerability.
+
+## CI defects found and repaired — 2026-10-11
+
+1. The first workflow failed before dependency installation because `actions/setup-node` referenced a non-existent `reentrancy-lab/package-lock.json`; `npm ci` would also have failed without that file.
+2. The workflow temporarily uses `npm install --ignore-scripts --no-audit --no-fund` and includes the generated lockfile in the run artifact. **A lockfile is not yet committed to the branch**, so dependency-resolution reproducibility is still an open engineering debt.
+3. The artifact upload path pointed to `reentrancy-lab/artifacts/iota-lockbox-fork`, while the test writes to repository-root `artifacts/iota-lockbox-fork`. The workflow was corrected in commit `f055e892759e2ac481167d5ff575a6737de908f6`; its new run must verify that both `config.json` and `unlock.json` are captured.
+
+## Current decision
+
+- Pinned config replay / event-fold comparison: **PASS on the local fork**.
+- LZ-ACCOUNT-UNLOCK-01: **EXPERIMENTALLY_SUPPORTED for the 15 sampled Ethereum receipts**.
+- Endpoint/peer receiver-boundary controls and exact-value release: **PASS on a local fork**.
+- Target vulnerability status: **NONE_CLAIMED**.
+
+The earlier 15-message sample gate was superseded by a bounded full-history reconciliation in CI run #54: all 162 captured Ethereum `OFTReceived` events matched IOTA L1 source events by GUID and exact amounts. The next discriminating work should shift to independent economic/state invariants, not to re-running the same correlation. All production observations remained read-only; no live-target probing was authorized or required.
+
+
+## Source-to-destination GUID correspondence — 2026-10-11
+
+**Result: PASS — 15/15 sampled messages correlated.**
+
+GitHub Actions run [#41](https://github.com/Loofy147/Bounties/actions/runs/38140745121) on head `c0cd53f50f3243af71650ed35231c6767f2a8253` ran the read-only `LZ-CROSSCHAIN-GUID-CORRELATION-01` test.
+
+The test reconstructs the LayerZero V2 GUID from the mined Ethereum `PacketDelivered` origin tuple:
+`nonce, srcEid, sender, dstEid, receiver`.
+
+It then queries IOTA L1's fully-qualified `OFTSentEvent` and requires the same GUID. For all 15 sampled Ethereum Lockbox unlocks:
+
+- a source-side IOTA L1 `OFTSentEvent` was found by GUID;
+- the destination EID matched Ethereum EID `30101`;
+- `amount_sent_ld` and `amount_received_ld` each equaled the raw USDT transfer amount observed in the corresponding Ethereum receipt;
+- no sampled Ethereum transaction remained uncorrelated.
+
+The read-only query paginated through 162 source-side `OFTSentEvent` records over four pages (page size 50). The query exhausted the available results for that fully-qualified event type; it did not stop early at the time cutoff.
+
+First correlation:
+- Ethereum transaction: `0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e`
+- IOTA L1 source transaction: `595i9yddsKkACKXVaDL2gsnw1bwS9KZfc72iT4BSRt4o`
+- GUID: `0x056aa04860b55984420b0bb4c0dd851f438256baa920332fa07f81f4c0135f3d`
+- Raw amount: `15730266080` (15,730.26608 USDT, six decimals)
+
+Permanent machine-readable sample ledger:
+`targets/usdt0/evidence/2026-10-11-cross-chain-guid-correlation.json`.
+
+CI artifact `usdt0-iota-local-fork-evidence` (artifact ID `11703261539`) was downloaded and inspected. It contains:
+- `artifacts/iota-lockbox-fork/config.json`
+- `artifacts/iota-lockbox-fork/cross-chain-guid-correlation.json`
+- `artifacts/iota-lockbox-fork/unlock.json`
+- `reentrancy-lab/package-lock.json`
+
+The completed workflow also passed the pinned config replay, the 15/15 Ethereum receipt invariant sample, the local-fork unauthorized `setPeer` rejection, wrong-peer rejection, and exact 1-USDT local-fork unlock control.
+
+### Evidence boundary
+
+This establishes sampled state/message correspondence, not general protocol correctness. `OFTSentEvent` itself does not expose the destination recipient address; recipient consistency is checked on the Ethereum side across `Transfer`, `OFTReceived`, and `PacketDelivered`. The local-fork test impersonates the Endpoint only to exercise the OApp receiver boundary; it does not exercise Endpoint proof verification and does not establish a replay vulnerability.
+
+The target vulnerability status remains **NONE_CLAIMED**.
+
+
+## Full captured-history source/destination reconciliation — 2026-10-11
+
+**Result: PASS — 162/162.** This supersedes the earlier 15-message sample-only statement while preserving the sample test as an independent test.
+
+### Pinned destination event snapshot
+
+The public Alchemy RPC available to CI capped `eth_getLogs` at 100 blocks per request. A second public RPC (PublicNode) required a personal token for archive requests. To avoid introducing credentials or weakening validation, the entire read-only Etherscan query response was pinned in:
+
+`targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json`
+
+Snapshot properties:
+- chain: Ethereum mainnet (chain ID 1);
+- emitter: USDT0 Lockbox `0xaef027f94008430bf4fc27ffabb49ea6f1dd3414`;
+- topic0: `OFTReceived(bytes32,uint32,address,uint256)`;
+- range: blocks `25,997,621–26,167,014`;
+- matching logs: **162**;
+- malformed snapshot entries: **0**.
+
+The snapshot was created from a read-only Etherscan log query and committed at `05ec6ca849c01d0b87b5409b51fdf56aaef08fdb`. CI does not trust the snapshot on its own: it checks every row against the transaction receipt, block hash/number, log index/payload, and the same-receipt USDT transfer and Endpoint `PacketDelivered` GUID.
+
+### Source-side matching and accounting
+
+GitHub Actions run [#54](https://github.com/Loofy147/Bounties/actions/runs/38141456942) completed **SUCCESS** on head `9441494de4eb59f6a7e8a1f0bbfb96cdcd2d18cb`.
+
+The read-only IOTA L1 GraphQL query scanned 162 `OFTSentEvent` records over four pages, with pagination exhausted and no early time cutoff. Results:
+
+| Check | Result |
+|---|---:|
+| Captured Ethereum `OFTReceived` records checked against mined receipts | 162/162 |
+| Matching same-receipt `PacketDelivered` GUIDs | 162/162 |
+| Matching Lockbox-to-recipient USDT transfer/amount | 162/162 |
+| Destination events from IOTA source EID 30423 | 162 |
+| Matching IOTA `OFTSentEvent` GUIDs | 162/162 |
+| IOTA `dst_eid` matches Ethereum EID 30101 | 162/162 |
+| `amount_sent_ld` equals Ethereum raw USDT amount | 162/162 |
+| `amount_received_ld` equals Ethereum raw USDT amount | 162/162 |
+| Unmatched destination events | 0 |
+| Amount mismatches | 0 |
+| Source-only GUIDs in captured set | 0 |
+
+The machine-readable summary is updated in `targets/usdt0/evidence/2026-10-11-cross-chain-guid-correlation.json`. The CI artifact is [run #54 evidence](https://github.com/Loofy147/Bounties/actions/runs/38141456942) (artifact ID `11703037963`, SHA-256 `00ffd993c1f85c82e9197f4cf42a8944b768d7241d9aa9ee311177fd42562968`). It contains `config.json`, `cross-chain-guid-correlation.json`, `unlock.json`, and the generated npm lockfile.
+
+### Interpretation and boundary
+
+This is strong bounded, experimentally supported evidence that every destination delivery in the captured interval corresponds to an IOTA L1 OFT send with the same LayerZero GUID and exact raw amounts. It is not an unbounded proof over later blocks, not a complete proof of LayerZero endpoint verification, and not a vulnerability claim. The local-fork boundary test still impersonates the Endpoint to exercise OApp caller/peer checks; it does not exercise Endpoint proof verification.
+
+**Current status:** `LZ-CROSSCHAIN-GUID-CORRELATION-01 = EXPERIMENTALLY_SUPPORTED (162/162)`; target vulnerability status remains **NONE_CLAIMED**.
+
+## Receiver authorization matrix — 2026-10-11
+
+**Result: PASS — CI run #61**, commit `822e3c188a6fcfeb58e36968d2fa4cfa80f04278`:
+https://github.com/Loofy147/Bounties/actions/runs/38141738075
+
+The local-fork receiver test now independently checks four negative boundaries before the positive control:
+
+1. An unauthorized actor cannot mutate the peer configuration with `setPeer`.
+2. A non-Endpoint caller cannot invoke `lzReceive`, even when the supplied origin contains the configured peer.
+3. An Endpoint call with the wrong peer is rejected.
+4. An Endpoint call with the correct peer but the wrong source EID is rejected.
+
+The positive control succeeds only with Endpoint caller + the configured peer + the configured source EID, releasing exactly 1 USDT on the local fork. Recipient balance delta and Lockbox balance delta each equal 1,000,000 raw USDT units.
+
+This isolates the Endpoint authorization gate from peer and source-EID validation. It does **not** test Endpoint packet-proof verification, replay protection inside the Endpoint, or demonstrate a target-level vulnerability.
+
+Run #61 re-ran the full 162/162 captured-history GUID+amount reconciliation successfully. Its artifact (`11702778923`, SHA-256 `5792695c6035f7cb1993b09f7584fcd930060c014629ca6838d74104405ba8df`) was downloaded and inspected. `unlock.json` records all four rejections plus exact-value unlock; `cross-chain-guid-correlation.json` records 162 matching destination/source messages and zero unmatched / amount-mismatch / source-only records.
+
+Current status:
+- Full captured-history message/accounting correspondence: **EXPERIMENTALLY_SUPPORTED (162/162)**.
+- Local-fork Endpoint/peer/EID receiver boundary: **PASS**.
+- Target vulnerability status: **NONE_CLAIMED**.

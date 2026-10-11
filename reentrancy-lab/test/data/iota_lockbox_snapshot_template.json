@@ -1,0 +1,53 @@
+{
+  "schema_version": "layerzero-local-fork-snapshot/v0.1",
+  "target": {
+    "program": "USDT0 / Immunefi",
+    "oapp": "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414",
+    "chain_id": 1,
+    "local_eid": 30101,
+    "remote_eid": 30423
+  },
+  "block": {
+    "number": 0,
+    "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "rpc_provenance": "UNPOPULATED_LOCAL_FORK_PLACEHOLDER"
+  },
+  "code_identity": {
+    "proxy": "0x0000000000000000000000000000000000000000",
+    "implementation": "0x0000000000000000000000000000000000000000",
+    "runtime_match": "UNKNOWN"
+  },
+  "endpoint": {
+    "address": "0x1a44076050125825900e736c501f859c50fE728c"
+  },
+  "receive_path": {
+    "app_receive_library": null,
+    "default_receive_library": null,
+    "effective_receive_library": null,
+    "is_default": true,
+    "timeout": {
+      "library": null,
+      "expiry_block": null
+    }
+  },
+  "peer": {
+    "remote_eid": 30423,
+    "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "receive_uln": {
+    "status": "UNRESOLVED",
+    "required_dvns": [],
+    "optional_dvns": [],
+    "optional_threshold": 0,
+    "confirmations": 0,
+    "resolution_provenance": []
+  },
+  "send_context": {
+    "executor": null,
+    "max_message_size": null
+  },
+  "provenance": {
+    "rpc": "UNPOPULATED",
+    "source_revision": "LayerZero-v2/main:c656547812047d3db46987a161930cc3525eb69e"
+  }
+}

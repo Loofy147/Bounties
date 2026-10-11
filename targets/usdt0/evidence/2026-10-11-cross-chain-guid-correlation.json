@@ -1,0 +1,260 @@
+{
+  "captured_at": "2026-10-11",
+  "status": "PASS",
+  "test": "LZ-CROSSCHAIN-GUID-CORRELATION-01",
+  "method": "Read-only correlation of sampled and full captured Ethereum Lockbox delivery history to IOTA L1 OFTSentEvent records using the LayerZero V2 GUID computed from PacketDelivered origin fields.",
+  "source": {
+    "chain": "IOTA L1 mainnet (Move)",
+    "graphql_endpoint": "https://graphql.mainnet.iota.cafe/graphql",
+    "event_type": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902::oft::OFTSentEvent",
+    "destination_eid": 30101,
+    "event_fields_checked": [
+      "guid",
+      "dst_eid",
+      "amount_sent_ld",
+      "amount_received_ld",
+      "transactionBlock.digest"
+    ]
+  },
+  "destination": {
+    "chain": "Ethereum mainnet",
+    "lockbox": "0xaef027f94008430bf4fc27ffabb49ea6f1dd3414",
+    "endpoint": "0x1a44076050125825900e736c501f859c50fe728c",
+    "source_eid": 30423,
+    "peer": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902"
+  },
+  "scan": {
+    "pages": 4,
+    "page_size": 50,
+    "iota_events_scanned": 162,
+    "time_window_cutoff": "2026-09-16T13:50:59.000Z",
+    "pagination_exhausted": true,
+    "stopped_by_time_window": false
+  },
+  "result": {
+    "ethereum_samples": 15,
+    "guid_correlated": 15,
+    "uncorrelated": 0,
+    "destination_eid_matches": 15,
+    "source_amount_sent_matches_ethereum_usdt_transfer": 15,
+    "source_amount_received_matches_ethereum_usdt_transfer": 15,
+    "target_vulnerability_claimed": false
+  },
+  "constraints": [
+    "All observations were read-only. No production transaction was submitted and no production state was mutated.",
+    "The source-side event was matched by GUID, destination EID, and token amount fields. OFTSentEvent does not itself expose the eventual destination recipient address.",
+    "Recipient consistency was checked on the Ethereum receipt among USDT Transfer, OFTReceived, and PacketDelivered.",
+    "The local-fork caller/peer controls do not exercise LayerZero Endpoint proof verification and do not establish absence of vulnerabilities.",
+    "The full-history destination census is limited to the immutable Etherscan snapshot from blocks 25997621 through 26167014. Each entry is validated against its mined receipt in CI; the snapshot does not claim later blocks.",
+    "Public RPC eth_getLogs archive queries were not relied on: the Alchemy public endpoint capped the range at 100 blocks and PublicNode required an archive token. The captured event set was obtained through a read-only Etherscan log query.",
+    "Follow-up local-fork run #61 separately verified rejection of a non-Endpoint caller supplying the correct peer and of the correct peer paired with an incorrect source EID. The valid Endpoint+peer control released exactly 1 USDT on the local fork."
+  ],
+  "ci": {
+    "workflow": "USDT0 IOTA Lockbox Local Fork",
+    "run_number": 41,
+    "run_id": 38140745121,
+    "head_sha": "c0cd53f50f3243af71650ed35231c6767f2a8253",
+    "url": "https://github.com/Loofy147/Bounties/actions/runs/38140745121",
+    "artifact": "usdt0-iota-local-fork-evidence",
+    "artifact_id": 11703261539,
+    "artifact_sha256": "dc69f11b28561f903ea0c862991a8278ae848ccec7a512390f7637e0ac8d6313"
+  },
+  "correlations": [
+    {
+      "ethereum_tx": "0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e",
+      "ethereum_block": 26132886,
+      "iota_source_tx": "595i9yddsKkACKXVaDL2gsnw1bwS9KZfc72iT4BSRt4o",
+      "guid": "0x056aa04860b55984420b0bb4c0dd851f438256baa920332fa07f81f4c0135f3d",
+      "amount_raw": "15730266080",
+      "recipient": "0xf51cff050f1079e9db735090731c33d39d768ece"
+    },
+    {
+      "ethereum_tx": "0x9a251a09feca4e86f2c80e7da1327c212973469c917a082dfddb2dcf0ba1931c",
+      "ethereum_block": 26132580,
+      "iota_source_tx": "8puQCYKB1TKEtuCkuyutmUWKdSEpFsyiX7tnJFw3TWtc",
+      "guid": "0xb58fb7e1c671188e1178a07cdc7e1cc044668a8bf9719345f60dbf65e9814f8e",
+      "amount_raw": "500000000",
+      "recipient": "0x6e59426c652c87060fc0378e1181a5013b0251fb"
+    },
+    {
+      "ethereum_tx": "0xb72559dd23bffe2a575ce2e231b6d1659983eda39f4cb66f1e7ab629bff54936",
+      "ethereum_block": 26130982,
+      "iota_source_tx": "6UcYBF4YH9NSHXauTWRVs3JSHYUVvSc2Wq9oUKHXBVaC",
+      "guid": "0x8c3cd8518af86c6779449b9aa8f1bb86ea5c6393a48a0cb91741331fbafce009",
+      "amount_raw": "1000000",
+      "recipient": "0xfb602a96d5dea984d768b38629a93a73125936e0"
+    },
+    {
+      "ethereum_tx": "0xf993eade000f6348bdf89922f5862fa08af3a66643fdea3a986ddec0ad34c603",
+      "ethereum_block": 26130522,
+      "iota_source_tx": "4SbdGKf472GUk7Fu6A1rwtzZcCp8pvS6mXBU4MTJTcm4",
+      "guid": "0x7183e7ba6a1c436c3c02ca65191b2d727c41a4a42494412311bb83b60d68700a",
+      "amount_raw": "5000000",
+      "recipient": "0xcf6b14efb50691982724251e0e94641b4526feea"
+    },
+    {
+      "ethereum_tx": "0x2579e2d97a196a8225712d937338d82b9d5b06583993cbfeb1908fb817ec3048",
+      "ethereum_block": 26130388,
+      "iota_source_tx": "5WLBLkV9YQ1kFdfxi2suTq28K8qXvgMMvaj9vdGZ9NAV",
+      "guid": "0xf5595851ecee1ce37092d18ebe4291a2f9d86a0beeef3fc5e5209b9435d597d2",
+      "amount_raw": "10000000",
+      "recipient": "0x1eb3fb84f28cdf2690b10c99281a21ffde0f3183"
+    },
+    {
+      "ethereum_tx": "0xca1641bb1a1f9e4885f02e4fbdbd01f801113963c732d9595d32b15ca7029ac6",
+      "ethereum_block": 26130355,
+      "iota_source_tx": "GoY4J2Nwjg88b8WuZT7wvDXmtU61qPjztfhEBnAadpSk",
+      "guid": "0xd753a32910d3a5d6412483b93c73853775bd9a6f1fcc440a24d7dc3f0dc9ee91",
+      "amount_raw": "5000000",
+      "recipient": "0xcf6b14efb50691982724251e0e94641b4526feea"
+    },
+    {
+      "ethereum_tx": "0x3b20c935bcb048a77ddd03e68bc0b8dcb33c097d53c88f68f49decd3820f62cc",
+      "ethereum_block": 26130312,
+      "iota_source_tx": "HvoCFP3xGn5FpRP8S4tz5zdthezF9SAyhRh82bczNVqC",
+      "guid": "0x74ffcf40ff474f7cf3ad6f36e6d62e567621c423acb45e79784b8fbcae93d937",
+      "amount_raw": "10000000",
+      "recipient": "0x1eb3fb84f28cdf2690b10c99281a21ffde0f3183"
+    },
+    {
+      "ethereum_tx": "0xa4a418abdc9c26e8f6d4f0a4c23860bb3e90d1dfca39e68bd93ca774bcfa5992",
+      "ethereum_block": 26127561,
+      "iota_source_tx": "EXG3WfxaKDzpYofSXYsudj7jGP4i1DK6UnLraUeg2CGc",
+      "guid": "0xcec87894bca200ddbdb3eabaf15facc863b564c112ad60322f8417dc3da8d272",
+      "amount_raw": "5000000",
+      "recipient": "0x7de5c505f7cb10f476d1e2dbe4816a6b71238354"
+    },
+    {
+      "ethereum_tx": "0x34d6f130b7097ed71324ef75a177876ccc59af2528931d3dbd9bd1569ff6a357",
+      "ethereum_block": 26127345,
+      "iota_source_tx": "JBV1qT3GU68YDmYprroH8U4X6g73kWrshrFHnsS1yJb2",
+      "guid": "0xd140501e3983cdf3fd934179e790571cfb8192c7407d958c92ae86483bff1a87",
+      "amount_raw": "115588508",
+      "recipient": "0x1a303003d92b274596b14e4d888d08934f3f05de"
+    },
+    {
+      "ethereum_tx": "0xc2ce401ac3ac8a0d61b9bc9f0a5edbcdb22b6cf45990f98c0ca8e208783c8f3a",
+      "ethereum_block": 26127199,
+      "iota_source_tx": "7NhEuggRHos8tWSrCrQN9ABdFvBGyfDSBrNiJfAqQcBa",
+      "guid": "0xb7c904cab3b5a9f0b55caac74738f988c3901801ee8987d3d4cf4fb5ee016ed1",
+      "amount_raw": "5000000",
+      "recipient": "0xf51cff050f1079e9db735090731c33d39d768ece"
+    },
+    {
+      "ethereum_tx": "0x544d1a917c2ca55d5548aa0698355d890396035ef0b997200d9efba12b9522b5",
+      "ethereum_block": 25997621,
+      "iota_source_tx": "GEhiHfjfRPTLKBj1yPnJ12eaFTgSSsnWZG1BiH1VXX7r",
+      "guid": "0xf725540769fffca22fafbc8543f245877595ddf0a73cd9a8eb3c20f7aaaaf278",
+      "amount_raw": "100000",
+      "recipient": "0x1a6362ad64ccff5902d46d875b36e8798267d154"
+    },
+    {
+      "ethereum_tx": "0x689918ddb4f667a21ab03959383c67f0d1ec28927f3894c4165184d52fa23446",
+      "ethereum_block": 25997754,
+      "iota_source_tx": "6qey8MkR9C3XfMggaai1R4XJbzEfWrgjDZgfA7ympeSH",
+      "guid": "0x5a1d9a43a21c7839115d32ed9ce0096cbe0e40750498c559e7d9db4e8fc5004f",
+      "amount_raw": "1",
+      "recipient": "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76"
+    },
+    {
+      "ethereum_tx": "0x7baa027dc4bd35574c0f3a539114f76161f5b12406cc8f37905b2f820ced44be",
+      "ethereum_block": 25997757,
+      "iota_source_tx": "2Zm3iaXX4BPMWzGuNRtLsCeeeTFr3MV6CBUD8B1n64Un",
+      "guid": "0x45a45798762226055b351c165cd1bd84e8f151b4f0641a9060dc09c65ddd67d0",
+      "amount_raw": "1",
+      "recipient": "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76"
+    },
+    {
+      "ethereum_tx": "0x4b84e628e2c0ccb50a67a6db08fae93ba82152b11c721af00fa28442968f0ae4",
+      "ethereum_block": 26002149,
+      "iota_source_tx": "7G938xJSCLEsaHqVr8c65gmkQiMQZtUMSxyUdskjFDb5",
+      "guid": "0xd53d930f88ffd904f010094d424039748b0498a8e9d7d10716efe97e4acd21d3",
+      "amount_raw": "500",
+      "recipient": "0x6821ec1fcd40ad5268d3b5607e49441d4e7eb4e7"
+    },
+    {
+      "ethereum_tx": "0x747dc0e5594dd9ac1af414d0ed366e5135e100de73f7061da4654d50e3f9ab2b",
+      "ethereum_block": 26003474,
+      "iota_source_tx": "Frxzj7vxtbznRRu62DeVvufcwLNu22egPnpMDw1WG4fd",
+      "guid": "0x0cf4fc3ec49764e07a0143c1e8eef84afcc7e80c0762962bce1151c15cdef147",
+      "amount_raw": "1",
+      "recipient": "0xdb6da94fedef11b2119b4088b89664fb9a3cb658"
+    }
+  ],
+  "full_history_reconciliation": {
+    "status": "PASS",
+    "destination_snapshot": "targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json",
+    "destination_snapshot_commit": "05ec6ca849c01d0b87b5409b51fdf56aaef08fdb",
+    "destination_query": {
+      "source": "Etherscan read-only event-log query",
+      "chain_id": 1,
+      "emitting_contract": "0xaef027f94008430bf4fc27ffabb49ea6f1dd3414",
+      "event_topic0": "0xefed6d3500546b29533b128a29e3a94d70788727f0507505ac12eaf2e578fd9c",
+      "from_block": 25997621,
+      "to_block": 26167014,
+      "returned_count": 162,
+      "malformed_records": 0
+    },
+    "source_query": {
+      "source": "IOTA L1 GraphQL read-only query",
+      "event_type": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902::oft::OFTSentEvent",
+      "destination_eid": 30101,
+      "page_size": 50,
+      "pages": 4,
+      "events_scanned": 162,
+      "pagination_exhausted": true,
+      "time_window_cutoff": "2026-09-16T13:50:59.000Z"
+    },
+    "checks": {
+      "destination_oft_received_receipt_matches": 162,
+      "packet_delivered_guid_matches": 162,
+      "usdt_lockbox_to_recipient_transfer_matches": 162,
+      "source_events_matched_by_guid": 162,
+      "destination_eid_matches": 162,
+      "amount_sent_ld_matches_raw_usdt_amount": 162,
+      "amount_received_ld_matches_raw_usdt_amount": 162,
+      "unmatched_destination_events": 0,
+      "amount_mismatches": 0,
+      "source_only_guid_count": 0
+    },
+    "interpretation": "Every OFTReceived event in the captured Lockbox block interval matched a successful mined receipt and a corresponding IOTA L1 OFTSentEvent by GUID, destination EID, and exact raw token amounts. This is bounded captured-history evidence, not a claim beyond the queried block range or proof of general protocol correctness."
+  },
+  "full_history_ci": {
+    "workflow": "USDT0 IOTA Lockbox Local Fork",
+    "run_number": 61,
+    "run_id": 38141738075,
+    "head_sha": "822e3c188a6fcfeb58e36968d2fa4cfa80f04278",
+    "url": "https://github.com/Loofy147/Bounties/actions/runs/38141738075",
+    "conclusion": "success",
+    "artifact": "usdt0-iota-local-fork-evidence",
+    "artifact_id": 11702778923,
+    "artifact_sha256": "5792695c6035f7cb1993b09f7584fcd930060c014629ca6838d74104405ba8df"
+  },
+  "previous_full_history_ci": {
+    "workflow": "USDT0 IOTA Lockbox Local Fork",
+    "run_number": 54,
+    "run_id": 38141456942,
+    "head_sha": "9441494de4eb59f6a7e8a1f0bbfb96cdcd2d18cb",
+    "url": "https://github.com/Loofy147/Bounties/actions/runs/38141456942",
+    "conclusion": "success",
+    "artifact": "usdt0-iota-local-fork-evidence",
+    "artifact_id": 11703037963,
+    "artifact_sha256": "00ffd993c1f85c82e9197f4cf42a8944b768d7241d9aa9ee311177fd42562968"
+  },
+  "local_fork_boundary_controls": {
+    "ci_run_id": 38141738075,
+    "ci_run_number": 61,
+    "conclusion": "success",
+    "unauthorized_owner_set_peer_rejected": true,
+    "non_endpoint_lz_receive_rejected_with_correct_peer": true,
+    "wrong_peer_rejected": true,
+    "correct_peer_wrong_source_eid_rejected": true,
+    "endpoint_and_correct_peer_unlock_succeeded": true,
+    "test_amount_raw": "1000000",
+    "recipient_before_raw": "0",
+    "recipient_after_raw": "1000000",
+    "lockbox_before_raw": "161245710241",
+    "lockbox_after_raw": "161244710241",
+    "limitation": "These checks ran on a local fork. Endpoint impersonation was used only to isolate the OApp receiver boundary; this does not test Endpoint packet proof verification or establish a vulnerability."
+  }
+}

@@ -1,0 +1,103 @@
+program: USDT0
+program_platform: Immunefi
+scope_revision: 2026-09-30
+target_name: OApp Adapter Ethereum (IOTA)
+target_type: EVM smart contract
+chain:
+  name: Ethereum
+  chain_id: 1
+  layerzero_eid: 30101
+address: "0xAEf027F94008430BF4Fc27FFABB49ea6F1dd3414"
+paired_route:
+  destination_network: IOTA L1
+  destination_layerzero_eid: 30423
+  iota_oapp_object: "0x6bd5f804a6877aa042f97a2617124bcbd4374bf7d5c9649d4bceb6d591093216"
+  iota_oft_package: "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902"
+  iota_token_coin_type: "0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0"
+  route_rule: Ethereum <-> IOTA only; IOTA USDT0 is not directly connected to other USDT0 chains
+platform_scope:
+  asset_added: 2026-09-30
+  platform_reported_funds_snapshot: "$111.6K"
+  max_bounty: "$6,000,000"
+  critical_minimum: "$50,000"
+  critical_calculation: "10% of funds directly affected, capped at $6M for EVM-compatible impact"
+  medium_griefing_flat: "$5,000"
+  poc_required: true
+  kyc_required: true
+  critical_impact_priority: "direct theft, protocol insolvency, permanent freezing"
+  medium_impact: "griefing"
+testing_rules:
+  allowed_mode: "local fork of public mainnet/testnet code"
+  prohibited:
+    - mainnet testing
+    - public-testnet deployed-code testing
+    - third-party smart-contract testing
+    - pricing-oracle testing
+    - denial-of-service
+    - high-traffic automated service testing
+    - phishing/social engineering
+    - leaked-key/credential dependent attack
+    - privileged-address attack without additional privilege modification
+research_status:
+  overall: OPEN
+  scope: ESTABLISHED
+  deployment_address: ESTABLISHED
+  production_code_version: UNKNOWN
+  implementation_address: ESTABLISHED
+  implementation_address_value: "0x1ab288f49e18884b3a5358f4079ca0f40b891d99"
+  proxy_type: ESTABLISHED
+  proxy_type_value: EIP-1967
+  peer_configuration: UNKNOWN
+  endpoint_address: ESTABLISHED
+  endpoint_address_value: "0x1a44076050125825900e736c501f859c50fE728c"
+  dvn_configuration: UNKNOWN
+  audit_coverage: UNKNOWN
+  audit_version_correspondence: UNKNOWN
+  prior_disclosure: UNKNOWN
+  vulnerability_status: NONE_CLAIMED
+  testing_authorization: "Do not test this deployed address directly; construct only permitted local-fork reproductions."
+priority:
+  p0: "deployment/version/audit correspondence"
+  p1:
+    - "LayerZero Endpoint + Origin + Peer boundary"
+    - "lock/unlock and mint/burn conservation"
+    - "amountLD/amountSD and dust/minAmountLD"
+    - "upgrade/initializer/storage boundary"
+  p2:
+    - "compose/callback boundary if present"
+    - "DVN/Executor configuration semantics when code-enforced"
+evidence:
+  implementation:
+    source: "Dedaub LayerZero V2 reference, live-RPC verification rechecked 2026-09-29"
+    source_url: "https://github.com/Dedaub/monitoring-cli/blob/9638b65aba28471ee2b0f81cfcf3f3ed10b686a3/packages/dedaub-skills/dedaub_skills/skills/dedaub-monitoring/references/protocols/layerzero/v2.md"
+    value: "0x1ab288f49e18884b3a5358f4079ca0f40b891d99"
+    note: "Secondary evidence; exact implementation-to-source commit still UNKNOWN."
+  endpoint:
+    source: "Dedaub LayerZero V2 reference; Ethereum EndpointV2 deployment"
+    value: "0x1a44076050125825900e736c501f859c50fE728c"
+  activity:
+    source: "Dedaub LayerZero V2 reference"
+    pinned_window_utc: "2026-09-28 00:00-12:00"
+    oft_sent_events: 5
+    oft_received_events: "not in top-50 emitter table; do not interpret as zero"
+  audits:
+    paladin:
+      reviewed_repo_commit: "e6cffe572e7d173daf76a53ae5822b102f11ccd6"
+      resolution_commit_1: "a53ae5822b71a091ab07decccbf4f3801965d31b"
+    openzeppelin_transaction_helper:
+      reviewed_repo_commit: "2ddcf81"
+    openzeppelin_erc7802_upgrade:
+      reviewed_repo: "Everdawn-Labs/usdt0-oft-contracts"
+      reviewed_change: "pull request #63"
+    note: "These establish historical audits of the USDT0 OFT codebase; they do not by themselves prove coverage of this exact deployed implementation/version."
+notes:
+  - "This target is the Ethereum-side IOTA Lockbox adapter, not the native IOTA Move OApp."
+  - "USDT0 states the IOTA route is dedicated to Ethereum only."
+  - "Current public USDT0 audit deployment index does not list this address by name; this is not evidence that no audit exists. Audit coverage remains UNKNOWN until commit/version-to-report correspondence is established."
+provenance:
+  scope: "https://immunefi.com/bug-bounty/usdt0/scope/"
+  information: "https://immunefi.com/bug-bounty/usdt0/information/"
+  deployments: "https://docs.usdt0.to/technical-documentation/deployments"
+  developer: "https://docs.usdt0.to/technical-documentation/developer"
+  audits: "https://github.com/Everdawn-Labs/usdt0-audit-reports"
+  captured: 2026-10-06

@@ -1,14 +1,13 @@
 {
   "name": "reentrancy-lab",
   "version": "1.0.0",
-  "description": "",
+  "description": "Executable smart-contract security research lab",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/layerzero_v2_boundary.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "ethers": "^5.8.0",
     "ganache": "^7.9.2",
