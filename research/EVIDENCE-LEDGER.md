@@ -1,11 +1,24 @@
-
 # Bounty Evidence Ledger
 
 This ledger prevents loss of work and prevents hypotheses from being mistaken for findings.
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; local H-E2 behavior EXPERIMENTALLY_SUPPORTED; production NativeOrderFactory source match ESTABLISHED; production residual state observed; passive scan of 6,701 resolver-cancellation events found zero non-zero rewards | audit/known-issue coverage; resolver-role eligibility; 24-hour report-window applicability; production positive-reward case UNKNOWN |
+
+## External gate update — 2026-10-08
+
+See [targets/1inch/EXTERNAL-GATES_2026-10-08.md](../targets/1inch/EXTERNAL-GATES_2026-10-08.md).
+
+New evidence recorded since the 2026-09-29 frontier:
+
+- The recorded production NativeOrderFactory address is 0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01.
+- The verified Etherscan source identifies `contracts/extensions/NativeOrderFactory.sol`, compiler v0.8.30, and matches the 4.3.4 target source exactly after normalization.
+- The live 1inch Immunefi program remains latest-tag/release scoped and currently lists governance and strategist in the privileged-address exclusion; resolver is not expressly named there. Eligibility is therefore narrowed but not closed.
+- The official audit archive's dedicated v4.3.4 report is described as a Permit2Proxy review. This does not establish NativeOrderFactory/NativeOrderImpl coverage and does not prove absence of other applicable audits.
+- Passive production evidence establishes deployed NativeOrderFactory activity, but the minimum real-world prevalence of an ordinary partial-fill residual state followed by resolver cancellation remains OPEN.
+
+No severity, bounty amount, or submission decision is assigned.
 
 ## Evidence stages
 
@@ -126,7 +139,6 @@ Applicable audit and known-issue reconciliation remains OPEN.
 
 The completed natural partial-fill run measured resolverNetTotal = -0.00006743195654982 ETH against victimResidualLoss = 0.0007 ETH. This is negative-EV for the measured local scenario, but it is not used as an impact-kill gate; current Immunefi guidance treats attacker financial risk/ROI as a feasibility consideration rather than an automatic invalidation of the underlying impact.
 
-
 For C<R and T=R-C:
 
 - total clone balance becomes R;
@@ -155,3 +167,24 @@ No severity, bounty amount, or submission decision has been assigned.
 ## Preservation rule
 
 Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
+
+
+## B0 update — 2026-10-11
+
+See [H-E2-DISPOSITION_2026-10-11.md](../targets/1inch/H-E2-DISPOSITION_2026-10-11.md) and [EXTERNAL-GATES_2026-10-08.md](../targets/1inch/EXTERNAL-GATES_2026-10-08.md).
+
+New observations:
+
+- The highest stable semantic release tag currently present in GitHub refs is 4.3.4, matching the pinned research target.
+- PR #390 explicitly records the design intent to return the clone's aggregate WETH balance to the maker, including accidental WETH left after cross-chain cancellation. This is adjacent design-intent evidence, not direct proof of duplicate disclosure of H-E2.
+- PR #422 proposed zeroing WETH allowance after cancellation to prevent refill from later accidental WETH deposits. It is closed/unmerged and is adjacent prior art, not the same reward-subtraction interaction.
+- A passive Ethereum mainnet event-topic scan from block 23,447,660 through the latest returned block 26,167,845 found 6,701 matching `NativeOrderCancelledByResolver(bytes32,uint256,uint256)` events; every decoded `resolverReward` was zero.
+- Immunefi's current information page states that vulnerabilities must be reported within 24 hours of initial discovery; later reports may receive discretionary consideration but are not guaranteed rewards. H-E2 was already recorded as a hypothesis on 2026-09-29, so eligibility timing is at risk if that wording applied at discovery. The historical effective date of the wording remains UNKNOWN.
+
+Decision:
+- H-E2 technical state remains EXPERIMENTALLY_SUPPORTED.
+- B0-1INCH remains HYPOTHESIS, not IN-SCOPE or SUBMISSION-READY.
+- Stop synthetic variants. Next work is scope/timing clarification and applicable audit/known-issue reconciliation, not another local reproduction.
+- No external submission has been made.
+
+Emitter spot-check: three distinct addresses in the passive event sample were independently traced to CREATE2 deployments from the recorded NativeOrderFactory, each with WETH deposited during creation. This validates the source family for sampled records, while the 6,701 result remains signature-wide rather than a complete emitter-address allowlist.
