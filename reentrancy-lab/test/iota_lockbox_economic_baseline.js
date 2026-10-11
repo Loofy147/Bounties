@@ -32,6 +32,7 @@ const OFT_RECEIVED =
 const PACKET_DELIVERED =
   "0x3cd5e48f9730b129dc7550f0fcea9c767b7be37837cd10e55eb35f734f4bca04";
 
+// 10 recent outflows + 5 earliest observed outflows after deployment.
 const SAMPLES = [
   {
     hash: "0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e",
@@ -79,9 +80,34 @@ const SAMPLES = [
     amount: "115588508"
   },
   {
-    hash: "0xc2ce401ac3ac8a0d61b9bc9f0a5edbcdb22b6cf4590f98c0ca8e208783c8f3a",
+    hash: "0xc2ce401ac3ac8a0d61b9bc9f0a5edbcdb22b6cf45990f98c0ca8e208783c8f3a",
     to: "0xf51cff050f1079e9db735090731c33d39d768ece",
     amount: "5000000"
+  },
+  {
+    hash: "0x544d1a917c2ca55d5548aa0698355d890396035ef0b997200d9efba12b9522b5",
+    to: "0x1a6362ad64ccff5902d46d875b36e8798267d154",
+    amount: "100000"
+  },
+  {
+    hash: "0x689918ddb4f667a21ab03959383c67f0d1ec28927f3894c4165184d52fa23446",
+    to: "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76",
+    amount: "1"
+  },
+  {
+    hash: "0x7baa027dc4bd35574c0f3a539114f76161f5b12406cc8f37905b2f820ced44be",
+    to: "0x72c659b3f95a457eb206bc6a4a1204f31b5d2e76",
+    amount: "1"
+  },
+  {
+    hash: "0x4b84e628e2c0ccb50a67a6db08fae93ba82152b11c721af00fa28442968f0ae4",
+    to: "0x6821ec1fcd40ad5268d3b5607e49441d4e7eb4e7",
+    amount: "500"
+  },
+  {
+    hash: "0x747dc0e5594dd9ac1af414d0ed366e5135e100de73f7061da4654d50e3f9ab2b",
+    to: "0xdb6da94fedef11b2119b4088b89664fb9a3cb658",
+    amount: "1"
   }
 ];
 
