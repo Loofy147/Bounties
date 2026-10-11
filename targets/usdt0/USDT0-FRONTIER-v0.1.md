@@ -392,4 +392,46 @@ Test-boundary caveat: the local-fork test impersonates the Endpoint to exercise 
 - Endpoint/peer receiver-boundary controls and exact-value release: **PASS on a local fork**.
 - Target vulnerability status: **NONE_CLAIMED**.
 
-Next discriminating work is cross-chain state correspondence for the sampled messages (source-side IOTA burn/message identity versus Ethereum delivery), plus verifying the corrected workflow captures its evidence artifacts. No live-target probing is authorized or required.
+The source-side/destination-side correspondence and artifact-capture gates are now closed for this sample set. The next discriminating work should shift to expanding historical coverage or checking additional independent economic/state invariants—not generating exploit claims from this successful control. All observations remain read-only; no live-target probing is authorized or required.
+
+
+## Source-to-destination GUID correspondence — 2026-10-11
+
+**Result: PASS — 15/15 sampled messages correlated.**
+
+GitHub Actions run [#41](https://github.com/Loofy147/Bounties/actions/runs/38140745121) on head `c0cd53f50f3243af71650ed35231c6767f2a8253` ran the read-only `LZ-CROSSCHAIN-GUID-CORRELATION-01` test.
+
+The test reconstructs the LayerZero V2 GUID from the mined Ethereum `PacketDelivered` origin tuple:
+`nonce, srcEid, sender, dstEid, receiver`.
+
+It then queries IOTA L1's fully-qualified `OFTSentEvent` and requires the same GUID. For all 15 sampled Ethereum Lockbox unlocks:
+
+- a source-side IOTA L1 `OFTSentEvent` was found by GUID;
+- the destination EID matched Ethereum EID `30101`;
+- `amount_sent_ld` and `amount_received_ld` each equaled the raw USDT transfer amount observed in the corresponding Ethereum receipt;
+- no sampled Ethereum transaction remained uncorrelated.
+
+The read-only query paginated through 162 source-side `OFTSentEvent` records over four pages (page size 50). The query exhausted the available results for that fully-qualified event type; it did not stop early at the time cutoff.
+
+First correlation:
+- Ethereum transaction: `0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e`
+- IOTA L1 source transaction: `595i9yddsKkACKXVaDL2gsnw1bwS9KZfc72iT4BSRt4o`
+- GUID: `0x056aa04860b55984420b0bb4c0dd851f438256baa920332fa07f81f4c0135f3d`
+- Raw amount: `15730266080` (15,730.26608 USDT, six decimals)
+
+Permanent machine-readable sample ledger:
+`targets/usdt0/evidence/2026-10-11-cross-chain-guid-correlation.json`.
+
+CI artifact `usdt0-iota-local-fork-evidence` (artifact ID `11703261539`) was downloaded and inspected. It contains:
+- `artifacts/iota-lockbox-fork/config.json`
+- `artifacts/iota-lockbox-fork/cross-chain-guid-correlation.json`
+- `artifacts/iota-lockbox-fork/unlock.json`
+- `reentrancy-lab/package-lock.json`
+
+The completed workflow also passed the pinned config replay, the 15/15 Ethereum receipt invariant sample, the local-fork unauthorized `setPeer` rejection, wrong-peer rejection, and exact 1-USDT local-fork unlock control.
+
+### Evidence boundary
+
+This establishes sampled state/message correspondence, not general protocol correctness. `OFTSentEvent` itself does not expose the destination recipient address; recipient consistency is checked on the Ethereum side across `Transfer`, `OFTReceived`, and `PacketDelivered`. The local-fork test impersonates the Endpoint only to exercise the OApp receiver boundary; it does not exercise Endpoint proof verification and does not establish a replay vulnerability.
+
+The target vulnerability status remains **NONE_CLAIMED**.
