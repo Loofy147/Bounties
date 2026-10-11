@@ -484,3 +484,26 @@ The machine-readable summary is updated in `targets/usdt0/evidence/2026-10-11-cr
 This is strong bounded, experimentally supported evidence that every destination delivery in the captured interval corresponds to an IOTA L1 OFT send with the same LayerZero GUID and exact raw amounts. It is not an unbounded proof over later blocks, not a complete proof of LayerZero endpoint verification, and not a vulnerability claim. The local-fork boundary test still impersonates the Endpoint to exercise OApp caller/peer checks; it does not exercise Endpoint proof verification.
 
 **Current status:** `LZ-CROSSCHAIN-GUID-CORRELATION-01 = EXPERIMENTALLY_SUPPORTED (162/162)`; target vulnerability status remains **NONE_CLAIMED**.
+
+## Receiver authorization matrix — 2026-10-11
+
+**Result: PASS — CI run #61**, commit `822e3c188a6fcfeb58e36968d2fa4cfa80f04278`:
+https://github.com/Loofy147/Bounties/actions/runs/38141738075
+
+The local-fork receiver test now independently checks four negative boundaries before the positive control:
+
+1. An unauthorized actor cannot mutate the peer configuration with `setPeer`.
+2. A non-Endpoint caller cannot invoke `lzReceive`, even when the supplied origin contains the configured peer.
+3. An Endpoint call with the wrong peer is rejected.
+4. An Endpoint call with the correct peer but the wrong source EID is rejected.
+
+The positive control succeeds only with Endpoint caller + the configured peer + the configured source EID, releasing exactly 1 USDT on the local fork. Recipient balance delta and Lockbox balance delta each equal 1,000,000 raw USDT units.
+
+This isolates the Endpoint authorization gate from peer and source-EID validation. It does **not** test Endpoint packet-proof verification, replay protection inside the Endpoint, or demonstrate a target-level vulnerability.
+
+Run #61 re-ran the full 162/162 captured-history GUID+amount reconciliation successfully. Its artifact (`11702778923`, SHA-256 `5792695c6035f7cb1993b09f7584fcd930060c014629ca6838d74104405ba8df`) was downloaded and inspected. `unlock.json` records all four rejections plus exact-value unlock; `cross-chain-guid-correlation.json` records 162 matching destination/source messages and zero unmatched / amount-mismatch / source-only records.
+
+Current status:
+- Full captured-history message/accounting correspondence: **EXPERIMENTALLY_SUPPORTED (162/162)**.
+- Local-fork Endpoint/peer/EID receiver boundary: **PASS**.
+- Target vulnerability status: **NONE_CLAIMED**.
