@@ -336,28 +336,60 @@ Reproduce the pinned production state on the local fork and compare:
 
 Only after that gate passes, run target-specific message-boundary and lock/unlock accounting mutations.
 
-## First empirical economic baseline — 2026-10-06
-
-The first target-specific economic invariant has now been exercised against 10 already-mined Lockbox outflow transactions using read-only Alchemy receipt retrieval.
+## Empirical economic baseline — 2026-10-11
 
 ### LZ-ACCOUNT-UNLOCK-01 — sampled Ethereum-side execution path
 
-Each sampled outflow contained:
+The executable test now checks **15 mined Lockbox outflows**: 10 recent outflows plus 5 earliest observed outflows after deployment, spanning blocks 25,997,621 through 26,132,886.
 
-```text
-ERC20 Transfer: Lockbox -> recipient
-        == exact amount ==
+Each sampled receipt must contain:
+```
+USDT Transfer: Lockbox -> recipient
+  == exact amount ==
 OFTReceived: srcEid 30423 -> same recipient
-        +
+  +
 Endpoint PacketDelivered: srcEid 30423, sender == configured IOTA peer, receiver == Lockbox
 ```
 
-Result: 10/10 PASS.
+Result: **15/15 PASS** in GitHub Actions run [#24](https://github.com/Loofy147/Bounties/actions/runs/38139695620), head `543ea3d9ec7b681a8118279308e8c14ed01eafce`.
 
 Status: EXPERIMENTALLY_SUPPORTED (sampled).
 
-This is deliberately not promoted to a universal invariant proof: the sample is not exhaustive, it does not reconcile the corresponding IOTA-side burn/mint state, and it does not test privileged recovery paths.
+Limitations:
+- This is not an exhaustive proof over all historical outflows.
+- It proves the Ethereum-side receipt pattern, not the corresponding IOTA-side burn/mint state.
+- It does not test privileged recovery paths.
+- No production contract was modified or sent a test transaction.
 
-Evidence: `targets/usdt0/evidence/2026-10-06-iota-lockbox-economic-baseline.json`.
+Evidence remains at `targets/usdt0/evidence/2026-10-06-iota-lockbox-economic-baseline.json`. The executable test now contains the same 15 samples; a malformed 32-byte transaction hash in the former list was corrected against the read-only receipt/log record.
 
-The corresponding executable check is `reentrancy-lab/test/iota_lockbox_economic_baseline.js`; its JavaScript syntax was independently parser-checked and the same 10 receipts were evaluated through the connected Alchemy read path. CI execution remains OPEN until an authoritative GitHub Actions run is observed.
+## Local-fork config / receiver-boundary run — 2026-10-11
+
+GitHub Actions run [#24](https://github.com/Loofy147/Bounties/actions/runs/38139695620) completed **SUCCESS** after the following checks:
+
+- pinned config block number and block hash match the stored snapshot;
+- deployed implementation, owner, peer, Endpoint, Endpoint EID, receive library, default receive library and timeout match the pinned evidence;
+- direct receive-side ULN state equals the event-folded configuration at the pinned block;
+- the recorded `optionalDVNCount=255` event value is retained as the raw `NIL_DVN_COUNT` sentinel, whose semantic meaning is “no optional DVNs”; the getter correctly returns an effective optional-DVN count/list length of zero;
+- unauthorized `setPeer` rejected on the local fork;
+- wrong-origin peer rejected at the OApp receiver boundary;
+- a valid Endpoint+peer origin released exactly 1 USDT in the **local fork**.
+
+The LayerZero source defines `Origin` in this order: `uint32 srcEid; bytes32 sender; uint64 nonce`. The test ABI was corrected to match the source. Source: [ILayerZeroEndpointV2.sol](https://github.com/LayerZero-Labs/LayerZero-v2/blob/9c741e7f9790639537b1710a203bcdfd73b0b9ac/packages/layerzero-v2/evm/protocol/contracts/interfaces/ILayerZeroEndpointV2.sol).
+
+Test-boundary caveat: the local-fork test impersonates the Endpoint to exercise the OApp's caller/peer checks and token-accounting response. It does **not** exercise Endpoint packet proof verification or establish a target-level replay vulnerability.
+
+## CI defects found and repaired — 2026-10-11
+
+1. The first workflow failed before dependency installation because `actions/setup-node` referenced a non-existent `reentrancy-lab/package-lock.json`; `npm ci` would also have failed without that file.
+2. The workflow temporarily uses `npm install --ignore-scripts --no-audit --no-fund` and includes the generated lockfile in the run artifact. **A lockfile is not yet committed to the branch**, so dependency-resolution reproducibility is still an open engineering debt.
+3. The artifact upload path pointed to `reentrancy-lab/artifacts/iota-lockbox-fork`, while the test writes to repository-root `artifacts/iota-lockbox-fork`. The workflow was corrected in commit `f055e892759e2ac481167d5ff575a6737de908f6`; its new run must verify that both `config.json` and `unlock.json` are captured.
+
+## Current decision
+
+- Pinned config replay / event-fold comparison: **PASS on the local fork**.
+- LZ-ACCOUNT-UNLOCK-01: **EXPERIMENTALLY_SUPPORTED for the 15 sampled Ethereum receipts**.
+- Endpoint/peer receiver-boundary controls and exact-value release: **PASS on a local fork**.
+- Target vulnerability status: **NONE_CLAIMED**.
+
+Next discriminating work is cross-chain state correspondence for the sampled messages (source-side IOTA burn/message identity versus Ethereum delivery), plus verifying the corrected workflow captures its evidence artifacts. No live-target probing is authorized or required.
