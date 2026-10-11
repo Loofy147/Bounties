@@ -227,11 +227,21 @@ async function main() {
     (p) => p.ethereumTx ===
       "0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e"
   );
-  assert(regression && regression.nonce === "1888",
-    "GUID regression sample no longer has expected nonce");
+  assert(regression,
+    "GUID regression transaction was not found in the normalized 15-sample set");
+  assert(regression.nonce === "1888",
+    "GUID regression nonce mismatch: observed=" + regression.nonce +
+      " srcEid=" + regression.sourceEid +
+      " sender=" + regression.sender +
+      " receiver=" + regression.receiver +
+      " guid=" + regression.guid);
   assert(regression.guid ===
     "0x992b3595a78d6667723dd18fb49aac721ddeac04aebcdecdd21851c43cc6ff38",
-    "GUID formula regression mismatch: " + (regression && regression.guid));
+    "GUID formula regression mismatch: nonce=" + regression.nonce +
+      " srcEid=" + regression.sourceEid +
+      " sender=" + regression.sender +
+      " receiver=" + regression.receiver +
+      " guid=" + regression.guid);
 
   const wanted = new Map(ethPackets.map((p) => [p.guid, p]));
   const matched = new Map();
