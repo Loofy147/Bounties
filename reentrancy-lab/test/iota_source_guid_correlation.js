@@ -22,6 +22,12 @@ const { ethers } = require("ethers");
 const RPC_URL =
   process.env.ALCHEMY_ETH_RPC ||
   "https://eth-mainnet.g.alchemy.com/public";
+// A separate public RPC is used only for historical eth_getLogs. The Alchemy
+// public endpoint currently caps getLogs ranges at 100 blocks, while this
+// read-only census covers ~169k blocks. Receipt/fork checks stay on RPC_URL.
+const LOG_RPC_URL =
+  process.env.ETHEREUM_LOG_RPC_URL ||
+  "https://ethereum.publicnode.com";
 const IOTA_GRAPHQL_URL =
   process.env.IOTA_L1_GRAPHQL_URL ||
   "https://graphql.mainnet.iota.cafe/graphql";
@@ -190,7 +196,10 @@ async function main() {
   assert(samples.length === 15, "expected 15 baseline samples, got " + samples.length);
 
   const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+  const logProvider = new ethers.providers.JsonRpcProvider(LOG_RPC_URL);
   const network = await provider.getNetwork();
+  const logNetwork = await logProvider.getNetwork();
+  assert(logNetwork.chainId === 1, "historical log RPC must point to Ethereum mainnet");
   assert(network.chainId === 1, "RPC must point to Ethereum mainnet");
 
   const ethPackets = [];
@@ -380,7 +389,7 @@ async function main() {
   for (let i = 0; i < evmLogRanges.length; i += 3) {
     const batch = evmLogRanges.slice(i, i + 3);
     const batchLogs = await Promise.all(batch.map((range) =>
-      provider.getLogs({
+      logProvider.getLogs({
         address: LOCKBOX,
         topics: [OFT_RECEIVED],
         fromBlock: range.fromBlock,
@@ -544,6 +553,8 @@ async function main() {
     destination: {
       chain: "Ethereum mainnet",
       lockbox: LOCKBOX,
+      receiptRpc: RPC_URL,
+      historicalLogRpc: LOG_RPC_URL,
       endpoint: ENDPOINT,
       sourceEid: SOURCE_EID,
       peer: PEER
