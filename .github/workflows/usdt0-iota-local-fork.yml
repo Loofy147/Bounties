@@ -41,8 +41,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
-          cache-dependency-path: reentrancy-lab/package-lock.json
 
       - name: Setup Foundry / Anvil
         uses: foundry-rs/foundry-toolchain@v1
@@ -50,7 +48,9 @@ jobs:
           version: stable
 
       - name: Install lab dependencies
-        run: npm ci
+        # This branch currently has no package-lock.json. Use npm install until
+        # the generated lockfile can be committed; npm ci would fail here.
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Reproduce pinned configuration state
         run: node test/iota_lockbox_fork.js
@@ -70,5 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: usdt0-iota-local-fork-evidence
-          path: reentrancy-lab/artifacts/iota-lockbox-fork
+          path: |
+            reentrancy-lab/artifacts/iota-lockbox-fork
+            reentrancy-lab/package-lock.json
           if-no-files-found: warn
