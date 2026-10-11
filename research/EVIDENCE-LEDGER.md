@@ -6,6 +6,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
 | B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
+| B1-USDT0-IOTA | USDT0 Ethereum Lockbox ↔ IOTA L1 OFT | EXPERIMENTALLY_SUPPORTED (sampled) | Pinned Ethereum config/ULN replay PASS; 15/15 Ethereum receipt invariants PASS; 15/15 source-side IOTA OFTSentEvent GUID matches PASS with exact amount correspondence; local-fork caller/peer and 1-USDT unlock controls PASS; CI run #41 succeeded | expand historical sample coverage and test additional independent accounting/state invariants; no vulnerability claim |
 
 ## Evidence stages
 
@@ -155,3 +156,25 @@ No severity, bounty amount, or submission decision has been assigned.
 ## Preservation rule
 
 Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
+
+
+## B1-USDT0-IOTA update — 2026-10-11
+
+Full frontier: [USDT0-FRONTIER-v0.1.md](../targets/usdt0/USDT0-FRONTIER-v0.1.md)
+
+Permanent machine-readable evidence:
+[2026-10-11-cross-chain-guid-correlation.json](../targets/usdt0/evidence/2026-10-11-cross-chain-guid-correlation.json)
+
+Validation results:
+- local fork config replay matches the pinned block and event-folded ULN config;
+- 15/15 sampled Ethereum Lockbox receipts satisfy `Transfer == OFTReceived == PacketDelivered` for amount, destination, peer, and receiver;
+- 15/15 sampled messages matched IOTA L1 `OFTSentEvent` by LayerZero GUID;
+- all 15 IOTA `dst_eid` values equal 30101 and both `amount_sent_ld` and `amount_received_ld` equal the Ethereum raw USDT amount;
+- 162 source-side events were scanned across four pages; pagination exhausted the available results for the fully-qualified event type;
+- local-fork authorization/peer controls and exact-value unlock passed;
+- artifact ID 11703261539 was downloaded and inspected; it includes `config.json`, `unlock.json`, `cross-chain-guid-correlation.json`, and `package-lock.json`.
+
+CI run: https://github.com/Loofy147/Bounties/actions/runs/38140745121
+Head: `c0cd53f50f3243af71650ed35231c6767f2a8253`
+
+Status remains EXPERIMENTALLY_SUPPORTED for this sample, not a claim of general correctness or absence of vulnerabilities. No deployed target was mutated. The GraphQL observations were read-only; the Endpoint impersonation was confined to the local fork.
