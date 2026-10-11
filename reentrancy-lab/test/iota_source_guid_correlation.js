@@ -37,7 +37,7 @@ const PACKET_DELIVERED =
   "0x3cd5e48f9730b129dc7550f0fcea9c767b7be37837cd10e55eb35f734f4bca04";
 const OFT_SENT_TYPE = PEER + "::oft::OFTSentEvent";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50; // IOTA GraphQL service maxPageSize is 50.
 const MAX_PAGES = 100;
 const STOP_PADDING_SECONDS = 24 * 60 * 60;
 
