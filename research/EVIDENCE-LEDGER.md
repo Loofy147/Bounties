@@ -6,7 +6,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
 | B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
-| B1-USDT0-IOTA | USDT0 Ethereum Lockbox ↔ IOTA L1 OFT | EXPERIMENTALLY_SUPPORTED (captured history) | CI run #54 validates all 162 pinned Ethereum OFTReceived logs against mined receipts; all 162 PacketDelivered GUIDs match IOTA L1 OFTSentEvent records and raw USDT amounts; 0 unmatched destination, 0 amount mismatch, 0 source-only GUIDs; local-fork boundary controls PASS | continue independent economic/state invariants; finding status NONE_CLAIMED |
+| B1-USDT0-IOTA | USDT0 Ethereum Lockbox ↔ IOTA L1 OFT | EXPERIMENTALLY_SUPPORTED (captured history) | CI run #61 passed all 162 pinned Ethereum OFTReceived logs against mined receipts; 162/162 PacketDelivered GUIDs match IOTA L1 OFTSentEvent records and raw amounts; 0 unmatched destination, 0 amount mismatches, 0 source-only GUIDs; local-fork non-Endpoint, wrong-peer, wrong-EID rejections and 1-USDT exact-value unlock PASS | next: independent accounting/state invariant, not replay/proof claims from mocked Endpoint calls; target status NONE_CLAIMED |
 
 ## Evidence stages
 
@@ -198,3 +198,18 @@ Full frontier: [USDT0-FRONTIER-v0.1.md](../targets/usdt0/USDT0-FRONTIER-v0.1.md)
 This is bounded captured-history experimental evidence, not general protocol correctness and not a vulnerability finding. No production transaction was sent or production state modified. The external RPC attempts were abandoned because the Alchemy public endpoint caps log ranges and PublicNode requires an archive token; no secrets were added. The Etherscan snapshot is validated receipt-by-receipt in CI.
 
 Next work: separate economic/state invariants on the permitted local fork. Do not derive exploit claims from the successful correlation control.
+
+
+## B1 receiver-boundary extension — 2026-10-11
+
+CI run [#61](https://github.com/Loofy147/Bounties/actions/runs/38141738075), head `822e3c188a6fcfeb58e36968d2fa4cfa80f04278`, completed SUCCESS.
+
+New local-fork controls:
+- non-Endpoint caller with otherwise valid peer/EID rejected;
+- configured peer paired with the wrong source EID rejected;
+- previous wrong-peer and unauthorized owner-mutation controls still pass;
+- valid Endpoint + peer + EID unlocks exactly 1 USDT on local fork, with equal recipient increase and Lockbox decrease of 1,000,000 raw units.
+
+This is receiver-boundary control coverage, not a target vulnerability finding. Because Endpoint is impersonated for the local receiver test, it does not establish Endpoint proof-validation or replay-protection behavior.
+
+Latest uploaded evidence artifact: ID `11702778923`, SHA-256 `5792695c6035f7cb1993b09f7584fcd930060c014629ca6838d74104405ba8df`.
