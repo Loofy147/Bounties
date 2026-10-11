@@ -45,7 +45,7 @@ const TARGET_ABI = [
   "function endpoint() view returns (address)",
   "function owner() view returns (address)",
   "function peers(uint32) view returns (bytes32)",
-  "function lzReceive((uint32,uint64,bytes32),bytes32,bytes,address,bytes) payable",
+  "function lzReceive((uint32 srcEid,bytes32 sender,uint64 nonce),bytes32 guid,bytes message,address executor,bytes extraData) payable",
   "function setPeer(uint32,bytes32)",
 ];
 
