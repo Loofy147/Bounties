@@ -71,6 +71,6 @@ jobs:
         with:
           name: usdt0-iota-local-fork-evidence
           path: |
-            reentrancy-lab/artifacts/iota-lockbox-fork
+            artifacts/iota-lockbox-fork
             reentrancy-lab/package-lock.json
           if-no-files-found: warn
