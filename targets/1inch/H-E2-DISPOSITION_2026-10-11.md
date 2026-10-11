@@ -164,3 +164,9 @@ Decision:
 ## 8. Stop rule
 
 Stop generating synthetic H-E2 variants. The next useful work is not another local reproduction; it is a bounded decision on whether to retain H-E2 only as a technical research case or seek a program eligibility clarification. The existing record is not sufficient for a defensible bounty submission.
+
+### Event-emitter validation
+
+To validate that the signature-wide event sample corresponds to NativeOrder clones, three distinct event-emitter addresses were checked through their Ethereum internal-transaction traces. Each was created via `CREATE2` by the recorded NativeOrderFactory address `0xe12E0f117d23a5ccc57f8935CD8c4E80cD91FF01` and immediately deposited WETH during creation. The sample emitters include addresses from both searched block windows.
+
+This spot-check supports the event-class attribution. It does not claim that every emitter was individually traced; the 6,701 count remains an event-signature query.
