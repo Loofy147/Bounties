@@ -22,12 +22,6 @@ const { ethers } = require("ethers");
 const RPC_URL =
   process.env.ALCHEMY_ETH_RPC ||
   "https://eth-mainnet.g.alchemy.com/public";
-// A separate public RPC is used only for historical eth_getLogs. The Alchemy
-// public endpoint currently caps getLogs ranges at 100 blocks, while this
-// read-only census covers ~169k blocks. Receipt/fork checks stay on RPC_URL.
-const LOG_RPC_URL =
-  process.env.ETHEREUM_LOG_RPC_URL ||
-  "https://ethereum.publicnode.com";
 const IOTA_GRAPHQL_URL =
   process.env.IOTA_L1_GRAPHQL_URL ||
   "https://graphql.mainnet.iota.cafe/graphql";
@@ -51,7 +45,6 @@ const OFT_SENT_TYPE = PEER + "::oft::OFTSentEvent";
 // Ethereum on 2026-10-11, independently checked via Etherscan logs.
 const EVM_HISTORY_FROM_BLOCK = 25997621;
 const EVM_HISTORY_TO_BLOCK = 26167014;
-const EVM_LOG_CHUNK_BLOCKS = 5000;
 
 const PAGE_SIZE = 50; // IOTA GraphQL service maxPageSize is 50.
 const MAX_PAGES = 100;
@@ -60,6 +53,10 @@ const STOP_PADDING_SECONDS = 24 * 60 * 60;
 const EVIDENCE_PATH = path.resolve(
   __dirname,
   "../../targets/usdt0/evidence/2026-10-06-iota-lockbox-economic-baseline.json"
+);
+const EVM_OFT_RECEIVED_SNAPSHOT_PATH = path.resolve(
+  __dirname,
+  "../../targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json"
 );
 const OUTPUT_DIR = path.resolve(__dirname, "../../artifacts/iota-lockbox-fork");
 const OUTPUT_PATH = path.join(OUTPUT_DIR, "cross-chain-guid-correlation.json");
@@ -196,10 +193,7 @@ async function main() {
   assert(samples.length === 15, "expected 15 baseline samples, got " + samples.length);
 
   const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-  const logProvider = new ethers.providers.JsonRpcProvider(LOG_RPC_URL);
   const network = await provider.getNetwork();
-  const logNetwork = await logProvider.getNetwork();
-  assert(logNetwork.chainId === 1, "historical log RPC must point to Ethereum mainnet");
   assert(network.chainId === 1, "RPC must point to Ethereum mainnet");
 
   const ethPackets = [];
@@ -376,33 +370,52 @@ async function main() {
 
   // Full historical route reconciliation: all Lockbox OFTReceived logs in the
   // pinned observed block interval, not just the 15 hand-selected samples.
-  const evmLogRanges = [];
-  for (let start = EVM_HISTORY_FROM_BLOCK; start <= EVM_HISTORY_TO_BLOCK;
-       start += EVM_LOG_CHUNK_BLOCKS) {
-    evmLogRanges.push({
-      fromBlock: start,
-      toBlock: Math.min(EVM_HISTORY_TO_BLOCK, start + EVM_LOG_CHUNK_BLOCKS - 1)
-    });
-  }
+  // Load the immutable, read-only Etherscan query snapshot. This avoids
+  // provider-specific archive eth_getLogs limits (Alchemy public capped the
+  // range at 100 blocks; PublicNode requires an archive token). Every entry is
+  // still validated against its mined transaction receipt below.
+  const evmSnapshot = JSON.parse(fs.readFileSync(EVM_OFT_RECEIVED_SNAPSHOT_PATH, "utf8"));
+  assert(evmSnapshot.status === "SNAPSHOT_CAPTURED",
+    "Ethereum OFTReceived snapshot is not marked captured");
+  assert(evmSnapshot.chain_id === 1,
+    "Ethereum OFTReceived snapshot chain id mismatch");
+  assert(evmSnapshot.emitting_contract.toLowerCase() === LOCKBOX,
+    "Ethereum OFTReceived snapshot contract mismatch");
+  assert(evmSnapshot.event_topic0.toLowerCase() === OFT_RECEIVED,
+    "Ethereum OFTReceived snapshot event topic mismatch");
+  assert(evmSnapshot.query.from_block === EVM_HISTORY_FROM_BLOCK &&
+      evmSnapshot.query.to_block === EVM_HISTORY_TO_BLOCK,
+    "Ethereum OFTReceived snapshot block interval mismatch");
+  assert(evmSnapshot.query.returned_count === evmSnapshot.logs.length &&
+      evmSnapshot.logs.length === 162,
+    "Ethereum OFTReceived snapshot count mismatch");
 
-  const evmOftReceivedLogs = [];
-  for (let i = 0; i < evmLogRanges.length; i += 3) {
-    const batch = evmLogRanges.slice(i, i + 3);
-    const batchLogs = await Promise.all(batch.map((range) =>
-      logProvider.getLogs({
-        address: LOCKBOX,
-        topics: [OFT_RECEIVED],
-        fromBlock: range.fromBlock,
-        toBlock: range.toBlock
-      })
-    ));
-    for (const logs of batchLogs) evmOftReceivedLogs.push(...logs);
-  }
-  evmOftReceivedLogs.sort((a, b) =>
-    a.blockNumber - b.blockNumber || a.logIndex - b.logIndex
-  );
-  assert(evmOftReceivedLogs.length > 0,
-    "no Lockbox OFTReceived events in the pinned history block interval");
+  const evmOftReceivedLogs = evmSnapshot.logs.map((log) => ({
+    address: log.address.toLowerCase(),
+    topics: log.topics.map((topic) => topic.toLowerCase()),
+    data: log.data.toLowerCase(),
+    blockNumber: Number(log.blockNumber),
+    blockHash: log.blockHash.toLowerCase(),
+    transactionHash: log.transactionHash.toLowerCase(),
+    transactionIndex: Number(log.transactionIndex),
+    logIndex: Number(log.logIndex),
+    timeStamp: Number(log.timeStamp)
+  }));
+  assert(evmOftReceivedLogs.every((log) =>
+    log.address === LOCKBOX &&
+    log.topics.length === 3 &&
+    log.topics[0] === OFT_RECEIVED &&
+    /^0x[0-9a-f]{64}$/.test(log.topics[1]) &&
+    log.data.length === 130 &&
+    log.blockNumber >= EVM_HISTORY_FROM_BLOCK &&
+    log.blockNumber <= EVM_HISTORY_TO_BLOCK
+  ), "malformed or out-of-range OFTReceived snapshot record");
+  assert(evmOftReceivedLogs.every((log, i) =>
+    i === 0 ||
+    log.blockNumber > evmOftReceivedLogs[i - 1].blockNumber ||
+    (log.blockNumber === evmOftReceivedLogs[i - 1].blockNumber &&
+      log.logIndex > evmOftReceivedLogs[i - 1].logIndex)
+  ), "OFTReceived snapshot is not strictly sorted by block/log index");
 
   const receiptCache = new Map();
   async function receiptByHash(txHash) {
@@ -428,6 +441,27 @@ async function main() {
       const receipt = await receiptByHash(log.transactionHash);
       assert(receipt, "missing receipt for OFTReceived: " + log.transactionHash);
       assert(receipt.status === 1, "failed receipt has OFTReceived: " + log.transactionHash);
+      assert(receipt.blockNumber === log.blockNumber,
+        "snapshot block number differs from mined receipt: " + log.transactionHash);
+      assert(receipt.blockHash.toLowerCase() === log.blockHash,
+        "snapshot block hash differs from mined receipt: " + log.transactionHash);
+      assert(receipt.transactionHash.toLowerCase() === log.transactionHash,
+        "snapshot transaction hash differs from mined receipt: " + log.transactionHash);
+
+      const receiptOftReceived = receipt.logs.find((candidate) =>
+        candidate.address.toLowerCase() === LOCKBOX &&
+        candidate.topics[0] &&
+        candidate.topics[0].toLowerCase() === OFT_RECEIVED &&
+        candidate.topics[1] &&
+        candidate.topics[1].toLowerCase() === guid &&
+        candidate.topics[2] &&
+        candidate.topics[2].toLowerCase() === log.topics[2]
+      );
+      assert(receiptOftReceived,
+        "snapshot OFTReceived does not exist in transaction receipt: " + log.transactionHash);
+      assert(receiptOftReceived.logIndex === log.logIndex &&
+          receiptOftReceived.data.toLowerCase() === log.data,
+        "snapshot OFTReceived payload/log index differs from receipt: " + log.transactionHash);
 
       const usdtTransfer = receipt.logs.find((candidate) =>
         candidate.address.toLowerCase() === USDT &&
@@ -554,7 +588,8 @@ async function main() {
       chain: "Ethereum mainnet",
       lockbox: LOCKBOX,
       receiptRpc: RPC_URL,
-      historicalLogRpc: LOG_RPC_URL,
+      historicalLogSource: evmSnapshot.provenance.source,
+      historicalLogSnapshotPath: EVM_OFT_RECEIVED_SNAPSHOT_PATH,
       endpoint: ENDPOINT,
       sourceEid: SOURCE_EID,
       peer: PEER
@@ -582,7 +617,9 @@ async function main() {
       ethereumOftReceivedLogs: evmOftReceivedLogs.length,
       ethereumOftReceivedHistoryBounds: {
         fromBlock: EVM_HISTORY_FROM_BLOCK,
-        toBlock: EVM_HISTORY_TO_BLOCK
+        toBlock: EVM_HISTORY_TO_BLOCK,
+        snapshotReturnedCount: evmSnapshot.query.returned_count,
+        snapshotSource: evmSnapshot.provenance.source
       },
       iotaSourceEventsScanned: scanned,
       iotaOftSentToEthereumEid: sourceByGuid.size,
