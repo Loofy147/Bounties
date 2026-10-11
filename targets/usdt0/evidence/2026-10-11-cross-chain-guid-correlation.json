@@ -2,13 +2,19 @@
   "captured_at": "2026-10-11",
   "status": "PASS",
   "test": "LZ-CROSSCHAIN-GUID-CORRELATION-01",
-  "method": "Read-only correlation of mined Ethereum Lockbox delivery receipts to IOTA L1 OFTSentEvent records using the LayerZero V2 GUID computed from PacketDelivered origin fields.",
+  "method": "Read-only correlation of sampled and full captured Ethereum Lockbox delivery history to IOTA L1 OFTSentEvent records using the LayerZero V2 GUID computed from PacketDelivered origin fields.",
   "source": {
     "chain": "IOTA L1 mainnet (Move)",
     "graphql_endpoint": "https://graphql.mainnet.iota.cafe/graphql",
     "event_type": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902::oft::OFTSentEvent",
     "destination_eid": 30101,
-    "event_fields_checked": ["guid", "dst_eid", "amount_sent_ld", "amount_received_ld", "transactionBlock.digest"]
+    "event_fields_checked": [
+      "guid",
+      "dst_eid",
+      "amount_sent_ld",
+      "amount_received_ld",
+      "transactionBlock.digest"
+    ]
   },
   "destination": {
     "chain": "Ethereum mainnet",
@@ -38,7 +44,9 @@
     "All observations were read-only. No production transaction was submitted and no production state was mutated.",
     "The source-side event was matched by GUID, destination EID, and token amount fields. OFTSentEvent does not itself expose the eventual destination recipient address.",
     "Recipient consistency was checked on the Ethereum receipt among USDT Transfer, OFTReceived, and PacketDelivered.",
-    "The local-fork caller/peer controls do not exercise LayerZero Endpoint proof verification and do not establish absence of vulnerabilities."
+    "The local-fork caller/peer controls do not exercise LayerZero Endpoint proof verification and do not establish absence of vulnerabilities.",
+    "The full-history destination census is limited to the immutable Etherscan snapshot from blocks 25997621 through 26167014. Each entry is validated against its mined receipt in CI; the snapshot does not claim later blocks.",
+    "Public RPC eth_getLogs archive queries were not relied on: the Alchemy public endpoint capped the range at 100 blocks and PublicNode required an archive token. The captured event set was obtained through a read-only Etherscan log query."
   ],
   "ci": {
     "workflow": "USDT0 IOTA Lockbox Local Fork",
@@ -171,5 +179,54 @@
       "amount_raw": "1",
       "recipient": "0xdb6da94fedef11b2119b4088b89664fb9a3cb658"
     }
-  ]
+  ],
+  "full_history_reconciliation": {
+    "status": "PASS",
+    "destination_snapshot": "targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json",
+    "destination_snapshot_commit": "05ec6ca849c01d0b87b5409b51fdf56aaef08fdb",
+    "destination_query": {
+      "source": "Etherscan read-only event-log query",
+      "chain_id": 1,
+      "emitting_contract": "0xaef027f94008430bf4fc27ffabb49ea6f1dd3414",
+      "event_topic0": "0xefed6d3500546b29533b128a29e3a94d70788727f0507505ac12eaf2e578fd9c",
+      "from_block": 25997621,
+      "to_block": 26167014,
+      "returned_count": 162,
+      "malformed_records": 0
+    },
+    "source_query": {
+      "source": "IOTA L1 GraphQL read-only query",
+      "event_type": "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902::oft::OFTSentEvent",
+      "destination_eid": 30101,
+      "page_size": 50,
+      "pages": 4,
+      "events_scanned": 162,
+      "pagination_exhausted": true,
+      "time_window_cutoff": "2026-09-16T13:50:59.000Z"
+    },
+    "checks": {
+      "destination_oft_received_receipt_matches": 162,
+      "packet_delivered_guid_matches": 162,
+      "usdt_lockbox_to_recipient_transfer_matches": 162,
+      "source_events_matched_by_guid": 162,
+      "destination_eid_matches": 162,
+      "amount_sent_ld_matches_raw_usdt_amount": 162,
+      "amount_received_ld_matches_raw_usdt_amount": 162,
+      "unmatched_destination_events": 0,
+      "amount_mismatches": 0,
+      "source_only_guid_count": 0
+    },
+    "interpretation": "Every OFTReceived event in the captured Lockbox block interval matched a successful mined receipt and a corresponding IOTA L1 OFTSentEvent by GUID, destination EID, and exact raw token amounts. This is bounded captured-history evidence, not a claim beyond the queried block range or proof of general protocol correctness."
+  },
+  "full_history_ci": {
+    "workflow": "USDT0 IOTA Lockbox Local Fork",
+    "run_number": 54,
+    "run_id": 38141456942,
+    "head_sha": "9441494de4eb59f6a7e8a1f0bbfb96cdcd2d18cb",
+    "url": "https://github.com/Loofy147/Bounties/actions/runs/38141456942",
+    "conclusion": "success",
+    "artifact": "usdt0-iota-local-fork-evidence",
+    "artifact_id": 11703037963,
+    "artifact_sha256": "00ffd993c1f85c82e9197f4cf42a8944b768d7241d9aa9ee311177fd42562968"
+  }
 }
