@@ -35,7 +35,17 @@ const PEER =
   "0xe6a11eb6a514b5510d731e5ed9d8e9294bcaad3b4696fa5d45406d11560b5902";
 const PACKET_DELIVERED =
   "0x3cd5e48f9730b129dc7550f0fcea9c767b7be37837cd10e55eb35f734f4bca04";
+const ERC20_TRANSFER =
+  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+const OFT_RECEIVED =
+  "0xefed6d3500546b29533b128a29e3a94d70788727f0507505ac12eaf2e578fd9c";
 const OFT_SENT_TYPE = PEER + "::oft::OFTSentEvent";
+
+// Snapshot bounds for the complete Lockbox OFTReceived history observed on
+// Ethereum on 2026-10-11, independently checked via Etherscan logs.
+const EVM_HISTORY_FROM_BLOCK = 25997621;
+const EVM_HISTORY_TO_BLOCK = 26167014;
+const EVM_LOG_CHUNK_BLOCKS = 5000;
 
 const PAGE_SIZE = 50; // IOTA GraphQL service maxPageSize is 50.
 const MAX_PAGES = 100;
@@ -59,6 +69,27 @@ function word(data, index) {
 
 function bigintWord(data, index) {
   return ethers.BigNumber.from(word(data, index));
+}
+
+function topicAddress(value) {
+  return ethers.utils.getAddress("0x" + value.slice(-40)).toLowerCase();
+}
+
+function decodePacketDelivered(log) {
+  if (!log.topics || !log.topics[0] ||
+      log.topics[0].toLowerCase() !== PACKET_DELIVERED ||
+      !log.data || log.data.length !== 2 + 64 * 4) return null;
+  const sourceEid = bigintWord(log.data, 0).toNumber();
+  const sender = word(log.data, 1).toLowerCase();
+  const nonce = bigintWord(log.data, 2);
+  const receiver = topicAddress("0x" + log.data.slice(-40));
+  const guid = ethers.utils.keccak256(
+    ethers.utils.solidityPack(
+      ["uint64", "uint32", "bytes32", "uint32", "bytes32"],
+      [nonce, sourceEid, sender, DESTINATION_EID, ethers.utils.hexZeroPad(receiver, 32)]
+    )
+  ).toLowerCase();
+  return { sourceEid, sender, nonce: nonce.toString(), receiver, guid };
 }
 
 function normalizeSample(row) {
@@ -243,6 +274,7 @@ async function main() {
   const wanted = new Map(ethPackets.map((p) => [p.guid, p]));
   const matched = new Map();
   const pageSummaries = [];
+  const allSourceEvents = [];
   let cursor = null;
   let scanned = 0;
   let stoppedByTimeWindow = false;
@@ -272,6 +304,7 @@ async function main() {
     assert(parsed.every((p) => Number.isFinite(p.timestampSeconds)),
       "IOTA event returned a non-parseable timestamp");
     scanned += parsed.length;
+    allSourceEvents.push(...parsed);
 
     for (const p of parsed) {
       if (!p.guid || !wanted.has(p.guid)) continue;
@@ -332,9 +365,174 @@ async function main() {
     };
   });
 
+  // Full historical route reconciliation: all Lockbox OFTReceived logs in the
+  // pinned observed block interval, not just the 15 hand-selected samples.
+  const evmLogRanges = [];
+  for (let start = EVM_HISTORY_FROM_BLOCK; start <= EVM_HISTORY_TO_BLOCK;
+       start += EVM_LOG_CHUNK_BLOCKS) {
+    evmLogRanges.push({
+      fromBlock: start,
+      toBlock: Math.min(EVM_HISTORY_TO_BLOCK, start + EVM_LOG_CHUNK_BLOCKS - 1)
+    });
+  }
+
+  const evmOftReceivedLogs = [];
+  for (let i = 0; i < evmLogRanges.length; i += 3) {
+    const batch = evmLogRanges.slice(i, i + 3);
+    const batchLogs = await Promise.all(batch.map((range) =>
+      provider.getLogs({
+        address: LOCKBOX,
+        topics: [OFT_RECEIVED],
+        fromBlock: range.fromBlock,
+        toBlock: range.toBlock
+      })
+    ));
+    for (const logs of batchLogs) evmOftReceivedLogs.push(...logs);
+  }
+  evmOftReceivedLogs.sort((a, b) =>
+    a.blockNumber - b.blockNumber || a.logIndex - b.logIndex
+  );
+  assert(evmOftReceivedLogs.length > 0,
+    "no Lockbox OFTReceived events in the pinned history block interval");
+
+  const receiptCache = new Map();
+  async function receiptByHash(txHash) {
+    const key = txHash.toLowerCase();
+    if (!receiptCache.has(key)) {
+      receiptCache.set(key, provider.getTransactionReceipt(txHash));
+    }
+    return receiptCache.get(key);
+  }
+
+  const destinationHistory = [];
+  const destinationGuids = new Set();
+  const destinationAmountMismatches = [];
+  for (let i = 0; i < evmOftReceivedLogs.length; i += 8) {
+    const batch = evmOftReceivedLogs.slice(i, i + 8);
+    const rows = await Promise.all(batch.map(async (log) => {
+      assert(log.topics.length >= 3, "OFTReceived log has missing indexed fields");
+      const guid = log.topics[1].toLowerCase();
+      assert(/^0x[0-9a-f]{64}$/.test(guid), "OFTReceived GUID is not bytes32");
+      const toAddress = topicAddress(log.topics[2]);
+      const sourceEid = bigintWord(log.data, 0).toNumber();
+      const amountRaw = bigintWord(log.data, 1).toString();
+      const receipt = await receiptByHash(log.transactionHash);
+      assert(receipt, "missing receipt for OFTReceived: " + log.transactionHash);
+      assert(receipt.status === 1, "failed receipt has OFTReceived: " + log.transactionHash);
+
+      const usdtTransfer = receipt.logs.find((candidate) =>
+        candidate.address.toLowerCase() === USDT &&
+        candidate.topics[0] &&
+        candidate.topics[0].toLowerCase() === ERC20_TRANSFER &&
+        topicAddress(candidate.topics[1]) === LOCKBOX &&
+        topicAddress(candidate.topics[2]) === toAddress &&
+        bigintWord(candidate.data, 0).eq(amountRaw)
+      );
+      assert(usdtTransfer,
+        "OFTReceived has no exact Lockbox->recipient USDT transfer: " + log.transactionHash);
+
+      const packet = receipt.logs
+        .filter((candidate) =>
+          candidate.address.toLowerCase() === ENDPOINT &&
+          candidate.topics[0] &&
+          candidate.topics[0].toLowerCase() === PACKET_DELIVERED)
+        .map(decodePacketDelivered)
+        .find((candidate) => candidate && candidate.guid === guid);
+      assert(packet,
+        "OFTReceived GUID has no matching PacketDelivered origin: " + log.transactionHash);
+      assert(packet.sourceEid === sourceEid,
+        "OFTReceived / PacketDelivered srcEid mismatch: " + log.transactionHash);
+      assert(packet.receiver === LOCKBOX,
+        "PacketDelivered receiver mismatch: " + log.transactionHash);
+      if (sourceEid === SOURCE_EID) {
+        assert(packet.sender === PEER,
+          "IOTA source EID has an unexpected peer: " + log.transactionHash);
+      }
+
+      const blockData = await provider.getBlock(log.blockNumber);
+      assert(blockData, "missing EVM block metadata: " + log.blockNumber);
+      return {
+        guid,
+        sourceEid,
+        sender: packet.sender,
+        nonce: packet.nonce,
+        receiver: packet.receiver,
+        toAddress,
+        amountRaw,
+        ethereumTx: log.transactionHash,
+        ethereumBlock: log.blockNumber,
+        ethereumTimestamp: blockData.timestamp
+      };
+    }));
+
+    for (const row of rows) {
+      assert(!destinationGuids.has(row.guid),
+        "duplicate OFTReceived GUID in Lockbox history: " + row.guid);
+      destinationGuids.add(row.guid);
+      destinationHistory.push(row);
+    }
+  }
+
+  const sourceByGuid = new Map();
+  for (const sourceEvent of allSourceEvents) {
+    if (!sourceEvent.guid || sourceEvent.dstEid !== DESTINATION_EID) continue;
+    assert(!sourceByGuid.has(sourceEvent.guid),
+      "duplicate IOTA OFTSentEvent GUID for Ethereum EID: " + sourceEvent.guid);
+    sourceByGuid.set(sourceEvent.guid, sourceEvent);
+  }
+
+  const fullHistoryMatches = [];
+  const unmatchedDestinationHistory = [];
+  const fullHistoryAmountMismatches = [];
+  for (const destinationEvent of destinationHistory.filter((d) => d.sourceEid === SOURCE_EID)) {
+    const sourceEvent = sourceByGuid.get(destinationEvent.guid);
+    if (!sourceEvent) {
+      unmatchedDestinationHistory.push({
+        guid: destinationEvent.guid,
+        ethereumTx: destinationEvent.ethereumTx,
+        ethereumBlock: destinationEvent.ethereumBlock,
+        amountRaw: destinationEvent.amountRaw
+      });
+      continue;
+    }
+    const sent = sourceEvent.amountSent === null ? null : String(sourceEvent.amountSent);
+    const received = sourceEvent.amountReceived === null ? null : String(sourceEvent.amountReceived);
+    if (sent !== destinationEvent.amountRaw || received !== destinationEvent.amountRaw) {
+      fullHistoryAmountMismatches.push({
+        guid: destinationEvent.guid,
+        ethereumTx: destinationEvent.ethereumTx,
+        iotaSourceTx: sourceEvent.transactionDigest,
+        evmAmountRaw: destinationEvent.amountRaw,
+        iotaAmountSentRaw: sent,
+        iotaAmountReceivedRaw: received
+      });
+      continue;
+    }
+    fullHistoryMatches.push({
+      guid: destinationEvent.guid,
+      sourceEid: destinationEvent.sourceEid,
+      destinationEid: DESTINATION_EID,
+      iotaSourceTx: sourceEvent.transactionDigest,
+      ethereumTx: destinationEvent.ethereumTx,
+      ethereumBlock: destinationEvent.ethereumBlock,
+      recipient: destinationEvent.toAddress,
+      amountRaw: destinationEvent.amountRaw,
+      iotaAmountSentRaw: sent,
+      iotaAmountReceivedRaw: received
+    });
+  }
+
+  const fullHistoryStatus =
+    unmatchedDestinationHistory.length === 0 &&
+    fullHistoryAmountMismatches.length === 0 &&
+    fullHistoryMatches.length === destinationHistory.filter((d) => d.sourceEid === SOURCE_EID).length
+      ? "PASS"
+      : "INCOMPLETE";
+
+  const sourceOnlyGuids = [...sourceByGuid.keys()].filter((guid) => !destinationGuids.has(guid));
   const matchedCount = correlations.filter((p) => p.match).length;
   const result = {
-    status: matchedCount === ethPackets.length ? "PASS" : "INCOMPLETE",
+    status: matchedCount === ethPackets.length && fullHistoryStatus === "PASS" ? "PASS" : "INCOMPLETE",
     test: "LZ-CROSSCHAIN-GUID-CORRELATION-01",
     claim: "Each sampled Ethereum Lockbox unlock is correlated by LayerZero GUID to a source-side IOTA L1 OFTSentEvent when that source event is in the scanned time window.",
     source: {
@@ -367,7 +565,24 @@ async function main() {
       timestamp: new Date(p.ethereumTimestamp * 1000).toISOString()
     })),
     pageSummaries,
-    correlations
+    correlations,
+    fullHistoryReconciliation: {
+      status: fullHistoryStatus,
+      ethereumOftReceivedLogs: evmOftReceivedLogs.length,
+      ethereumOftReceivedHistoryBounds: {
+        fromBlock: EVM_HISTORY_FROM_BLOCK,
+        toBlock: EVM_HISTORY_TO_BLOCK
+      },
+      iotaSourceEventsScanned: scanned,
+      iotaOftSentToEthereumEid: sourceByGuid.size,
+      destinationEventsFromIotaPeer: destinationHistory.filter((d) => d.sourceEid === SOURCE_EID).length,
+      guidAmountMatches: fullHistoryMatches.length,
+      unmatchedDestinationEvents: unmatchedDestinationHistory,
+      amountMismatches: fullHistoryAmountMismatches,
+      sourceOnlyGuidCount: sourceOnlyGuids.length,
+      sourceOnlyGuids: sourceOnlyGuids.slice(0, 25),
+      note: "Every destination OFTReceived event in the pinned block interval whose source EID is 30423 must match an IOTA OFTSentEvent by GUID and both raw amounts. Source-only IOTA events are reported but not failed because a source send may still be pending delivery."
+    }
   };
 
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -382,10 +597,26 @@ async function main() {
     cutoff: result.scan.timeWindowCutoff,
     stoppedByTimeWindow: result.scan.stoppedByTimeWindow,
     uncorrelated: result.uncorrelatedEthereumTransactions,
+    fullHistoryReconciliation: {
+      status: fullHistoryStatus,
+      ethereumOftReceivedLogs: evmOftReceivedLogs.length,
+      iotaOftSentToEthereumEid: sourceByGuid.size,
+      destinationEventsFromIotaPeer: destinationHistory.filter((d) => d.sourceEid === SOURCE_EID).length,
+      guidAmountMatches: fullHistoryMatches.length,
+      unmatchedDestinationEvents: unmatchedDestinationHistory.length,
+      amountMismatches: fullHistoryAmountMismatches.length,
+      sourceOnlyGuidCount: sourceOnlyGuids.length
+    },
     evidencePath: OUTPUT_PATH
   }, null, 2));
   assert(matchedCount === ethPackets.length,
-    "source/destination GUID correlation incomplete: " + matchedCount + "/" + ethPackets.length);
+    "sampled source/destination GUID correlation incomplete: " + matchedCount + "/" + ethPackets.length);
+  assert(fullHistoryStatus === "PASS",
+    "full Lockbox delivery history reconciliation incomplete: destination events=" +
+      destinationHistory.filter((d) => d.sourceEid === SOURCE_EID).length +
+      " matched=" + fullHistoryMatches.length +
+      " unmatched=" + unmatchedDestinationHistory.length +
+      " amountMismatches=" + fullHistoryAmountMismatches.length);
 }
 
 main().catch((error) => {
