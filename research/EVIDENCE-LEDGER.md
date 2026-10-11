@@ -6,7 +6,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
 | B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH | reconcile audits/known issues; settle resolver-role treatment; establish production deployment/version correspondence and minimum real victim state |
-| B1-USDT0-IOTA | USDT0 Ethereum Lockbox ↔ IOTA L1 OFT | EXPERIMENTALLY_SUPPORTED (sampled) | Pinned Ethereum config/ULN replay PASS; 15/15 Ethereum receipt invariants PASS; 15/15 source-side IOTA OFTSentEvent GUID matches PASS with exact amount correspondence; local-fork caller/peer and 1-USDT unlock controls PASS; CI run #41 succeeded | expand historical sample coverage and test additional independent accounting/state invariants; no vulnerability claim |
+| B1-USDT0-IOTA | USDT0 Ethereum Lockbox ↔ IOTA L1 OFT | EXPERIMENTALLY_SUPPORTED (captured history) | CI run #54 validates all 162 pinned Ethereum OFTReceived logs against mined receipts; all 162 PacketDelivered GUIDs match IOTA L1 OFTSentEvent records and raw USDT amounts; 0 unmatched destination, 0 amount mismatch, 0 source-only GUIDs; local-fork boundary controls PASS | continue independent economic/state invariants; finding status NONE_CLAIMED |
 
 ## Evidence stages
 
@@ -178,3 +178,23 @@ CI run: https://github.com/Loofy147/Bounties/actions/runs/38140745121
 Head: `c0cd53f50f3243af71650ed35231c6767f2a8253`
 
 Status remains EXPERIMENTALLY_SUPPORTED for this sample, not a claim of general correctness or absence of vulnerabilities. No deployed target was mutated. The GraphQL observations were read-only; the Endpoint impersonation was confined to the local fork.
+
+
+## B1-USDT0-IOTA update — full captured history, 2026-10-11
+
+**Run #54:** https://github.com/Loofy147/Bounties/actions/runs/38141456942  
+Head: `9441494de4eb59f6a7e8a1f0bbfb96cdcd2d18cb` — SUCCESS.
+
+- Pinned all 162 Lockbox `OFTReceived` log records returned by the read-only Etherscan query for blocks 25,997,621–26,167,014:
+  [2026-10-11-ethereum-oftreceived-snapshot.json](../targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json)
+- CI validated every snapshot record against its transaction receipt (block number/hash, transaction hash, log index, exact `OFTReceived` payload).
+- Each receipt had the corresponding `PacketDelivered` origin tuple and exact Lockbox-to-recipient USDT transfer.
+- 162/162 destination GUIDs matched IOTA L1 `OFTSentEvent` records; destination EID = 30101; `amount_sent_ld` and `amount_received_ld` both equaled the raw Ethereum USDT transfer amount.
+- 0 unmatched destination events, 0 amount mismatches, 0 source-only GUIDs in the captured set.
+- The uploaded artifact (ID 11703037963, SHA-256 `00ffd993c1f85c82e9197f4cf42a8944b768d7241d9aa9ee311177fd42562968`) was downloaded and inspected. It contains config, full-history correlation, local unlock evidence, and the generated npm lockfile.
+
+Full frontier: [USDT0-FRONTIER-v0.1.md](../targets/usdt0/USDT0-FRONTIER-v0.1.md)
+
+This is bounded captured-history experimental evidence, not general protocol correctness and not a vulnerability finding. No production transaction was sent or production state modified. The external RPC attempts were abandoned because the Alchemy public endpoint caps log ranges and PublicNode requires an archive token; no secrets were added. The Etherscan snapshot is validated receipt-by-receipt in CI.
+
+Next work: separate economic/state invariants on the permitted local fork. Do not derive exploit claims from the successful correlation control.
