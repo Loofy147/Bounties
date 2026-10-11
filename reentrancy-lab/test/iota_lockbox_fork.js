@@ -25,6 +25,12 @@ const BLOCKS = {
   unlock: Number(process.env.UNLOCK_FORK_BLOCK || 26133519),
 };
 
+const PINNED_STATE_PATH = path.resolve(
+  __dirname,
+  "../../targets/usdt0/evidence/2026-10-06-iota-lockbox-pinned-state.json"
+);
+const PINNED_STATE = JSON.parse(fs.readFileSync(PINNED_STATE_PATH, "utf8"));
+
 const EIP1967_IMPL_SLOT =
   "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
@@ -132,6 +138,15 @@ async function main() {
       observedBlock === blockNumber,
       `fork block mismatch: got ${observedBlock}, expected ${blockNumber}`
     );
+    const observedBlockData = await provider.getBlock(blockNumber);
+    assert(observedBlockData, `missing fork block data at ${blockNumber}`);
+    if (mode === "config") {
+      assert(
+        observedBlockData.hash.toLowerCase() ===
+          PINNED_STATE.provenance.block_hash.toLowerCase(),
+        `pinned block hash mismatch: ${observedBlockData.hash}`
+      );
+    }
 
     const target = new ethers.Contract(TARGET, TARGET_ABI, provider);
     const endpoint = new ethers.Contract(ENDPOINT, ENDPOINT_ABI, provider);
@@ -174,6 +189,105 @@ async function main() {
     );
 
     const lockboxBalanceBefore = await usdt.balanceOf(TARGET);
+    const usdtDecimals = await usdt.decimals();
+    let configurationComparison = null;
+
+    if (mode === "config") {
+      const expectedReceive = PINNED_STATE.receive_configuration;
+      const expectedPeer = PINNED_STATE.application_state.peer_30423.value;
+      const expectedOwner = PINNED_STATE.application_state.owner.address;
+      const expectedImplementation =
+        PINNED_STATE.proxy.implementation_slot.value.slice(-40);
+      const expectedAppLibrary =
+        expectedReceive.current_receive_library.address;
+      const expectedDefaultLibrary =
+        expectedReceive.default_receive_library_30423.address;
+      const expectedTimeout =
+        expectedReceive.receive_library_timeout;
+
+      assert(owner.toLowerCase() === expectedOwner.toLowerCase(),
+        `owner differs from pinned observation: ${owner}`);
+      assert(peer.toLowerCase() === expectedPeer.toLowerCase(),
+        `peer differs from pinned observation: ${peer}`);
+      assert(implementation.toLowerCase() === ("0x" + expectedImplementation).toLowerCase(),
+        `implementation differs from pinned observation: ${implementation}`);
+      assert(effective.toLowerCase() === expectedAppLibrary.toLowerCase(),
+        `effective receive library differs from pinned observation: ${effective}`);
+      assert(isDefault === expectedReceive.current_receive_library.is_default,
+        `receive-library default flag mismatch: ${isDefault}`);
+      assert(ethers.utils.getAddress(defaultLib).toLowerCase() === expectedDefaultLibrary.toLowerCase(),
+        `default receive library differs from pinned observation: ${defaultLib}`);
+      assert(timeout[0].toLowerCase() === expectedTimeout.library.toLowerCase(),
+        `receive-library timeout address mismatch: ${timeout[0]}`);
+      assert(timeout[1].toString() === String(expectedTimeout.expiry),
+        `receive-library timeout expiry mismatch: ${timeout[1].toString()}`);
+      assert(Number(usdtDecimals) === PINNED_STATE.economic_baseline.decimals,
+        `USDT decimals mismatch: ${usdtDecimals}`);
+      assert(
+        lockboxBalanceBefore.toString() ===
+          PINNED_STATE.economic_baseline.lockbox_usdt_balance_at_pinned_block_raw,
+        `pinned Lockbox USDT balance mismatch: ${lockboxBalanceBefore.toString()}`
+      );
+
+      const receiveUln = new ethers.Contract(effective, ULN_ABI, provider);
+      const directUln = await receiveUln.getUlnConfig(TARGET, 30423);
+      const directConfig = {
+        confirmations: Number(directUln.confirmations.toString()),
+        required_dvn_count: Number(directUln.requiredDVNCount.toString()),
+        optional_dvn_count: Number(directUln.optionalDVNCount.toString()),
+        optional_dvn_threshold: Number(directUln.optionalDVNThreshold.toString()),
+        required_dvns: directUln.requiredDVNs.map((a) => a.toLowerCase()),
+        optional_dvns: directUln.optionalDVNs.map((a) => a.toLowerCase()),
+      };
+      const eventConfig = expectedReceive.app_specific_uln_override;
+      const foldedConfig = {
+        confirmations: eventConfig.confirmations,
+        required_dvn_count: eventConfig.required_dvn_count,
+        optional_dvn_count: eventConfig.optional_dvn_count,
+        optional_dvn_threshold: eventConfig.optional_dvn_threshold,
+        required_dvns: eventConfig.required_dvns.map((a) => a.toLowerCase()),
+      };
+      assert(eventConfig.event_block === blockNumber,
+        `ULN config event block mismatch: ${eventConfig.event_block}`);
+      assert(eventConfig.src_eid === 30423, "ULN config event source EID mismatch");
+      for (const key of [
+        "confirmations",
+        "required_dvn_count",
+        "optional_dvn_count",
+        "optional_dvn_threshold",
+      ]) {
+        assert(directConfig[key] === foldedConfig[key],
+          `direct ULN ${key} differs from event-folded state: ${directConfig[key]} vs ${foldedConfig[key]}`);
+      }
+      assert(
+        JSON.stringify(directConfig.required_dvns) === JSON.stringify(foldedConfig.required_dvns),
+        "direct required-DVN addresses differ from event-folded state"
+      );
+      assert(
+        JSON.stringify(directConfig.required_dvns) ===
+          JSON.stringify(PINNED_STATE.current_state_check.effective_required_dvns.map((a) => a.toLowerCase())),
+        "direct required-DVN addresses differ from the pinned state check"
+      );
+      assert(
+        directConfig.confirmations === PINNED_STATE.current_state_check.effective_uln_confirmations,
+        "direct confirmations differ from pinned state check"
+      );
+      assert(
+        directConfig.required_dvn_count === PINNED_STATE.current_state_check.effective_required_dvn_count,
+        "direct required-DVN count differs from pinned state check"
+      );
+
+      configurationComparison = {
+        blockHash: observedBlockData.hash,
+        directStateMatchesEventFold: true,
+        directConfig,
+        foldedConfig,
+        eventBlock: eventConfig.event_block,
+        eventTransaction: eventConfig.event_tx,
+        usdtDecimals: Number(usdtDecimals),
+        lockboxUsdtBalance: lockboxBalanceBefore.toString(),
+      };
+    }
 
     const evidence = {
       mode,
@@ -192,6 +306,8 @@ async function main() {
         expiry: timeout[1].toString(),
       },
       lockboxUsdtBefore: lockboxBalanceBefore.toString(),
+      usdtDecimals: Number(usdtDecimals),
+      configurationComparison,
       rpcSource: RPC_URL.includes("/public") ? "ALCHEMY_PUBLIC" : "ALCHEMY_PRIVATE_ENV",
       localForkOnly: true,
     };
@@ -200,8 +316,9 @@ async function main() {
       assert(lockboxBalanceBefore.eq(0), "pinned config block should have zero lockbox USDT");
       const out = path.join(outDir, "config.json");
       fs.writeFileSync(out, JSON.stringify(evidence, null, 2) + "\n");
-      console.log("PASS pinned config state reproduced");
-      console.log("PASS implementation / endpoint / peer / library / timeout checks");
+      console.log("PASS pinned config state and block hash reproduced");
+      console.log("PASS implementation / endpoint / owner / peer / library / timeout checks");
+      console.log("PASS receive-side ULN direct state == event-folded state");
       console.log(`ARTIFACT ${out}`);
       return;
     }
