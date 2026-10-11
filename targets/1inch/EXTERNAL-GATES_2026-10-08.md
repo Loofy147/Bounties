@@ -208,3 +208,43 @@ https://etherscan.io/address/0xe12e0f117d23a5ccc57f8935cd8c4e80cd91ff01
 
 7. Example production resolver-cancellation transaction:
 https://etherscan.io/tx/0x9d6db312e6e58187b8f3c9da6e78c2a9545230b2b94413570db209a6e1a136a1
+
+---
+
+## Recheck — 2026-10-11
+
+Full disposition: [H-E2-DISPOSITION_2026-10-11.md](H-E2-DISPOSITION_2026-10-11.md)
+
+### Latest stable target tag
+
+Current GitHub tag refs contain no stable version tag higher than 4.3.4; the highest stable semantic version tag observed is 4.3.4, with tag object `0a40e01befff19d925457b55191900fb456c2dd2` pointing to the researched commit `7da29889efa2e635611e1caf60f85f595ff7f05f`.
+
+### Audit / known-issue reconciliation update
+
+The official 1inch audit README gives a precise scope description for the v4.3.4 OpenZeppelin report: it reviews the Permit2Proxy extension. It does not list NativeOrderFactory or NativeOrderImpl as a dedicated audit target. This leaves report-body / historical v4 and v4.1 coverage reconciliation OPEN rather than cleared.
+
+Two adjacent prior-art records are relevant:
+
+- [PR #390](https://github.com/1inch/limit-order-protocol/pull/390) contains a 2025-09-24 design discussion in which the author explicitly says the entire WETH balance should be returned to the maker, including accidental WETH, because cross-chain cancellation can leave WETH in the clone and the maker can withdraw WETH through `withdraw`. This establishes intended aggregate-balance semantics; it does not directly establish prior disclosure of the specific H-E2 reward interaction.
+- [PR #422](https://github.com/1inch/limit-order-protocol/pull/422) proposed resetting WETH allowance after cancellation to prevent a cancelled order from being refilled using later accidental WETH. It is closed and unmerged. This is adjacent prior art, not a proven duplicate of H-E2.
+
+### Passive event scan — complete to the latest returned block
+
+A topic0 scan of `NativeOrderCancelledByResolver(bytes32,uint256,uint256)` on Ethereum mainnet from block 23,447,660 through the latest Etherscan block returned:
+
+- blocks 23,447,660–26,000,000: 6,337 events;
+- blocks 26,000,001–latest: 364 events;
+- combined: 6,701 decoded events;
+- malformed data: 0;
+- records with resolverReward > 0: 0;
+- latest matching event: block 26,167,845.
+
+The event data decoded correctly in all 6,701 records and every resolverReward was zero. This does not prove the reward path is impossible; it means a non-zero reward case remains unobserved in passive production history.
+
+### Reporting-window constraint
+
+The current Immunefi information page, observed 2026-10-11 and last updated 2026-10-09, states that discoveries must be reported within 24 hours; later reports may be considered at the program's discretion, without guaranteed reward eligibility. Since H-E2 is already documented as a hypothesis in the 2026-09-29 status snapshot, timing eligibility is now at risk if the clause applied in the same form at initial discovery. The historical effective date of that exact wording has not been established.
+
+### Current decision
+
+H-E2 remains EXPERIMENTALLY_SUPPORTED technically and HYPOTHESIS overall. Do not promote it to IN-SCOPE or SUBMISSION-READY. Stop generating synthetic variants. If a submission is later considered, resolver-role eligibility and the timing rule need explicit resolution first. No external report was submitted.
