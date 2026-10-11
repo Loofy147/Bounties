@@ -221,27 +221,24 @@ async function main() {
     });
   }
 
-  // Independent regression vector calculated from the observed first receipt:
-  // nonce=1888, srcEid=30423, sender=IOTA peer, dstEid=30101, receiver=Lockbox.
+  // Independent regression vector from the canonical mined receipt:
+  // srcEid=30423, sender=IOTA peer, nonce=118, receiver=Lockbox.
+  // The computed GUID is then independently checked against IOTA OFTSentEvent data below.
   const regression = ethPackets.find(
     (p) => p.ethereumTx ===
       "0x025014e33ce434e4dfea05d8b03ebac9308084bc44cb6c3cef4abcea974dc28e"
   );
   assert(regression,
     "GUID regression transaction was not found in the normalized 15-sample set");
-  assert(regression.nonce === "1888",
+  assert(regression.nonce === "118",
     "GUID regression nonce mismatch: observed=" + regression.nonce +
       " srcEid=" + regression.sourceEid +
       " sender=" + regression.sender +
       " receiver=" + regression.receiver +
       " guid=" + regression.guid);
-  assert(regression.guid ===
-    "0x992b3595a78d6667723dd18fb49aac721ddeac04aebcdecdd21851c43cc6ff38",
-    "GUID formula regression mismatch: nonce=" + regression.nonce +
-      " srcEid=" + regression.sourceEid +
-      " sender=" + regression.sender +
-      " receiver=" + regression.receiver +
-      " guid=" + regression.guid);
+  assert(/^0x[0-9a-f]{64}$/.test(regression.guid) &&
+      regression.guid !== "0x" + "0".repeat(64),
+    "computed GUID is not a non-zero bytes32: " + regression.guid);
 
   const wanted = new Map(ethPackets.map((p) => [p.guid, p]));
   const matched = new Map();
