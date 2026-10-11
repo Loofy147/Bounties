@@ -248,3 +248,5 @@ The current Immunefi information page, observed 2026-10-11 and last updated 2026
 ### Current decision
 
 H-E2 remains EXPERIMENTALLY_SUPPORTED technically and HYPOTHESIS overall. Do not promote it to IN-SCOPE or SUBMISSION-READY. Stop generating synthetic variants. If a submission is later considered, resolver-role eligibility and the timing rule need explicit resolution first. No external report was submitted.
+
+Spot-check validation of three distinct event-emitter addresses across the two windows found each was deployed by `CREATE2` from the recorded NativeOrderFactory and received WETH at creation. The count remains a signature-wide query, not an emitter-by-emitter classification of every record.
