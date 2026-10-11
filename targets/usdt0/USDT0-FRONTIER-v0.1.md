@@ -392,7 +392,7 @@ Test-boundary caveat: the local-fork test impersonates the Endpoint to exercise 
 - Endpoint/peer receiver-boundary controls and exact-value release: **PASS on a local fork**.
 - Target vulnerability status: **NONE_CLAIMED**.
 
-The source-side/destination-side correspondence and artifact-capture gates are now closed for this sample set. The next discriminating work should shift to expanding historical coverage or checking additional independent economic/state invariants—not generating exploit claims from this successful control. All observations remain read-only; no live-target probing is authorized or required.
+The earlier 15-message sample gate was superseded by a bounded full-history reconciliation in CI run #54: all 162 captured Ethereum `OFTReceived` events matched IOTA L1 source events by GUID and exact amounts. The next discriminating work should shift to independent economic/state invariants, not to re-running the same correlation. All production observations remained read-only; no live-target probing was authorized or required.
 
 
 ## Source-to-destination GUID correspondence — 2026-10-11
@@ -435,3 +435,52 @@ The completed workflow also passed the pinned config replay, the 15/15 Ethereum 
 This establishes sampled state/message correspondence, not general protocol correctness. `OFTSentEvent` itself does not expose the destination recipient address; recipient consistency is checked on the Ethereum side across `Transfer`, `OFTReceived`, and `PacketDelivered`. The local-fork test impersonates the Endpoint only to exercise the OApp receiver boundary; it does not exercise Endpoint proof verification and does not establish a replay vulnerability.
 
 The target vulnerability status remains **NONE_CLAIMED**.
+
+
+## Full captured-history source/destination reconciliation — 2026-10-11
+
+**Result: PASS — 162/162.** This supersedes the earlier 15-message sample-only statement while preserving the sample test as an independent test.
+
+### Pinned destination event snapshot
+
+The public Alchemy RPC available to CI capped `eth_getLogs` at 100 blocks per request. A second public RPC (PublicNode) required a personal token for archive requests. To avoid introducing credentials or weakening validation, the entire read-only Etherscan query response was pinned in:
+
+`targets/usdt0/evidence/2026-10-11-ethereum-oftreceived-snapshot.json`
+
+Snapshot properties:
+- chain: Ethereum mainnet (chain ID 1);
+- emitter: USDT0 Lockbox `0xaef027f94008430bf4fc27ffabb49ea6f1dd3414`;
+- topic0: `OFTReceived(bytes32,uint32,address,uint256)`;
+- range: blocks `25,997,621–26,167,014`;
+- matching logs: **162**;
+- malformed snapshot entries: **0**.
+
+The snapshot was created from a read-only Etherscan log query and committed at `05ec6ca849c01d0b87b5409b51fdf56aaef08fdb`. CI does not trust the snapshot on its own: it checks every row against the transaction receipt, block hash/number, log index/payload, and the same-receipt USDT transfer and Endpoint `PacketDelivered` GUID.
+
+### Source-side matching and accounting
+
+GitHub Actions run [#54](https://github.com/Loofy147/Bounties/actions/runs/38141456942) completed **SUCCESS** on head `9441494de4eb59f6a7e8a1f0bbfb96cdcd2d18cb`.
+
+The read-only IOTA L1 GraphQL query scanned 162 `OFTSentEvent` records over four pages, with pagination exhausted and no early time cutoff. Results:
+
+| Check | Result |
+|---|---:|
+| Captured Ethereum `OFTReceived` records checked against mined receipts | 162/162 |
+| Matching same-receipt `PacketDelivered` GUIDs | 162/162 |
+| Matching Lockbox-to-recipient USDT transfer/amount | 162/162 |
+| Destination events from IOTA source EID 30423 | 162 |
+| Matching IOTA `OFTSentEvent` GUIDs | 162/162 |
+| IOTA `dst_eid` matches Ethereum EID 30101 | 162/162 |
+| `amount_sent_ld` equals Ethereum raw USDT amount | 162/162 |
+| `amount_received_ld` equals Ethereum raw USDT amount | 162/162 |
+| Unmatched destination events | 0 |
+| Amount mismatches | 0 |
+| Source-only GUIDs in captured set | 0 |
+
+The machine-readable summary is updated in `targets/usdt0/evidence/2026-10-11-cross-chain-guid-correlation.json`. The CI artifact is [run #54 evidence](https://github.com/Loofy147/Bounties/actions/runs/38141456942) (artifact ID `11703037963`, SHA-256 `00ffd993c1f85c82e9197f4cf42a8944b768d7241d9aa9ee311177fd42562968`). It contains `config.json`, `cross-chain-guid-correlation.json`, `unlock.json`, and the generated npm lockfile.
+
+### Interpretation and boundary
+
+This is strong bounded, experimentally supported evidence that every destination delivery in the captured interval corresponds to an IOTA L1 OFT send with the same LayerZero GUID and exact raw amounts. It is not an unbounded proof over later blocks, not a complete proof of LayerZero endpoint verification, and not a vulnerability claim. The local-fork boundary test still impersonates the Endpoint to exercise OApp caller/peer checks; it does not exercise Endpoint proof verification.
+
+**Current status:** `LZ-CROSSCHAIN-GUID-CORRELATION-01 = EXPERIMENTALLY_SUPPORTED (162/162)`; target vulnerability status remains **NONE_CLAIMED**.
