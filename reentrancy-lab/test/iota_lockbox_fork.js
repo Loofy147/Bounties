@@ -240,10 +240,16 @@ async function main() {
         optional_dvns: directUln.optionalDVNs.map((a) => a.toLowerCase()),
       };
       const eventConfig = expectedReceive.app_specific_uln_override;
+      // LayerZero encodes "no optional DVNs" as 255 in UlnConfigSet,
+      // while getUlnConfig returns the effective list length (0). Compare
+      // semantic config, but preserve the raw event sentinel in the artifact.
+      const rawEventOptionalDvnCount = eventConfig.optional_dvn_count;
+      const semanticEventOptionalDvnCount =
+        rawEventOptionalDvnCount === 255 ? 0 : rawEventOptionalDvnCount;
       const foldedConfig = {
         confirmations: eventConfig.confirmations,
         required_dvn_count: eventConfig.required_dvn_count,
-        optional_dvn_count: eventConfig.optional_dvn_count,
+        optional_dvn_count: semanticEventOptionalDvnCount,
         optional_dvn_threshold: eventConfig.optional_dvn_threshold,
         required_dvns: eventConfig.required_dvns.map((a) => a.toLowerCase()),
       };
@@ -282,6 +288,7 @@ async function main() {
         directStateMatchesEventFold: true,
         directConfig,
         foldedConfig,
+        rawEventOptionalDvnCount,
         eventBlock: eventConfig.event_block,
         eventTransaction: eventConfig.event_tx,
         usdtDecimals: Number(usdtDecimals),
