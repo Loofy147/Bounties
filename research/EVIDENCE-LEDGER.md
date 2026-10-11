@@ -4,7 +4,7 @@ This ledger prevents loss of work and prevents hypotheses from being mistaken fo
 
 | ID | Target | Status | Evidence | Next gate |
 |---|---|---|---|---|
-| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; H-E2 and the natural partial-fill residual path are EXPERIMENTALLY_SUPPORTED; run #64 completed all six controls; victim loss 0.0007 ETH, resolver net -0.00006743195654982 ETH; production source correspondence for NativeOrderFactory is now ESTABLISHED | reconcile complete applicable audits/known issues; settle resolver-role eligibility; passive production evidence for real partial-fill residual state |
+| B0-1INCH | 1inch Limit Order Protocol | HYPOTHESIS | Target 4.3.4 pinned; local H-E2 behavior EXPERIMENTALLY_SUPPORTED; production NativeOrderFactory source match ESTABLISHED; production residual state observed; passive scan of 6,701 resolver-cancellation events found zero non-zero rewards | audit/known-issue coverage; resolver-role eligibility; 24-hour report-window applicability; production positive-reward case UNKNOWN |
 
 ## External gate update — 2026-10-08
 
@@ -167,3 +167,22 @@ No severity, bounty amount, or submission decision has been assigned.
 ## Preservation rule
 
 Record exact version, ref/commit, execution result, status transition, and next discriminating action for every material step. Never store credentials or secrets.
+
+
+## B0 update — 2026-10-11
+
+See [H-E2-DISPOSITION_2026-10-11.md](../targets/1inch/H-E2-DISPOSITION_2026-10-11.md) and [EXTERNAL-GATES_2026-10-08.md](../targets/1inch/EXTERNAL-GATES_2026-10-08.md).
+
+New observations:
+
+- The highest stable semantic release tag currently present in GitHub refs is 4.3.4, matching the pinned research target.
+- PR #390 explicitly records the design intent to return the clone's aggregate WETH balance to the maker, including accidental WETH left after cross-chain cancellation. This is adjacent design-intent evidence, not direct proof of duplicate disclosure of H-E2.
+- PR #422 proposed zeroing WETH allowance after cancellation to prevent refill from later accidental WETH deposits. It is closed/unmerged and is adjacent prior art, not the same reward-subtraction interaction.
+- A passive Ethereum mainnet event-topic scan from block 23,447,660 through the latest returned block 26,167,845 found 6,701 matching `NativeOrderCancelledByResolver(bytes32,uint256,uint256)` events; every decoded `resolverReward` was zero.
+- Immunefi's current information page states that vulnerabilities must be reported within 24 hours of initial discovery; later reports may receive discretionary consideration but are not guaranteed rewards. H-E2 was already recorded as a hypothesis on 2026-09-29, so eligibility timing is at risk if that wording applied at discovery. The historical effective date of the wording remains UNKNOWN.
+
+Decision:
+- H-E2 technical state remains EXPERIMENTALLY_SUPPORTED.
+- B0-1INCH remains HYPOTHESIS, not IN-SCOPE or SUBMISSION-READY.
+- Stop synthetic variants. Next work is scope/timing clarification and applicable audit/known-issue reconciliation, not another local reproduction.
+- No external submission has been made.
