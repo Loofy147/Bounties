@@ -186,3 +186,5 @@ Decision:
 - B0-1INCH remains HYPOTHESIS, not IN-SCOPE or SUBMISSION-READY.
 - Stop synthetic variants. Next work is scope/timing clarification and applicable audit/known-issue reconciliation, not another local reproduction.
 - No external submission has been made.
+
+Emitter spot-check: three distinct addresses in the passive event sample were independently traced to CREATE2 deployments from the recorded NativeOrderFactory, each with WETH deposited during creation. This validates the source family for sampled records, while the 6,701 result remains signature-wide rather than a complete emitter-address allowlist.
