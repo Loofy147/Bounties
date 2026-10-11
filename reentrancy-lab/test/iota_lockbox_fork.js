@@ -349,9 +349,6 @@ async function main() {
     }
     assert(attackerRejected, "UNAUTHORIZED OWNER MUTATION DID NOT REVERT");
 
-    const endpointSigner = await impersonate(provider, ENDPOINT);
-    const targetAsEndpoint = target.connect(endpointSigner);
-
     const guid = ethers.utils.hexZeroPad("0x01", 32);
     const recipient = "0x2000000000000000000000000000000000000002";
     const amount = ethers.BigNumber.from(1_000_000); // 1 USDT
@@ -359,6 +356,31 @@ async function main() {
       ["bytes32", "uint64"],
       [ethers.utils.hexZeroPad(recipient, 32), amount]
     );
+
+    const validOrigin = {
+      srcEid: 30423,
+      nonce: 1,
+      sender: PEER,
+    };
+
+    let nonEndpointRejected = false;
+    try {
+      const tx = await targetAsAttacker.lzReceive(
+        validOrigin,
+        guid,
+        message,
+        attacker,
+        "0x",
+        { gasLimit: 1_500_000 }
+      );
+      await tx.wait();
+    } catch (_) {
+      nonEndpointRejected = true;
+    }
+    assert(nonEndpointRejected, "NON-ENDPOINT CALLER WAS ABLE TO REACH LZRECEIVE");
+
+    const endpointSigner = await impersonate(provider, ENDPOINT);
+    const targetAsEndpoint = target.connect(endpointSigner);
 
     const wrongOrigin = {
       srcEid: 30423,
@@ -382,16 +404,31 @@ async function main() {
     }
     assert(wrongPeerRejected, "WRONG PEER MESSAGE DID NOT REVERT");
 
+    const wrongEidOrigin = {
+      srcEid: 30101,
+      nonce: 1,
+      sender: PEER,
+    };
+    let wrongEidRejected = false;
+    try {
+      const tx = await targetAsEndpoint.lzReceive(
+        wrongEidOrigin,
+        guid,
+        message,
+        attacker,
+        "0x",
+        { gasLimit: 1_500_000 }
+      );
+      await tx.wait();
+    } catch (_) {
+      wrongEidRejected = true;
+    }
+    assert(wrongEidRejected, "WRONG SOURCE EID WITH OTHERWISE CORRECT PEER DID NOT REVERT");
+
     const recipientBefore = await usdt.balanceOf(recipient);
     const lockboxBefore = await usdt.balanceOf(TARGET);
 
     assert(lockboxBefore.gte(amount), "unlock test requires >= 1 USDT on lockbox");
-
-    const validOrigin = {
-      srcEid: 30423,
-      nonce: 1,
-      sender: PEER,
-    };
 
     const validTx = await targetAsEndpoint.lzReceive(
       validOrigin,
@@ -417,7 +454,9 @@ async function main() {
 
     evidence.unlockTest = {
       attackerRejected,
+      nonEndpointRejected,
       wrongPeerRejected,
+      wrongEidRejected,
       validMessageTx: receipt.transactionHash,
       recipient,
       amount: amount.toString(),
@@ -431,7 +470,9 @@ async function main() {
     fs.writeFileSync(out, JSON.stringify(evidence, null, 2) + "\n");
 
     console.log("PASS unauthorized owner mutation rejected");
+    console.log("PASS non-Endpoint caller rejected at receiver boundary");
     console.log("PASS wrong peer rejected at target boundary");
+    console.log("PASS correct peer with wrong source EID rejected");
     console.log("PASS endpoint+correct peer released exactly 1 USDT on LOCAL FORK");
     console.log(`ARTIFACT ${out}`);
   } finally {
