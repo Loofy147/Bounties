@@ -74,3 +74,26 @@ Do not repackage these known points as a new finding. Any future hypothesis must
 - **Required before promotion:** retrieve/verify a complete local source snapshot and dependencies; reconcile all applicable audit/known-issue material; identify one new attacker-reachable invariant violation; reproduce against the actual production code in the program-authorized local fork; collect state-delta/trace evidence; independently validate impact and novelty; then request human approval before submission.
 
 Evidence path: official Immunefi pages and pinned GitHub source URLs above. No tests were run against live networks or third-party contracts.
+
+
+## 7. Follow-up: adjacent in-scope ACE transfer targets
+
+The current official scope also lists these assets (added 2026-07-30):
+
+- [ChainlinkAceSharesTransferValidator.sol](https://github.com/enzymefinance/protocol-onyx/blob/d8a522d6ca58af9dbb831dad2b8045a88952e468/src/components/shares-transfer-validators/ChainlinkAceSharesTransferValidator.sol) — blob SHA `29d6364fcf4eaa936dd4ca46606eeca72fb3b3e2`.
+- [ChainlinkAceSharesTransferExtractor.sol](https://github.com/enzymefinance/protocol-onyx/blob/d8a522d6ca58af9dbb831dad2b8045a88952e468/src/components/shares-transfer-validators/ChainlinkAceSharesTransferExtractor.sol) — blob SHA `6080903b676fc57c52d444142cf408e5c7963e8b`.
+
+Static findings:
+- The validator's state-changing entry point is gated by `onlyShares` and uses the inherited `runPolicy` modifier.
+- The extractor accepts only the `validateSharesTransfer` selector, decodes `(originator, from, to, amount)`, and emits the corresponding four named policy parameters in that order.
+- Project tests encode the same selector/sender/argument tuple and test both `transfer` and `transferFrom` allow/deny paths. These tests were inspected as source only; none were executed.
+- The inherited ACE base stores context by the immediate caller (`senderContext[msg.sender]`). Since this validator's guarded caller is the protocol's `Shares` contract, an external account cannot set the context entry used for a subsequent `Shares`-initiated validation by calling `setContext` as itself. The project base explicitly documents this integration as not using per-user context.
+- No payload-order mismatch or unprivileged context-injection path was established in static review.
+
+**Feasibility note:** These targets sit on the Chainlink ACE boundary. The live bounty rules prohibit testing with third-party smart contracts, so do not execute the ACE integration/E2E tests or construct an experiment involving the third-party policy engine unless Immunefi explicitly clarifies an allowed method. The standalone source mapping can be reviewed without executing that integration, but any eventual PoC must meet the live program's actual-production-code requirement.
+
+## 8. Source delta and novelty check
+
+The `SyncRedeemHandler.sol` file at repository ref `58c9d4d48103f1755390e4a9fdaf35ebdcfb4597` has the same blob SHA (`8e90babe79714f66728111406e35ddd3b7442aa4`) as the current scoped ref `d8a522d6ca58af9dbb831dad2b8045a88952e468`. The source commit is dated 2026-10-01 and is titled `feat: implement SyncRedeemHandler and related components for synchronous redemptions (#138)`. Therefore the 2026-10-12 scope addition appears to be an addition of existing code to the program scope, not a new code revision in that interval. This is **not** proof that the implementation was comprehensively audited; the QA report states its review was time-limited.
+
+A repository search found no matching public issue/PR for `SyncRedeemHandler`; this is a limited search signal, not proof of global novelty. No runtime tests were executed in this session because the environment could not resolve `github.com` for a source clone. No status is promoted beyond static review.
