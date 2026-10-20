@@ -9,33 +9,24 @@ def record():
     return {
         "schema_version": "1.0",
         "target": {
-            "program": "Example Program",
-            "asset": "Example Contract",
-            "source_url": "https://example.org/scope",
-            "repository": "org/repo",
-            "revision": "abc123def456",
-            "eligible_release_confirmed": True,
-            "in_scope": True,
-            "scope_snapshot_checked_at": "2026-10-20T10:00:00Z",
+            "program": "Example Program", "asset": "Example Contract",
+            "source_url": "https://example.org/scope", "repository": "org/repo",
+            "revision": "abc123def456", "eligible_release_confirmed": True,
+            "in_scope": True, "scope_snapshot_checked_at": "2026-10-20T10:00:00Z",
             "allowed_environments": ["local", "local-fork"],
             "prohibited_actions": ["public-network-testing", "denial-of-service"],
             "allowed_actions": []
         },
         "claim": {
-            "id": "H-001",
-            "status": "REPRODUCED",
+            "id": "H-001", "status": "REPRODUCED",
             "title": "Invariant mismatch in local model",
             "hypothesis": "A permitted state transition may violate an accounting invariant.",
             "claimed_impact": "Funds accounting discrepancy under specified local preconditions",
             "first_discovered_at": "2026-10-20T10:30:00Z"
         },
         "experiment": {
-            "environment": "local-fork",
-            "target_matches_scope": True,
-            "destructive": False,
-            "uses_public_network": False,
-            "reproducible": True,
-            "poc_passed": True
+            "environment": "local-fork", "target_matches_scope": True, "destructive": False,
+            "uses_public_network": False, "reproducible": True, "poc_passed": True
         },
         "evidence": [{
             "id": "E-001", "kind": "test-log", "path": "tests/fixtures/run.txt", "sha256": None,
@@ -79,6 +70,16 @@ class ValidateRecordTests(unittest.TestCase):
         result = validate_record(item, root=Path(__file__).resolve().parents[1], now="2026-10-20T11:00:00Z")
         self.assertFalse(result["valid"])
         self.assertTrue(any("environment" in error for error in result["errors"]))
+
+    def test_public_network_is_not_authorized_by_environment_allowlist_alone(self):
+        item = record()
+        item["target"]["allowed_environments"].append("public-mainnet")
+        item["target"]["prohibited_actions"] = ["denial-of-service"]
+        item["experiment"]["environment"] = "public-mainnet"
+        item["experiment"]["uses_public_network"] = True
+        result = validate_record(item, root=Path(__file__).resolve().parents[1], now="2026-10-20T11:00:00Z")
+        self.assertFalse(result["valid"])
+        self.assertIn("experiment uses a public network without explicit program authorization", result["errors"])
 
     def test_rejects_unauthorized_destructive_testing(self):
         item = record()
@@ -150,6 +151,19 @@ class ValidateRecordTests(unittest.TestCase):
             item["evidence"][0]["sha256"] = digest
             result = validate_record(item, root=root, now="2026-10-20T11:00:00Z")
             self.assertTrue(result["valid"])
+
+    def test_rejects_sha256_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / "artifacts" / "run.txt"
+            artifact.parent.mkdir()
+            artifact.write_text("evidence payload\n", encoding="utf-8")
+            item = record()
+            item["evidence"][0]["path"] = "artifacts/run.txt"
+            item["evidence"][0]["sha256"] = "0" * 64
+            result = validate_record(item, root=root, now="2026-10-20T11:00:00Z")
+            self.assertFalse(result["valid"])
+            self.assertIn("evidence[0].sha256 does not match the evidence file", result["errors"])
 
     def test_rejects_artifact_path_escape(self):
         item = record()
