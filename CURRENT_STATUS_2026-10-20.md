@@ -7,7 +7,7 @@
 
 ## Executive decision
 
-1. **Keep 1inch Smart Contracts / Limit Order Protocol as the first track, but do not resume the old H-E2 line mechanically and do not submit it now.** The official program scope page shows eight assets marked new on 2026-10-14, including `Limit Order Protocol - new`. It also states that only the latest eligible tag/releases qualify and that reports must be submitted within 24 hours of initial discovery.
+1. **Keep 1inch in the active research queue, but correct the previous scope interpretation.** The information page was updated on 2026-10-14; the separate scope page shows last updated on 2026-08-14 and lists eight assets with `Added on` dates of 2026-06-10. I found no official evidence of a target named `Limit Order Protocol - new` or of an asset addition on October 14. The program requires the latest eligible tag/releases and reporting within 24 hours of initial discovery.
 2. **SP1 is the best fallback to prepare, not an automatic switch.** It is a live zero-knowledge proof program with a $100,000 maximum, no payout KYC, and strict production soundness/completeness requirements.
 3. **IOTA/Sherlock remains unpromoted.** This review did not independently verify the full official program terms from an accessible primary-source page; reward, eligibility, and KYC details must remain unconfirmed until rechecked directly.
 
@@ -29,20 +29,14 @@ No vulnerability is claimed or promoted by this review. No active testing was pe
 - For a Critical reward, the demonstrated impact must also be live on a mainnet deployment. The program reserves discretion to downgrade impacts involving code not deployed on mainnet.
 - Testing deployed mainnet/public-testnet code is prohibited; testing must use a local fork. Testing with third-party contracts is prohibited, except that integration logic may be tested on a local fork. Do not access or modify other users' data, conduct denial-of-service testing, or publicly disclose an unpatched/embargoed issue. AI-generated reports are explicitly prohibited.
 
-### Scope delta — ESTABLISHED
+### Scope delta — ESTABLISHED (corrected)
 
-The scope page now lists these eight entries as added on 2026-10-14:
+The current Immunefi pages show different page-update timestamps:
+- Information page: last updated **2026-10-14**.
+- Scope page: last updated **2026-08-14**.
+- Each of the eight listed scope assets shows **2026-06-10** in its `Added on` column: Limit Order Protocol, Limit Order Settlement, Token-plugins, Farming Contracts, Delegating Contracts, Cross-chain Swap, Solana Crosschain, and Solana Fusion.
 
-- Limit Order Protocol - new
-- Limit Order Settlement - new
-- Token-plugins - new
-- Farming Contracts - new
-- Delegating Contracts - new
-- Cross-chain Swap - new
-- Solana Crosschain - new
-- Solana Fusion - new
-
-The previous Bounties snapshot predates this page update. This is a material scope-page change and requires a fresh target-to-source mapping before any new testing. The parsed page did not expose a source URL for the specific “Limit Order Protocol - new” row, so the exact source/asset mapping for that row remains **OPEN**; do not infer it solely from the row label.
+The scope table does not currently identify `Limit Order Protocol - new`, and does not show these eight assets as added on October 14. The verified change is an information-page update, not a demonstrated scope-asset addition. Do not report a new target without an official row and a verifiable scope delta.
 
 ### Version and provenance gate — OPEN
 
