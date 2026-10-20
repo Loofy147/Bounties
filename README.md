@@ -78,3 +78,15 @@ All work must remain within the current bounty scope and permitted test environm
 ## Snapshot provenance
 
 The initial material in this repository is a preservation snapshot derived from the Moirae bounty-track documents on branch `feat/abd-atomic-register` of `Loofy147/moirae` on 2026-09-02. The original Moirae documents remain untouched.
+
+
+## Reusable research layer
+
+The first reusable software layer is being developed on the feat/evidence-gate-layer-v0.1 branch. Its goal is to make scope, target revision, claims, experiment constraints, evidence provenance, reporting deadlines, and human review gates machine-checkable.
+
+See the Evidence Gate Layer v0.1 design in docs/EVIDENCE_GATE_LAYER_v0.1.md, the record schema in schemas/research-record-v1.schema.json, and the latest opportunity review in CURRENT_STATUS_2026-10-20.md. The validator never auto-promotes a hypothesis or submits a report; passing its gates is not proof of a vulnerability or a guarantee of bounty acceptance.
+
+Run locally from the repository root with Python 3.12+:
+
+    python -m unittest discover -s tests -v
+    python -m tools.bounty_gate examples/claim-record.example.json --root . --pretty
