@@ -16,7 +16,9 @@ Every candidate is classified as `RECONNAISSANCE`, `HYPOTHESIS`, `REPRODUCED`, `
 
 Obtain the first legitimate, externally accepted paid finding, regardless of payout size.
 
-Current B0 target: 1inch Smart Contracts, beginning with a pinned production release of Limit Order Protocol. See `targets/1inch/`.
+Latest source-verified opportunity review: [`CURRENT_STATUS_2026-10-20.md`](CURRENT_STATUS_2026-10-20.md). It records the 2026-10-14 1inch scope change, the release/eligibility gates, and the SP1 fallback assessment.
+
+Current B0 target: 1inch Smart Contracts / Limit Order Protocol, but the existing H-E2 candidate remains a hypothesis and is on hold pending scope-to-release, audit/known-issue, role, production-impact and reporting-deadline gates. See `targets/1inch/` and the latest status snapshot.
 
 ## Hunter architecture
 
