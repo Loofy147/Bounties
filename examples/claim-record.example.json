@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "target": {
+    "program": "Replace with the official bounty program",
+    "asset": "Replace with the exact in-scope asset",
+    "source_url": "https://example.org/authorized-scope",
+    "repository": "owner/repository",
+    "revision": "0123456789abcdef0123456789abcdef01234567",
+    "eligible_release_confirmed": false,
+    "in_scope": true,
+    "scope_snapshot_checked_at": "2026-10-20T10:00:00Z",
+    "allowed_environments": ["local", "local-fork"],
+    "prohibited_actions": ["public-network-testing", "denial-of-service", "third-party-contract-testing"],
+    "allowed_actions": []
+  },
+  "claim": {
+    "id": "H-EXAMPLE-001",
+    "status": "HYPOTHESIS",
+    "title": "Example falsifiable hypothesis",
+    "hypothesis": "State the invariant, preconditions, and observable that could falsify this hypothesis.",
+    "claimed_impact": "Describe only an impact category explicitly defined by the current program; do not assert vulnerability until evidenced.",
+    "first_discovered_at": "2026-10-20T10:30:00Z"
+  },
+  "experiment": {
+    "environment": "local",
+    "target_matches_scope": true,
+    "destructive": false,
+    "uses_public_network": false,
+    "reproducible": false,
+    "poc_passed": false
+  },
+  "evidence": [],
+  "gates": {
+    "scope_reviewed": true,
+    "release_pinned": false,
+    "known_issues_reviewed": false,
+    "audits_reviewed": false,
+    "impact_mapped_to_program": false,
+    "independent_review_passed": false,
+    "human_approved": false,
+    "submission_human_authored": false,
+    "ai_generated_report": false,
+    "deadline_checked": false,
+    "eligibility_confirmed": false
+  },
+  "program_terms": {
+    "poc_required": true,
+    "report_deadline_hours": 24,
+    "deadline_rule_confirmed": false,
+    "ai_report_policy": "unknown",
+    "scope_refresh_max_age_hours": 24
+  }
+}
