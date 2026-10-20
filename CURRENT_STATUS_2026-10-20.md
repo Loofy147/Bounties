@@ -62,16 +62,17 @@ Before any new test, determine from the current program asset link and release/t
 
 ### Existing H-E2 / K-04 line — HOLD
 
-The 2026-09-29 research status records H-E2 local behavior as `EXPERIMENTALLY_SUPPORTED`, but the overall candidate remains `HYPOTHESIS`; bounty eligibility was still open. The status also records an unresolved resolver-role/privileged-address question, incomplete audit/known-issue reconciliation, and incomplete production prevalence evidence.
+The 2026-09-29 research status records H-E2's local mechanism as `EXPERIMENTALLY_SUPPORTED`, while the overall candidate remains `HYPOTHESIS`. The new source review yields these separate results:
 
-The 24-hour initial-discovery reporting rule is an additional blocker. Existing H-E2 work predates the 2026-10-14 scope-page update. **Do not assume that adding or relabeling a scope asset resets the initial-discovery clock.** Treat eligibility of this old candidate as `UNKNOWN / NOT CLEARED` unless Immunefi/1inch explicitly confirms otherwise. Do not submit based only on local reproduction or the new scope row.
+- **Scope correction — ESTABLISHED:** the information page was updated on 2026-10-14, but the current scope page says it was last updated on 2026-08-14 and lists eight assets with `Added on` dates of 2026-06-10. No current official evidence establishes a new asset named `Limit Order Protocol - new` or an October 14 asset addition.
+- **Target pin — ESTABLISHED:** the official GitHub Releases page lists `v4.3.4` as the latest release at commit `7da29889efa2e635611e1caf60f85f595ff7f05f`. The default-branch package version `4.3.5` is not evidence of a published eligible tag.
+- **Specific audit coverage — ESTABLISHED:** the official 1inch audit archive describes its `Limit Order Protocol v4.3.4` OpenZeppelin report as covering the `Permit2Proxy` extension. That report does not establish audit coverage of `NativeOrderFactory` or `NativeOrderImpl`. This does not prove the extension was never audited elsewhere.
+- **Design-intent evidence — ESTABLISHED:** the public NativeOrder PR #390 explicitly discussed returning the full WETH balance, including accidentally deposited WETH, and the maintainer explained why that broad refund behavior was desired. This supports intended full-balance refund semantics; it does not establish that the undercollateralized resolver-reward scenario itself was known.
+- **Reporting eligibility — NOT CLEARED:** local H-E2 work and impact calibration were already documented by 2026-09-29, while the live program page states a 24-hour initial-discovery reporting rule. A page update does not reset that clock. Late reports may be considered at program discretion, but reward eligibility is not guaranteed. Do not submit H-E2 unless the program explicitly confirms eligibility.
 
-Stop repeating synthetic variants of the same H-E2 mechanism unless genuinely new evidence changes a previously open gate. The next useful work is:
-1. Map the current “Limit Order Protocol - new” asset to its exact eligible source and release commit.
-2. Reconcile the matching audit archive, known issues, and previous disclosures against that exact code.
-3. Determine whether resolver/access-token-holder treatment changes the in-scope assessment.
-4. Choose a fresh, falsifiable invariant-based investigation only after the preceding gates pass.
-5. Record the first-discovery timestamp for any genuinely new candidate and use a 24-hour submission gate.
+Do not repeat synthetic variants of the same H-E2 mechanism. The next useful action is to stop treating H-E2 as the immediate payout candidate, preserve its technical evidence, and run a distinct, falsifiable investigation against the pinned release only if its scope and expected impact justify the work. Any genuinely new issue must have its actual first-discovery timestamp recorded, and tests must remain local/fork-based under the current program terms.
+
+Detailed source-by-source reconciliation: [`targets/1inch/AUDIT-AND-ELIGIBILITY-RECHECK_2026-10-20.md`](targets/1inch/AUDIT-AND-ELIGIBILITY-RECHECK_2026-10-20.md).
 
 ## 2. Fallback candidate: SP1
 
