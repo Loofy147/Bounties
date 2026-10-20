@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Loofy147/Bounties/main/schemas/scope-snapshot-v1.schema.json",
+  "title": "Normalized bounty program scope snapshot",
+  "description": "Manual/verified structural snapshot of a public bounty scope. A snapshot is not proof of current eligibility until checked against the official program page.",
+  "type": "object",
+  "required": ["schema_version", "program", "assets"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "program": {
+      "type": "object",
+      "required": ["id", "name", "source_url", "retrieved_at", "terms"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "source_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+        "retrieved_at": {"type": "string", "format": "date-time"},
+        "page_last_updated": {"type": ["string", "null"]},
+        "terms": {
+          "type": "object",
+          "properties": {
+            "reward_ceiling": {"type": ["number", "null"], "minimum": 0},
+            "reward_currency": {"type": ["string", "null"]},
+            "kyc_required": {"type": ["boolean", "null"]},
+            "report_deadline_hours": {"type": ["number", "null"], "exclusiveMinimum": 0},
+            "deadline_rule": {"type": ["string", "null"]},
+            "poc_required": {"type": ["boolean", "null"]},
+            "ai_report_policy": {"enum": ["allowed", "prohibited", "unknown", null]},
+            "allowed_environments": {"type": ["array", "null"], "items": {"type": "string"}},
+            "prohibited_actions": {"type": ["array", "null"], "items": {"type": "string"}},
+            "disclosure_policy": {"type": ["string", "null"]},
+            "known_issue_policy": {"type": ["string", "null"]}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "status", "source_url"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "status": {"enum": ["in-scope", "out-of-scope", "unknown"]},
+          "source_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+          "eligible_release": {"type": ["string", "null"]},
+          "impacts": {"type": ["array", "null"], "items": {"type": "string"}},
+          "max_reward": {"type": ["number", "null"], "minimum": 0},
+          "reward_currency": {"type": ["string", "null"]},
+          "allowed_environments": {"type": ["array", "null"], "items": {"type": "string"}},
+          "prohibited_actions": {"type": ["array", "null"], "items": {"type": "string"}},
+          "poc_required": {"type": ["boolean", "null"]},
+          "known_issue_policy": {"type": ["string", "null"]},
+          "disclosure_policy": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

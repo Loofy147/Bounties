@@ -33,3 +33,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Example record validation
         run: python -m tools.bounty_gate examples/claim-record.example.json --root . --pretty
+      - name: Example scope-delta validation
+        run: python -m tools.scope_diff examples/scope-snapshot-before.example.json examples/scope-snapshot-after.example.json --pretty

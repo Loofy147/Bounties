@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "program": {
+    "id": "example:not-a-real-program",
+    "name": "Example only — not a real bounty program",
+    "source_url": "https://example.org/program/scope",
+    "retrieved_at": "2026-10-21T10:00:00Z",
+    "page_last_updated": "2026-10-20",
+    "terms": {
+      "reward_ceiling": 100000, "reward_currency": "USDC", "kyc_required": true,
+      "report_deadline_hours": 12, "deadline_rule": "from first discovery",
+      "poc_required": true, "ai_report_policy": "prohibited",
+      "allowed_environments": ["local-fork"],
+      "prohibited_actions": ["public-network-testing", "denial-of-service"],
+      "disclosure_policy": "coordinated", "known_issue_policy": "excluded"
+    }
+  },
+  "assets": [
+    {
+      "id": "order-contract", "name": "Example Order Contract", "status": "in-scope",
+      "source_url": "https://example.org/program/scope#order",
+      "eligible_release": "tag:1.0.1@abcdef0123456789abcdef0123456789abcdef01",
+      "impacts": ["unauthorized asset loss", "signature bypass"],
+      "max_reward": 50000, "reward_currency": "USDC",
+      "allowed_environments": ["local-fork"], "prohibited_actions": ["public-network-testing"],
+      "poc_required": true
+    },
+    {
+      "id": "vault-contract", "name": "Example Vault Contract", "status": "in-scope",
+      "source_url": "https://example.org/program/scope#vault",
+      "eligible_release": "tag:2.0.0@0123456789abcdef0123456789abcdef01234567",
+      "impacts": ["unauthorized asset loss"], "max_reward": 100000, "reward_currency": "USDC",
+      "allowed_environments": ["local-fork"], "prohibited_actions": ["public-network-testing"],
+      "poc_required": true
+    }
+  ]
+}

@@ -90,3 +90,12 @@ Run locally from the repository root with Python 3.12+:
 
     python -m unittest discover -s tests -v
     python -m tools.bounty_gate examples/claim-record.example.json --root . --pretty
+
+
+## Scope snapshot diff (v0.2)
+
+The structural diff utility compares manually reviewed, normalized snapshots; it does not scrape programs or assume that a changed page timestamp is a material scope change.
+
+    python -m tools.scope_diff examples/scope-snapshot-before.example.json examples/scope-snapshot-after.example.json --pretty
+
+The snapshots in the example are synthetic. See the v0.2 design section in docs/EVIDENCE_GATE_LAYER_v0.1.md.
