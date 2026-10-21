@@ -12,7 +12,7 @@ All listed rows show **Added on: 5 October 2026**. Scope is by deployed address;
 
 | # | Target | Ethereum address | Source / status at this check |
 |---:|---|---|---|
-| 1 | TransitStation | `0x49AAA987b1a7e9E4AE091dcD8332c39F322D7d28` | Etherscan/Sourcify exact-match classification; text reconciliation has one NatSpec discrepancy still to normalize |
+| 1 | TransitStation | `0x49AAA987b1a7e9E4AE091dcD8332c39F322D7d28` | Etherscan/Sourcify exact-match; normalized source comparison matches; source diff vs audit follow-up is limited to event ABI/log payload and comment text |
 | 2 | Transit BoringVault | `0x91FE06C6E9F97E7DE4580A280E03046155f8e1e3` | Sourcify record found; exact source/commit map not closed |
 | 3 | Transit Manager | `0x666156ab52bb9984F5c3985726f048Dd4A73887a` | Sourcify API returned 404 at this check; source map open |
 | 4 | Transit RolesAuthority | `0x3B4decc43d2173280198B46532Ef570062FCc8f5` | Verified metadata returned, Solidity 0.8.20, optimizer 200, Shanghai; exact source map open |
@@ -43,8 +43,9 @@ The total inventory is now closed (14/14). This does **not** close per-address c
 - Compiler: `0.8.21+commit.d9974bed`; optimizer enabled, 200 runs; EVM `shanghai`.
 - The verified source file is `src/transit/TransitStation.sol`.
 - Program-owned pinned file at commit `2843ac873718e869ac138278f9f4ee3c12736544` has Git blob SHA `d83ef26ca09749a8503c9447d586449d45d46261`.
-- Full source text comparison found a first discrepancy in NatSpec around `forceSetUsedDigestTrue`: deployed verified text says “block it from ever **becoming** received”; the pinned GitHub file says “block it from ever **being** received”. Lengths differ by 3 characters. The normalized comparison was rerun: replacing only the phrase “becoming received” with “being received” makes the full file text exactly equal. Raw source text is **not** byte-identical. The difference is confined to NatSpec, but comments can change compiler metadata, so this is not proof of identical runtime bytecode. Full compilation/dependency/constructor/immutable reconstruction remains open.
-- Source/compiler identification is substantially stronger than a package version, but the chain/block bytecode hash and constructor/immutable configuration still need an evidence bundle before a PoC.
+- Raw source text differs from the pinned GitHub file by one NatSpec phrase: verified text says “block it from ever **becoming** received”; repository text says “block it from ever **being** received” (3-character length delta). The offline comparator's normalization confirms the full file matches after this one phrase replacement. This is diagnostic only, not raw source equality or bytecode identity; source comments can affect compiler metadata.
+- A direct line diff against the program-owned repo file at [commit `094289219a4ace472e7b6be06187266c4aecaed3`](https://github.com/paxoslabs/pxl-boring-vault/blob/094289219a4ace472e7b6be06187266c4aecaed3/src/transit/TransitStation.sol), the Pashov follow-up source, found only three diff blocks: (1) `OrderSubmitted` event signature changes from `Route` + `OrderTerms` to the full `Quote`; (2) emitted event arguments change accordingly; (3) the same NatSpec phrase above. No other lines in this source file differ. The event change alters the log ABI, but does not change contract state-transition logic.
+- **Interpretation:** the current TransitStation source logic is strongly matched to the audited/fixed source family, subject to verifying the full audit commit provenance, dependency revisions, constructor/immutable values, and runtime bytecode. Do not spend a PoC budget on previously acknowledged/fixed logic absent a distinct residual hypothesis.
 
 ### 2.2 DistributorCodeDepositor fee module (correct source identification)
 
