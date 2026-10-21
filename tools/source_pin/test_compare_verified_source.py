@@ -1,11 +1,14 @@
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 from compare_verified_source import (
     compare_sources,
     load_verified_source,
+    main,
     solidity_lexical_form,
 )
 
@@ -67,6 +70,45 @@ class VerifiedSourceLoadingTests(unittest.TestCase):
             path.write_text(json.dumps({"sources": {}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "has no embedded 'content'"):
                 load_verified_source(path, "src/Missing.sol")
+
+
+class CliFailClosedTests(unittest.TestCase):
+    def _run_cli(self, verified_source: str, repo_source: str) -> tuple[int, str]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata_path = root / "verified.json"
+            repo_path = root / "A.sol"
+            metadata_path.write_text(json.dumps({
+                "chainId": 1,
+                "address": "0xabc",
+                "match": "exact_match",
+                "metadata": {"compiler": {"version": "0.8.21"}},
+                "sources": {"src/A.sol": {"content": verified_source}},
+            }), encoding="utf-8")
+            repo_path.write_text(repo_source, encoding="utf-8")
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                code = main([
+                    "--verified-json", str(metadata_path),
+                    "--source-unit", "src/A.sol",
+                    "--repo-file", str(repo_path),
+                ])
+            return code, stdout.getvalue()
+
+    def test_cli_exact_text_match_exits_zero(self):
+        code, output = self._run_cli("contract A {}", "contract A {}")
+        self.assertEqual(code, 0)
+        self.assertIn('"status": "EXACT_TEXT_MATCH"', output)
+
+    def test_cli_comment_only_difference_fails_closed(self):
+        code, output = self._run_cli("contract A {} // verified note", "contract A {} // repo note")
+        self.assertEqual(code, 1)
+        self.assertIn('"status": "COMMENT_OR_WHITESPACE_ONLY_DIFF"', output)
+
+    def test_cli_semantic_difference_exits_three(self):
+        code, output = self._run_cli("contract A { uint x; }", "contract A { uint y; }")
+        self.assertEqual(code, 3)
+        self.assertIn('"status": "SOURCE_CONTENT_MISMATCH"', output)
 
 
 if __name__ == "__main__":
