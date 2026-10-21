@@ -78,9 +78,10 @@ Transit and PAXGy map well to existing strengths:
 1. ✅ Captured all 14 official scope rows and dates.
 2. ✅ Read the official known-issues document body directly and mapped exclusions.
 3. ✅ Text-extracted key Transit and PAXGy fee-module audit reports and recorded known/resolved/acknowledged findings.
-4. ✅ Retrieved Sourcify verified source text for TransitStation and DCDAssetSpecificFeeModule; DCD source matches the pinned repository file exactly. TransitStation has a 3-character NatSpec phrase discrepancy; full normalized comparison remains open.
-5. ✅ Identified non-exact Explorer source matches for Accountant, WithdrawQueue, and WithdrawQueue fee module; those targets are blocked pending source diff.
-6. ⏳ Next: finish exact source comparison, then re-evaluate whether any distinct non-known invariant still justifies a local harness. Current decision: no candidate clears the serious-work gate yet.
+4. ✅ Retrieved Sourcify source for TransitStation and DCDAssetSpecificFeeModule. DCD source matches the pinned repo file exactly. TransitStation matches after one NatSpec phrase normalization; direct line diff against the Pashov follow-up source has only the `OrderSubmitted` event signature/emission shape and that comment phrase changed, with no other file-body differences.
+5. ✅ Recorded non-exact Explorer source matches for Accountant, WithdrawQueue, and WithdrawQueue fee module; these remain blocked pending semantic source-diff reconciliation.
+6. ✅ Added and tested the offline fail-closed source comparator (9/9 unit tests passed).
+7. ⏳ Next: close remaining selected-target deployment/build/config pins before considering any new hypothesis. Current decision: no candidate clears the serious-work gate, so no PoC is justified yet.
 
 All work so far is static/source/audit review. No target-interacting PoC was run. No vulnerability, severity, payout or novelty claim is made.
 
@@ -88,7 +89,7 @@ All work so far is static/source/audit review. No target-interacting PoC was run
 
 | ID | Candidate family | Status | Decision |
 |---|---|---|---|
-| PX-TR-01 | Transit quote signature, chain/domain binding, one-use digest, cross-chain replay | `RECONNAISSANCE / BLOCKED` | Exact TransitStation source normalization and audit-to-deployed mapping remain open; adjacent known/audited behaviors exist. Do not start a PoC yet. |
+| PX-TR-01 | Transit quote signature, chain/domain binding, one-use digest, cross-chain replay | `RECONNAISSANCE / BLOCKED` | Core current source matches the Pashov follow-up source except for event log ABI/payload and comment. Related state-transition failures are already known/fixed/acknowledged; no distinct target hypothesis survives. Do not start a PoC. |
 | PX-TR-02 | Cross-chain decimal normalization / dust / zero `amountDue` | `KILLED / KNOWN AUDIT ISSUE` | yAudit, Guardian and Pashov record adjacent dust/low-decimal fee behaviors; no repeat. |
 | PX-TR-03 | Version-skewed payload, receive-route/backlog, peer removal | `KILLED / ACKNOWLEDGED AUDIT ISSUE` | Guardian/yAudit record the behavior; do not repackage. |
 | PX-PX-01 | DCD fee arithmetic and per-token fee configuration | `RECONNAISSANCE / CONFIGURATION GATE OPEN` | Deployed module source matches repo, but owner/fee mapping/config and qualifying unprivileged impact are not established. |
