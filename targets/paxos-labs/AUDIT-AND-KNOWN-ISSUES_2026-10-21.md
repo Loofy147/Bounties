@@ -19,7 +19,7 @@ All listed rows show **Added on: 5 October 2026**. Scope is by deployed address;
 | 5 | Transit Decoder | `0xF34942E8612ccE476307B30a6246B43ce42B5D20` | Verified metadata returned, Solidity 0.8.21, optimizer 200, Shanghai; exact source map open |
 | 6 | PAXGy Token BoringVault | `0x6c6494Fd9962eB98B94ffA48F6679058F820700e` | Sourcify record found; exact source/commit map open |
 | 7 | PAXGy Manager | `0x353741aBa79974a90F88594f6CBd1a9c54651015` | Sourcify record found; exact source/commit map open |
-| 8 | PAXGy Accountant | `0x397e38359f169748a02bc11f98D4f451FE88C1fd` | Etherscan says Similar Match; do not substitute repository HEAD |
+| 8 | PAXGy Accountant | `0x397e38359f169748a02bc11f98D4f451FE88C1fd` | Etherscan Similar Match; Sourcify `match`; source text normalizes to the pinned repo file with only the security-contact comment changed |
 | 9 | PAXGy Teller | `0x41AB5d8387e60E30AACCF11357C306f6d875A6f7` | Sourcify record found; exact source/commit map open |
 | 10 | PAXGy Roles Authority | `0xC444dA4DF6AF6A9A3891a720c1712a4188d899DD` | Verified metadata returned, Solidity 0.8.20, optimizer 200, Shanghai; exact source map open |
 | 11 | PAXGy DistributorCodeDepositor | `0xF6dE922D08cF9Ee4e7cE25ca1f3936EC1AA1f62C` | Exact metadata query rate-limited; source map open |
