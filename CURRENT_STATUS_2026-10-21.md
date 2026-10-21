@@ -52,7 +52,7 @@ Official sources:
 - TransitStation at `0x49AAA...D7d28` is explorer-verified exact match / Sourcify `exact_match`, Solidity 0.8.21, optimizer 200, Shanghai. The normalized source comparator confirms equality after changing only the three-character NatSpec phrase discrepancy; raw text is not byte-identical and the runtime compilation/build pin remains open.
 - Added the offline utility [`tools/source_pin/compare_verified_source.py`](tools/source_pin/compare_verified_source.py), with nine passing unit tests. It distinguishes exact text matches from comment/whitespace-only differences and fails closed on every non-exact source pin.
 - DCD fee module at `0x6E0A...B8c6D` is Etherscan Exact Match, and verified source text equals the pinned `src/helper/DCDAssetSpecificFeeModule.sol` at commit `2843ac8...` exactly.
-- Etherscan marks the scoped Accountant, WithdrawQueue, and WithdrawQueue fee module as Similar Match. Sourcify `match` for the Accountant source normalizes to the repository file except the security-contact comment. WithdrawQueue and its fee-module source comparisons remain open.
+- Etherscan labels the scoped Accountant, WithdrawQueue, and WithdrawQueue fee module as Similar Match. The verified Accountant source normalizes to the pinned repo file except a security-contact comment; Etherscan embedded verified source text for WithdrawQueue and its fee module is byte-for-byte identical to their pinned repo files. Runtime bytecode/compiler-input, constructor/immutable and deployed-config gates remain open.
 
 ### INFERENCE — fit
 
