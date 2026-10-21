@@ -7,8 +7,8 @@
 
 ## Executive decision
 
-1. **Correct the 1inch scope record.** The live scope table now displays eight target-family rows marked `- new`, each with `Added on` = 2026-10-14. This contradicts the interpretation in `CURRENT_STATUS_2026-10-20.md` that the October 14 update was only an information-page update and no scope-asset additions were demonstrated. Preserve the old status file as historical evidence; the reconciliation is in [`targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md`](targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md).
-2. **Prioritize Paxos Labs for bounded source-level reconnaissance.** Its Immunefi information and scope pages now show last updated 2026-10-21; the program went live 2026-10-20. The work matches existing Solidity, authorization, accounting, order-state, and deterministic-harness capabilities. Do not start a target-interacting PoC until source-to-deployment, known-issue, and testing-policy gates are cleared. See [`targets/paxos-labs/README.md`](targets/paxos-labs/README.md).
+1. **Keep the 1inch scope discrepancy OPEN.** The official search-indexed scope result reports last updated 2026-10-20 and eight asset-added dates of 5 October 2026, while the earlier local snapshot records June 10 and a prior scope-page update of August 14. The prior material does not justify asserting an October 14 asset addition. Preserve the historical snapshot and use [`targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md`](targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md) as the unresolved discrepancy record.
+2. **Prioritize Paxos Labs for bounded source-level reconnaissance.** Its official search-indexed information and scope pages show last updated 2026-10-20; the program went live 2026-10-20. The work matches existing Solidity, authorization, accounting, order-state, and deterministic-harness capabilities. Do not start a target-interacting PoC until source-to-deployment, known-issue, and testing-policy gates are cleared. See [`targets/paxos-labs/README.md`](targets/paxos-labs/README.md).
 3. **Keep 1inch H-E2 on HOLD.** Local mechanism remains `EXPERIMENTALLY_SUPPORTED`, but the overall candidate remains `HYPOTHESIS` and reporting eligibility is `UNKNOWN / NOT CLEARED`. The 24-hour timer runs from initial discovery, not from a scope-page change. Do not repeat the already-completed synthetic experiment and do not submit without explicit program eligibility confirmation.
 4. **No vulnerability is established by this follow-up.** No new target-interacting tests were run and no external report was prepared or submitted.
 
@@ -20,32 +20,15 @@ Official sources:
 - Release source: https://github.com/1inch/limit-order-protocol/releases
 - Detailed reconciliation: [`targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md`](targets/1inch/SCOPE-RECONCILIATION_2026-10-21.md)
 
-### ESTABLISHED
+### ESTABLISHED / OPEN
 
-The live table shows the following eight rows with `- new` in their displayed names and `Added on` = **2026-10-14**:
-- Limit Order Protocol
-- Limit Order Settlement
-- Token-plugins
-- Farming Contracts
-- Delegating Contracts
-- Cross-chain Swap
-- Solana Crosschain
-- Solana Fusion
+- **ESTABLISHED:** Official 1inch program information states a 24-hour initial-discovery reporting rule.
+- **ESTABLISHED:** The previous status snapshot recorded eight asset dates of 2026-06-10 and a scope-page update of 2026-08-14.
+- **ESTABLISHED:** The current official search-indexed scope result reports a 2026-10-20 page update and eight asset-added dates of 2026-10-05.
+- **OPEN:** This is a discrepancy requiring row-by-row recheck of the live official page. Do not label it an October 14 addition or material asset addition without direct supporting evidence.
+- **UNKNOWN:** Whether the scope display maps each row to a new eligible release/commit.
 
-The information page shows a 2026-10-14 update. The previous status document recorded the scope page's older 2026-08-14 page-update field and June 10 asset dates, and it concluded that October 14 was not an asset addition. The live scope-table contents now contradict that previous interpretation. Do not delete or rewrite the prior status; retain this dated correction as the append-only record.
-
-### UNKNOWN / OPEN
-
-- Exact eligible repository/tag/commit mapping for each new-labelled scope row at the time of a future experiment.
-- Whether the displayed additions have any target-specific exclusions or implementation boundaries not exposed by the rendered row.
-- Eligibility of the historical H-E2 discovery for a reward.
-
-### Hard gates
-
-- The program states a **24-hour initial-discovery reporting rule**. A new row or page update does not reset it.
-- Existing H-E2 was already researched before this snapshot and is not to be submitted without explicit written eligibility confirmation.
-- Continue only with a distinct hypothesis when scope, exact release, audits/known issues, actor permissions, and impact gates warrant it.
-- All testing must remain on local forks; deployed mainnet/public-testnet testing and AI-generated report submissions are prohibited by the live program rules.
+Do not treat the page update or asset-added date as a reset of H-E2's initial-discovery clock. Preserve H-E2's existing status and do not repeat the completed synthetic experiment.
 
 ## 2. Paxos Labs — serious follow-up, reconnaissance only
 
