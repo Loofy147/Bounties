@@ -61,17 +61,21 @@ The total inventory is now closed (14/14). This does **not** close per-address c
 
 | Address / target | Current observation | Gate before testing |
 |---|---|---|
-| PAXGy Accountant | Etherscan Similar Match to a different source address; compiler/settings visible | Obtain full verified source and compare code/immutables against repo blob `35c34e1d2c01b648a1dc07ca9576101a1dc5987f`; reconcile the similar-match diff |
-| PAXGy WithdrawQueue | Etherscan Similar Match, compiler `0.8.21`, optimizer 200, Shanghai | Compare deployed `WithdrawQueue` source to repo blob `f0b60a43f77567481d2d907e75b7bfee90e81a8d`; resolve all semantic diffs |
-| PAXGy WithdrawQueue Fee Module | Etherscan Similar Match, compiler `0.8.21`, optimizer 200, Shanghai | Compare deployed module to repo blob `0d4530eb300908f99abb08c09a2142193b72e20e`; resolve all semantic diffs |
+| PAXGy Accountant | Etherscan Similar Match; Sourcify v2 `match`; compiler `0.8.21+commit.d9974bed`, optimizer 200, Shanghai | **Source-text comparison complete at the normalized level:** verified source is 21,442 characters vs repository's 21,439; the only difference found is the security-contact comment (`security@molecularlabs.io` vs `security@paxoslabs.com`). Repo blob `35c34e1d2c01b648a1dc07ca9576101a1dc5987f`. Runtime build, source metadata, deployment block, constructor/immutable values, and current configuration remain open |
+| PAXGy WithdrawQueue | Etherscan Similar Match, compiler `0.8.21`, optimizer 200, Shanghai; Sourcify source unit not returned | Compare deployed `WithdrawQueue` source to repo blob `f0b60a43f77567481d2d907e75b7bfee90e81a8d`; resolve semantic diffs before any test |
+| PAXGy WithdrawQueue Fee Module | Etherscan Similar Match, compiler `0.8.21`, optimizer 200, Shanghai; Sourcify source unit not returned | Compare deployed module to repo blob `0d4530eb300908f99abb08c09a2142193b72e20e`; resolve semantic diffs before any test |
 | PAXGy DistributorCodeDepositor | Sourcify request hit service rate limit before a result | Retry when service allows, then compare verified source, config, and blob `68521bf60f46bb4052543780d58c7b3b9270fdf0` |
 | Remaining manager/decoder/vault/teller/authority entries | Some Sourcify metadata records exist; exactness and repo equivalence are not established consistently | Record runtime bytecode hashes, compiler metadata, constructor args, source paths and resolved diffs for the chosen target |
+
+A normalized source match is **not** a bytecode build proof. The security-contact change is comment-only by source diff, but the verifier metadata may differ; source-tree equality alone does not establish runtime code equivalence.
 
 Public-source links:
 - [TransitStation at the pinned source commit](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/transit/TransitStation.sol)
 - [DCDAssetSpecificFeeModule at the pinned source commit](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/DCDAssetSpecificFeeModule.sol)
+- [AccountantWithRateProviders at the pinned source commit](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/base/Roles/AccountantWithRateProviders.sol)
 - [Sourcify v2 — TransitStation source/metadata](https://sourcify.dev/server/v2/contract/1/0x49AAA987b1a7e9E4AE091dcD8332c39F322D7d28?fields=sources,metadata)
 - [Sourcify v2 — DCD fee module source/metadata](https://sourcify.dev/server/v2/contract/1/0x6E0A209672f6e357B2B5435AB6AEa2acbB4B8c6D?fields=sources,metadata)
+- [Sourcify v2 — Accountant metadata/source](https://sourcify.dev/server/v2/contract/1/0x397e38359f169748a02bc11f98D4f451FE88C1fd?fields=sources,metadata)
 
 ## 3. Official known-issues register read directly
 
