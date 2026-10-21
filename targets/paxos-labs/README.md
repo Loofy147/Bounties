@@ -129,57 +129,31 @@ These reports have been text-extracted, not fully visually inspected. A final pa
 
 **CLOSED for the current document body** after direct extraction on 2026-10-21. The earlier note saying the document could not be read is superseded. The official document explicitly lists cross-chain DCD supply-cap limitations, non-enforcing share locks, WithdrawQueue refund-recipient and receipt-screening semantics, raw-hash queue signatures, processor-gas refund behavior, CCIP shared-rate-limit exhaustion, an infeasible Merkle double-preimage scenario, Transit decoder design, pause behavior, and trusted roles. Full details and explicit kill decisions are recorded in [`AUDIT-AND-KNOWN-ISSUES_2026-10-21.md`](AUDIT-AND-KNOWN-ISSUES_2026-10-21.md). These entries are exclusions, not hypotheses.
 
-## 7. Invariant-led research queue
+## 7. Candidate register after source/audit/known-issue triage
 
-These are investigation directions, not vulnerability claims.
+These are research lines, not vulnerability claims. Findings labelled known/audited are not to be repeated as new experiments.
 
-### PX-TR-01 — Signed quote and settlement-state integrity
+| ID | Surface | Status | Rationale / decision |
+|---|---|---|---|
+| PX-TR-01 | Transit quote digest, chain/domain binding, replay and order settlement | `RECONNAISSANCE / BLOCKED` | The verified source is strongly mapped, but full normalized text equality and audit-to-deployed-source equivalence remain open. yAudit/Guardian/Pashov already cover several adjacent payload, idempotency, routing and execution behaviors. No target-interacting test until the residual property is distinct from documented findings. |
+| PX-TR-02 | Cross-chain decimal normalization / dust / zero `amountDue` | `KILLED / KNOWN AUDIT ISSUE` | yAudit and Guardian reported sub-dust/zero-due behavior; Pashov acknowledged low-decimal fees rounding to zero. Do not repeat. Rounding/precision-only impact also faces the program's USD 100,000 loss threshold. |
+| PX-TR-03 | Version-skewed payload and receive-side route behavior | `KILLED / ACKNOWLEDGED AUDIT ISSUE` | Guardian acknowledged a version-skewed payload; yAudit/Guardian acknowledge peer-removal/route backlog behavior. Do not repackage those reports. |
+| PX-PX-01 | DCD fee arithmetic / deployed per-token config | `RECONNAISSANCE / CONFIGURATION GATE OPEN` | The scoped module is `DCDAssetSpecificFeeModule` (not the dynamic oracle fee module). Its fee settings are owner-controlled; the consuming deposit path reverts when fees equal/exceed deposit amount. Need deployed owner, fee mapping and DCD config before any candidate could exist. No serious unprivileged impact is currently supported. |
+| PX-PX-02 | Cross-chain DCD supply cap | `KILLED / KNOWN ISSUE` | Official known-issues document explicitly says the cap is only single-chain enforceable. No repeat experiment. |
+| PX-PX-03 | Dynamic PAXGy fee/oracle and share/NAV accounting | `BLOCKED / SCOPE MAPPING OPEN` | Dynamic fee modules appear in source/audit history but the scoped DCD fee address is a different contract. Pashov/yAudit recorded acknowledged feed freshness/skew/share-lock concerns and fixed fee math. The program restricts oracle/third-party interactions. Do not begin an experiment without matching a currently scoped address and resolving audit/known-issue overlap. |
+| PX-WQ-01 | WithdrawQueue refund receiver, receipt transfer/screening, cancellation signatures | `KILLED / KNOWN ISSUE` | All listed behavior is in the official known-issues document. WithdrawQueue deployed source is an Etherscan Similar Match; do not explore a source variant before reconciling it. |
+| PX-WQ-02 | WithdrawQueue processor gas, refund behavior, liveness | `KILLED / KNOWN ISSUE` | Processor gas-limited refund and queue liveness assumptions are explicitly documented and role-trusted. |
+| PX-AUTH-01 | Merkle manager double-preimage / decoder sanitization | `KILLED / KNOWN ISSUE / DESIGN-BOUNDED` | The official known-issues document says the double-preimage scenario is not viable, and Transit decoder behavior is intentional and bounded by pending order, fixed receiver, amountDue and vault approval checks. Do not test. |
+| PX-EE-01 | Equivalent Exchange nested flash-loan / dangling approval | `REPORTED / FOLLOW-UP FIX MERGED` | yAudit reported a High issue; PR #342 merged 2026-09-08 and adds a flashLoan rejection + checks additional approval selectors. EquivalentExchange UManager is not a separately listed target address, so do not treat its historical report as a new scoped candidate. |
 
-Source family: `TransitStation`.
+### Candidate-selection decision
 
-Candidate invariants:
-- A quote digest must bind the exact route, chain/domain, verifying contract and order terms.
-- A digest may be accepted only once at the source, and a cross-chain order UUID may enter destination pending state only once from the authenticated peer.
-- Net offer tokens transferred must equal the signed offer amount after exactly the signed fee partition.
-- Destination `amountDue` must derive deterministically from the normalized net amount and actual configured want-asset decimals.
-- Partial fills must monotonically decrease `amountDue`; cumulative fills must not exceed it; the receiver and want asset must remain fixed.
-- Batch failure must roll back state changes and transfers atomically.
-
-Source observations at the recorded commit:
-- EIP-712-like quote domain binds live `block.chainid` and `address(this)`.
-- `_verifyAndCollect` marks the digest used before token transfers and partitions protocol fee, integrator fee and net.
-- `_lzReceive` rejects a UUID already marked used on destination.
-- `executePendingOrders` decrements/deletes order state before token transfer and checks the residual allowance after each batch.
-- `_toNormalizedDecimals` / `_toTokenDecimals` deliberately truncate precision in documented paths.
-
-**Interpretation:** these observed structures look like explicit mitigations, not evidence of a defect. Start by mapping deployed source and reviewing audit coverage. Small rounding/dust cases are not a priority because of the USD 100,000 threshold.
-
-### PX-PX-01 — Fee module and share/NAV conservation
-
-Source family: `PaxgyDynamicDepositFeeModule`, `PaxgyDynamicWithdrawalFeeModule`, `DistributorCodeDepositor`, `TellerWithMultiAssetSupport`, `AccountantWithRateProviders`, and any scoped queue/module revealed by page 2.
-
-Candidate invariants:
-- Deposit fee is within the original deposit amount and the net deposited amount equals the signed/authorized amount minus the fee.
-- Minimum-mint failure and supply-cap failure revert the whole transaction, including prior transfers/mints.
-- Deposit/withdrawal fees route only according to the deployed fee recipient/module configuration.
-- Vault-held shares, total supply and NAV are treated consistently; do not assume the intended economic result from a comment alone.
-- Exchange rate/fees state stays within documented bounds and pause behavior is enforced.
-
-Source observations at the recorded commit:
-- Deposit module rejects unexpected token/share addresses and rounds its fee up in the vault's favor.
-- `DistributorCodeDepositor._deposit` deducts the fee, uses the Teller to mint, sends shares, then enforces the value-based supply cap; EVM revert should roll back the full call sequence.
-- The withdrawal module's comment says shares sent to the vault are not burned, and that accounting must exclude vault-held shares from NAV/supply assumptions for the fee to accrue as intended.
-
-**Interpretation:** the share/NAV note is a cross-component configuration/accounting question, not a proven defect. Check deployed fee module, queue/fee recipient and actual NAV/share-supply treatment against the known-issues ledger and relevant fee-module audit before designing an experiment.
-
-### PX-AUTH-01 — Merkle manager and decoder boundary
-
-Candidate invariants:
-- Permission checks bind the deployed Merkle root, target, value, selector and sensitive decoded arguments.
-- A different encoding or decoder interpretation must not authorize a call outside the committed permission.
-- Only currently configured roles can perform the protected action.
-
-**Gate:** do not hypothesize impact from missing/possible role configuration alone; the deployed settings must contain the relevant condition or the in-scope logic must allow an unprivileged actor to create it.
+**No new invariant currently clears all serious-work gates.** The next safe engineering step is source reconciliation, not a synthetic PoC:
+1. Finish the normalized TransitStation source-text comparison and pin the audited/final source commit relationship.
+2. Compare the deployed Accountant, WithdrawQueue and WithdrawQueue fee-module sources against the pinned repo files. Etherscan reports Similar Match for those three.
+3. Capture current deployed configuration for the DCD owner and per-token fee map, if that surface remains the chosen target; without it, do not infer impact from hypothetical privileged settings.
+4. Recheck official known issues and current reward terms at the point a genuinely distinct property is proposed.
+5. Only then design a local/fork harness against an invariant that is neither a known issue nor an acknowledged/resolved audit finding.
 
 ## 8. Implementation steps and gate statuses
 
