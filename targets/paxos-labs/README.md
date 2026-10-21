@@ -14,7 +14,7 @@
 
 **ESTABLISHED at check time**
 - Live since: 2026-10-20.
-- Information and scope pages observed as last updated: 2026-10-21.
+- Information and scope pages observed in official search-indexed results as last updated: 2026-10-20 (checked 2026-10-21).
 - Maximum reward: $500,000; payout in USDG on Ethereum, reward values denominated in USD.
 - Critical: 10% of directly affected funds, minimum $10,000 / maximum $500,000.
 - High: $5,000–$10,000.
