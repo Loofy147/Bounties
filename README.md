@@ -24,7 +24,7 @@ Current B0 target: 1inch Smart Contracts / Limit Order Protocol, but the existin
 
 The reusable research engine is defined in [`research/BUG-HUNTER-FOUNDATION-v0.1.md`](research/BUG-HUNTER-FOUNDATION-v0.1.md).
 
-The source-provenance gate now includes an offline [verified-source comparator](tools/source_pin/README.md) and six regression tests. It distinguishes raw source equality from comment/whitespace-only similarity and fails closed when the exact source text differs. Normalized equality is diagnostic only, not bytecode identity or bounty eligibility.
+The source-provenance gate now includes an offline [verified-source comparator](tools/source_pin/README.md) and nine regression tests. It distinguishes raw source equality from comment/whitespace-only similarity and fails closed when the exact source text differs. Normalized equality is diagnostic only, not bytecode identity or bounty eligibility.
 
 The canonical model is:
 
