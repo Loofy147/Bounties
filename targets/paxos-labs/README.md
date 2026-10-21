@@ -20,7 +20,7 @@
 - High: $5,000–$10,000.
 - Medium: $1,000 flat.
 - KYC required; PoC required; Responsible Publication Category 3 (approval required).
-- The scope page states 14 assets total. Its extracted first page shows 12 assets; the two rows on page 2 are not included here because they have not been independently captured. Do not infer their names or addresses.
+- The official scope UI was paginated. Both pages have now been reviewed and all **14/14** displayed rows are recorded below; page 2 contains WithdrawQueue and its fee module.
 - The program scopes contracts by deployed address. If a listed asset is a proxy, the implementation it points to at submission time is included.
 - A PoC must reproduce the impact against the in-scope contracts in a local or forked environment. Theoretical-only reports are out of scope.
 
@@ -29,7 +29,7 @@
 - Any change in rewards or terms relative to the previous day's snapshot, beyond the now-visible page-update date; current terms are the ones above.
 - Exact deployed-source correspondence for each address in the table below.
 
-## 2. Exact addresses visible on page 1
+## 2. Exact addresses — all 14 rows captured
 
 Every entry below was read from the live official Immunefi scope table on 2026-10-21. The page shows each was added on **2026-10-05**.
 
@@ -46,9 +46,11 @@ Every entry below was read from the live official Immunefi scope table on 2026-1
 | PAXGy Teller | `0x41AB5d8387e60E30AACCF11357C306f6d875A6f7` | [Etherscan](https://etherscan.io/address/0x41AB5d8387e60E30AACCF11357C306f6d875A6f7) |
 | PAXGy Roles Authority | `0xC444dA4DF6AF6A9A3891a720c1712a4188d899DD` | [Etherscan](https://etherscan.io/address/0xC444dA4DF6AF6A9A3891a720c1712a4188d899DD) |
 | PAXGy DistributorCodeDepositor | `0xF6dE922D08cF9Ee4e7cE25ca1f3936EC1AA1f62C` | [Etherscan](https://etherscan.io/address/0xF6dE922D08cF9Ee4e7cE25ca1f3936EC1AA1f62C) |
-| PAXGy DCD FeeModule | `0x6E0A209672f6e357B2B5435AB6AEa2acbB4B8c6D` | [Etherscan](https://etherscan.io/address/0x6E0A209672f6e357B2B5435AB6AEa2acbB4B8c6D) |
+| PAXGy DCD FeeModule (`DCDAssetSpecificFeeModule`) | `0x6E0A209672f6e357B2B5435AB6AEa2acbB4B8c6D` | [Etherscan](https://etherscan.io/address/0x6E0A209672f6e357B2B5435AB6AEa2acbB4B8c6D#code) |
+| PAXGy WithdrawQueue | `0x69e0BF658bE5600864A946b4e5B911736D248FB4` | [Etherscan](https://etherscan.io/address/0x69e0BF658bE5600864A946b4e5B911736D248FB4#code) |
+| PAXGy WithdrawQueue Fee Module (`WithdrawQueueAssetSpecificFeeModule`) | `0xF41e79D6e646f334C2fc4ea5Ae609707AE82264D` | [Etherscan](https://etherscan.io/address/0xF41e79D6e646f334C2fc4ea5Ae609707AE82264D#code) |
 
-**Asset inventory gate: OPEN.** Do not test or select a target as “the full scope” until page 2 has been captured and the remaining two assets recorded.
+**Asset inventory gate: CLOSED (14/14).** Per-address source-to-deployment and configuration gates remain independently open; completing the table does not authorize a test.
 
 ## 3. Source provenance and what it proves
 
@@ -64,8 +66,8 @@ The current tree contains relevant source and tests:
 |---|---|---|
 | TransitStation | [`src/transit/TransitStation.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/transit/TransitStation.sol) | `d83ef26ca09749a8503c9447d586449d45d46261` |
 | DistributorCodeDepositor | [`src/helper/DistributorCodeDepositor.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/DistributorCodeDepositor.sol) | `68521bf60f46bb4052543780d58c7b3b9270fdf0` |
-| PAXGy dynamic deposit fee | [`src/helper/PaxgyDynamicDepositFeeModule.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/PaxgyDynamicDepositFeeModule.sol) | `2d5ee5f7b8c01ac29c6360f19a8a01af26f6e84e` |
-| PAXGy dynamic withdrawal fee | [`src/helper/PaxgyDynamicWithdrawalFeeModule.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/PaxgyDynamicWithdrawalFeeModule.sol) | `6b0f95e811fe502f83cb3e1d61265ea9f6e6f630` |
+| DCD deposit fee module (matches the scoped fee address) | [`src/helper/DCDAssetSpecificFeeModule.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/DCDAssetSpecificFeeModule.sol) | `f79f17a6a45724598f061488b8eccb053a41c398` |
+| WithdrawQueue fee module | [`src/helper/WithdrawQueueAssetSpecificFeeModule.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/helper/WithdrawQueueAssetSpecificFeeModule.sol) | `0d4530eb300908f99abb08c09a2142193b72e20e` |
 | Accountant | [`src/base/Roles/AccountantWithRateProviders.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/base/Roles/AccountantWithRateProviders.sol) | `35c34e1d2c01b648a1dc07ca9576101a1dc5987f` |
 | Merkle Manager | [`src/base/Roles/ManagerWithMerkleVerification.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/base/Roles/ManagerWithMerkleVerification.sol) | `28eefd3c1ffdda1ee961c6d32279ff85a8d67d6f` |
 | Teller | [`src/base/Roles/TellerWithMultiAssetSupport.sol`](https://github.com/paxoslabs/pxl-boring-vault/blob/2843ac873718e869ac138278f9f4ee3c12736544/src/base/Roles/TellerWithMultiAssetSupport.sol) | `a3293adf6ba70bef8a55b09a45130841d2e76c1b` |
@@ -73,7 +75,20 @@ The current tree contains relevant source and tests:
 
 `deployment-config/PAXGyCCIPEth.json` at this commit matches four visible scoped addresses: PAXGy Token BoringVault, Manager, Accountant and RolesAuthority. The checked config's Teller address is zero, so it does not establish the deployed Teller source/pin.
 
-This mapping is **not** sufficient to establish exact deployed-source equivalence. The following have not been established for any selected target:
+The mapping is now address-aware but not fully closed. Verified-source evidence checked on 2026-10-21:
+
+| Scoped component | Explorer verification | Current repo comparison | Decision |
+|---|---|---|---|
+| TransitStation | Etherscan Exact Match; Sourcify `exact_match`; Solidity 0.8.21, optimizer 200, Shanghai | Sourcify source path matches. Source text differs at the `forceSetUsedDigestTrue` NatSpec phrase (“becoming received” vs “being received”), a 3-character length delta; complete normalized equality still pending | Hold source pin until normalized comparison is rerun |
+| DCDAssetSpecificFeeModule | Etherscan Exact Match; Solidity 0.8.21, optimizer 200, Shanghai | Sourcify source text equals the pinned repo file exactly | Source text gate closed; deployed fee data/owner/constructor state remain open |
+| PAXGy Accountant | Etherscan Similar Match; Solidity 0.8.21, optimizer 200, Shanghai | Not proven equivalent to pinned `AccountantWithRateProviders.sol` | Block this target until diff reconciled |
+| WithdrawQueue | Etherscan Similar Match; Solidity 0.8.21, optimizer 200, Shanghai | Not proven equivalent to pinned `WithdrawQueue.sol` | Block this target until diff reconciled |
+| WithdrawQueue fee module | Etherscan Similar Match; Solidity 0.8.21, optimizer 200, Shanghai | Not proven equivalent to pinned `WithdrawQueueAssetSpecificFeeModule.sol` | Block this target until diff reconciled |
+| Other ten/authority/decoder targets | Some Sourcify records exist; exact repository commit mapping is inconsistent or unverified | Do not assume a default-branch file is deployed | Per-address pin required before selection |
+
+Detailed row-level state and audit findings: [`AUDIT-AND-KNOWN-ISSUES_2026-10-21.md`](AUDIT-AND-KNOWN-ISSUES_2026-10-21.md).
+
+This mapping is **not** sufficient to establish exact deployed-source equivalence for every asset. The following remain open:
 - address and chain at the exact pinned block;
 - runtime bytecode hash;
 - verified source and exact compiler/settings;
@@ -83,26 +98,16 @@ This mapping is **not** sufficient to establish exact deployed-source equivalenc
 
 Do not infer eligible tag/release from `master` or a package version. Scope is the deployed address; deployment bytecode correspondence is the required pin.
 
-## 4. Relevant official audit map — coverage is not yet reconciled
+## 4. Relevant official audit map
 
-The official program information page links these reports in the program-owned source tree:
+TransitStation audit PDFs and the PR #324 / #342 PAXGy fee-module audits have now been text-extracted and reconciled at the finding-title/status level. Reports on earlier `nucleus-boring-vault` commits are not proof that every currently scoped deployment is identical to the reviewed source, but their findings must be treated as prior art. See the [dated audit register](AUDIT-AND-KNOWN-ISSUES_2026-10-21.md).
 
-| Component family | Report | Official completion date |
-|---|---|---|
-| Core BoringVault | 0xMacro / Spearbit / Pashov | 2024 |
-| WithdrawQueue | Zellic Zenith / Pashov | 2025–2026 |
-| Predicate freeze / supply cap | Pashov | 2026-03-05 |
-| TransitStation | yAudit | 2026-06-18 |
-| TransitStation | Guardian | 2026-06-24 |
-| TransitStation | Zellic | 2026-06-26 |
-| TransitStation | Pashov | 2026-06-27 |
-| PAXGy fee modules | Pashov | 2026-08-06 |
-| PAXGy fee modules | yAudit | 2026-08-15 |
-| CCIP Teller | Pashov | 2026-08-28 |
+- yAudit Transit: old repo commits `5affe77657a9bf788a6f13c27f911047d8900616` / `4a0d21ec5837842cfdb8936816c5e248e5e68c10`; dust-order and peer-removal issues acknowledged; `_pushOrder` idempotency and same-chain native-value handling marked fixed.
+- Guardian Transit: old repo commit `2a32b7cc3dfe83825cf9cc5a8cbe751dec95b122`; sub-dust orders, version-skewed payload, peer backlogs and other listed findings include acknowledged/resolved entries.
+- Pashov Transit: `L-01` stale decoder resolved; `L-02` zero fees for low-decimal stablecoins acknowledged.
+- Pashov/yAudit PAXGy fee modules: review commit `0af42540fb25a1e5ea85b7142adb4f3a3b7954d5`; follow-up [PR #342](https://github.com/paxoslabs/pxl-boring-vault/pull/342) merged 2026-09-08. It includes a flash-loan nested-batch rejection, broader dangling-allowance checks, and fee/scaling/deployment corrections.
 
-The report inventory does not establish which exact functions, revisions, deployed addresses, or known findings each report covers. The PDFs have not been text/image reviewed in this snapshot. No finding may be called “unaudited” from this list alone.
-
-Audit links are available under [the repository's `audit/` folder](https://github.com/paxoslabs/pxl-boring-vault/tree/2843ac873718e869ac138278f9f4ee3c12736544/audit) and on the [official Immunefi information page](https://immunefi.com/bug-bounty/paxos-labs/information/).
+These reports have been text-extracted, not fully visually inspected. A final page-by-page visual review and exact deployed-implementation mapping remain open. Do not label a candidate “unaudited” or “novel” on this basis alone.
 
 ## 5. Testing and impact boundaries
 
@@ -122,9 +127,7 @@ Audit links are available under [the repository's `audit/` folder](https://githu
 
 ## 6. Known-issues gate
 
-Official link: https://docs.google.com/document/d/14gImubrl0MNn_Jl_2_jCW1QPD4ra_MqYX-TV8S7JGlQ/edit
-
-The document could not be read through the current retrieval route. A previous monitor note reported that it contains entries involving DCD supply-cap behavior, share-lock fields, WithdrawQueue refund/receipt behavior, raw-hash queue signatures, gas-limit refunds, CCIP rate limits, decoder and pause behavior, role powers, and Merkle-verification cases. Treat that list as a **provisional research index only**, not a verified current known-issue ledger; check the primary document itself before assigning novelty status. This gate remains **OPEN**.
+**CLOSED for the current document body** after direct extraction on 2026-10-21. The earlier note saying the document could not be read is superseded. The official document explicitly lists cross-chain DCD supply-cap limitations, non-enforcing share locks, WithdrawQueue refund-recipient and receipt-screening semantics, raw-hash queue signatures, processor-gas refund behavior, CCIP shared-rate-limit exhaustion, an infeasible Merkle double-preimage scenario, Transit decoder design, pause behavior, and trusted roles. Full details and explicit kill decisions are recorded in [`AUDIT-AND-KNOWN-ISSUES_2026-10-21.md`](AUDIT-AND-KNOWN-ISSUES_2026-10-21.md). These entries are exclusions, not hypotheses.
 
 ## 7. Invariant-led research queue
 
@@ -183,14 +186,14 @@ Candidate invariants:
 | Gate | Status | Closure evidence |
 |---|---|---|
 | Official program/reward/PoC/KYC rules | `ESTABLISHED` | Live official pages |
-| 14/14 scope row inventory | `OPEN` | Capture scope page 2 and the exact two remaining rows |
-| Source commit identified | `ESTABLISHED` for repository snapshot only | Commit `2843ac8...` |
+| 14/14 scope row inventory | `ESTABLISHED` | All 14 live rows captured, including both page-2 queue entries |
+| Source commit identified | `ESTABLISHED` for repo snapshot | Commit `2843ac873718e869ac138278f9f4ee3c12736544` |
 | Deployment bytecode → source equivalence | `OPEN` | Per-address chain/block, code hash, verified-source/compiler and build match |
-| Full known-issues ledger read | `OPEN` | Read official linked document directly and cite exact applicable entries |
-| Relevant audit contents reconciled | `OPEN` | Inspect reports and map findings to the selected code revisions |
+| Official known-issues document | `ESTABLISHED` for extracted document body | Read directly 2026-10-21; known exclusions mapped in the audit register |
+| Audit finding-title/status pass | `ESTABLISHED` | Transit and relevant PAXGy fee PDFs text-extracted; exact current-source/final visual reconciliation remains OPEN |
 | Testing restriction clarified for third-party/oracle behavior | `OPEN` | Written official clarification or avoid such interactions |
 | Program-specific first-discovery deadline | `UNKNOWN` | Confirm through authorized program channel |
-| Candidate invariant selected | `OPEN` | Close preceding scope/source/audit gates first |
+| Candidate invariant selected | `OPEN` | Remove known issues and close source-map gate before defining a distinct property |
 | Deterministic local PoC | `NOT STARTED` | Only after target and test-policy gates permit the exact harness |
 | In-scope impact, novelty and human review | `NOT STARTED` | Independent evidence package and current policy mapping |
 
