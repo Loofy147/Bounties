@@ -8,7 +8,7 @@
 
 ## Observation
 
-On 2026-10-21, the live scope table showed eight rows labelled with `- new`, each with an `Added on` date of **2026-10-14**:
+The repository's 2026-10-20 status and a subsequent rendered/search result do not provide a clean, stable row-level reconciliation. The official search-indexed scope page reports `Last Updated 20 October 2026` and all eight asset-added dates as **5 October 2026**, while the earlier local snapshot records June 10. This document records the discrepancy as OPEN; it does not assert that October 14 is an asset-added date:
 
 | Displayed scope row | Displayed added date |
 |---|---|
