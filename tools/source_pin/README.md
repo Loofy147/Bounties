@@ -24,3 +24,5 @@ The tool is fail-closed: comment-only matches do not pass the exact-pin gate. A 
 ## Tests
 
     python -m unittest discover -s tools/source_pin -v
+
+The repository workflow `.github/workflows/source-pin-comparator.yml` runs this suite on pushes and pull requests that touch the comparator, tests, or workflow. Treat the GitHub Actions result as the shared verification record; a local unit-test pass alone does not prove source-to-deployment equivalence.
