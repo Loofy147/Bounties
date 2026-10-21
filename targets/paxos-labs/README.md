@@ -79,7 +79,7 @@ The mapping is now address-aware but not fully closed. Verified-source evidence 
 
 | Scoped component | Explorer verification | Current repo comparison | Decision |
 |---|---|---|---|
-| TransitStation | Etherscan Exact Match; Sourcify `exact_match`; Solidity 0.8.21, optimizer 200, Shanghai | Sourcify source text is normalized-equal after replacing only the `forceSetUsedDigestTrue` NatSpec phrase (“becoming received” vs “being received”); raw text differs by three characters. This does not prove bytecode identity because compiler metadata can encode source content | Source text is semantically aligned after one comment-only normalization; bytecode/build and constructor/immutable mapping remain open |
+| TransitStation | Etherscan Exact Match; Sourcify `exact_match`; Solidity 0.8.21, optimizer 200, Shanghai | Sourcify source text is normalized-equal after replacing only the `forceSetUsedDigestTrue` NatSpec phrase (“becoming received” vs “being received”); raw text differs by three characters. Direct diff vs Pashov follow-up commit `094289219a4ace472e7b6be06187266c4aecaed3` found only `OrderSubmitted` event declaration/emission shape plus that comment phrase. State-transition logic aligns with the audit/fix source family; this does not prove bytecode identity | Normalized source text aligns with the pinned repo; no other source-file line differences were found against the Pashov follow-up source beyond the event ABI/log payload and comment. Runtime build, dependencies, and constructor/immutable mapping remain open |
 | DCDAssetSpecificFeeModule | Etherscan Exact Match; Solidity 0.8.21, optimizer 200, Shanghai | Sourcify source text equals the pinned repo file exactly | Source text gate closed; deployed fee data/owner/constructor state remain open |
 | PAXGy Accountant | Etherscan Similar Match; Solidity 0.8.21, optimizer 200, Shanghai | Not proven equivalent to pinned `AccountantWithRateProviders.sol` | Block this target until diff reconciled |
 | WithdrawQueue | Etherscan Similar Match; Solidity 0.8.21, optimizer 200, Shanghai | Not proven equivalent to pinned `WithdrawQueue.sol` | Block this target until diff reconciled |
@@ -148,8 +148,8 @@ These are research lines, not vulnerability claims. Findings labelled known/audi
 
 ### Candidate-selection decision
 
-**No new invariant currently clears all serious-work gates.** The next safe engineering step is source reconciliation, not a synthetic PoC:
-1. Close the complete deployed build pin for TransitStation: compile the normalized source set with exact dependencies/settings and reconcile constructor/immutable/runtime metadata; then reconcile the audit review/fix commits against that deployed target.
+**No new invariant currently clears all serious-work gates.** The next safe engineering step is remaining deployment/source reconciliation, not a synthetic PoC:
+1. Close the complete deployed build pin for TransitStation: compile the verified source set with exact dependencies/settings and reconcile constructor/immutable/runtime metadata. The current source's only difference from the Pashov follow-up source is event ABI/log payload and a NatSpec phrase; do not re-test known/fixed state-transition issues.
 2. Compare the deployed Accountant, WithdrawQueue and WithdrawQueue fee-module sources against the pinned repo files. Etherscan reports Similar Match for those three.
 3. Capture current deployed configuration for the DCD owner and per-token fee map, if that surface remains the chosen target; without it, do not infer impact from hypothetical privileged settings.
 4. Recheck official known issues and current reward terms at the point a genuinely distinct property is proposed.
