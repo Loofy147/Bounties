@@ -42,7 +42,7 @@ Every entry below was read from the live official Immunefi scope table on 2026-1
 | Transit Decoder | `0xF34942E8612ccE476307B30a6246B43ce42B5D20` | [Etherscan](https://etherscan.io/address/0xF34942E8612ccE476307B30a6246B43ce42B5D20) |
 | PAXGy Token BoringVault | `0x6c6494Fd9962eB98B94ffA48F6679058F820700e` | [Etherscan](https://etherscan.io/address/0x6c6494Fd9962eB98B94ffA48F6679058F820700e) |
 | PAXGy Manager | `0x353741aBa79974a90F88594f6CBd1a9c54651015` | [Etherscan](https://etherscan.io/address/0x353741aBa79974a90F88594f6CBd1a9c54651015) |
-| PAXGy Accountant | `0x397e38359f169748a02bc11f98D4f451FE88C1fd` | [Etherscan](https://etherscan.io/address/0x397e38359f169748a02bc11f98D4f451FE88C1fd) |
+| PAXGy Accountant | `0x397e38359f169748a02bc11f98D4f451FE88C1fd` | [Etherscan](https://etherscan.io/address/0x397e38359f169748a02bc11f98D4f451FE88C1fd) — Sourcify `match`, normalized source equals repository except security-contact comment |
 | PAXGy Teller | `0x41AB5d8387e60E30AACCF11357C306f6d875A6f7` | [Etherscan](https://etherscan.io/address/0x41AB5d8387e60E30AACCF11357C306f6d875A6f7) |
 | PAXGy Roles Authority | `0xC444dA4DF6AF6A9A3891a720c1712a4188d899DD` | [Etherscan](https://etherscan.io/address/0xC444dA4DF6AF6A9A3891a720c1712a4188d899DD) |
 | PAXGy DistributorCodeDepositor | `0xF6dE922D08cF9Ee4e7cE25ca1f3936EC1AA1f62C` | [Etherscan](https://etherscan.io/address/0xF6dE922D08cF9Ee4e7cE25ca1f3936EC1AA1f62C) |
@@ -150,7 +150,7 @@ These are research lines, not vulnerability claims. Findings labelled known/audi
 
 **No new invariant currently clears all serious-work gates.** The next safe engineering step is remaining deployment/source reconciliation, not a synthetic PoC:
 1. Close the complete deployed build pin for TransitStation: compile the verified source set with exact dependencies/settings and reconcile constructor/immutable/runtime metadata. The current source's only difference from the Pashov follow-up source is event ABI/log payload and a NatSpec phrase; do not re-test known/fixed state-transition issues.
-2. Compare the deployed Accountant, WithdrawQueue and WithdrawQueue fee-module sources against the pinned repo files. Etherscan reports Similar Match for those three.
+2. Compare the deployed Accountant, WithdrawQueue and WithdrawQueue fee-module sources against the pinned repo files. Etherscan reports Similar Match for all three in its UI. Sourcify `match` for the Accountant source text normalizes to the pinned repository file except for the security-contact comment; runtime/build and deployment-state gates still remain open.
 3. Capture current deployed configuration for the DCD owner and per-token fee map, if that surface remains the chosen target; without it, do not infer impact from hypothetical privileged settings.
 4. Recheck official known issues and current reward terms at the point a genuinely distinct property is proposed.
 5. Only then design a local/fork harness against an invariant that is neither a known issue nor an acknowledged/resolved audit finding.
