@@ -46,9 +46,12 @@ Official sources:
 - Critical: 10% of directly affected funds, minimum $10,000 and maximum $500,000.
 - High: $5,000–$10,000. Medium: $1,000 flat.
 - KYC required; PoC required for every severity; Responsible Publication Category 3 requires approval.
-- Scope says 14 assets total. The live extracted first page exposes 12 named addresses. The remaining two are **not inferred** and must be read from page 2 before any target is chosen.
+- Scope says 14 assets total. The live scope UI was paginated and all 14 rows are now captured, including PAXGy WithdrawQueue and its fee module on page 2. All rows display 5 October 2026 as their asset-added date.
 - Program-owned repository master was observed at commit `2843ac873718e869ac138278f9f4ee3c12736544` (2026-10-14T22:14:06Z). This is a source snapshot only; it is not proof that every scoped deployment uses that exact source.
-- `deployment-config/PAXGyCCIPEth.json` at that revision matches the listed PAXGy Vault, Manager, Accountant, and RolesAuthority addresses. That is useful provenance evidence, not bytecode/source equivalence proof.
+- `deployment-config/PAXGyCCIPEth.json` at that revision matches the listed PAXGy Vault, Manager, Accountant, and RolesAuthority addresses, but its Teller address is zero and therefore does not pin the scoped Teller. This is config provenance, not proof of complete deployment equivalence.
+- TransitStation at `0x49AAA...D7d28` is explorer-verified exact match / Sourcify `exact_match`, Solidity 0.8.21, optimizer 200, Shanghai. A source comparison found a NatSpec wording discrepancy with the pinned repository file; full normalized equality remains open.
+- DCD fee module at `0x6E0A...B8c6D` is Etherscan Exact Match, and verified source text equals the pinned `src/helper/DCDAssetSpecificFeeModule.sol` at commit `2843ac8...` exactly.
+- Etherscan marks the scoped Accountant, WithdrawQueue, and WithdrawQueue fee module as Similar Match; their source drift is not resolved. Do not target those contracts until the diff is reconciled.
 
 ### INFERENCE — fit
 
@@ -62,32 +65,38 @@ Transit and PAXGy map well to existing strengths:
 
 ### UNKNOWN / OPEN
 
-- Exact full set of 14 scoped addresses (page 2 not captured).
-- Verified-source/compiler/settings/constructor-argument/bytecode correspondence for each selected address, including proxy implementation at submission time.
-- Whether the relevant source functions at master commit are identical to the scoped deployed contract source.
-- Complete known-issues document and issue-by-issue audit overlap.
+- Exact source equivalence remains open for the Accountant, WithdrawQueue, WithdrawQueue fee module, DCD, manager/decoder/authority and other candidates except the DCD file's verified source text match.
+- The official known-issues Google Doc body was directly extracted and reviewed on 2026-10-21; documented behaviors are now listed as killed/known in `targets/paxos-labs/AUDIT-AND-KNOWN-ISSUES_2026-10-21.md`.
+- TransitStation Pashov, Guardian, yAudit reports and PAXGy fee-module Pashov/yAudit reports were text-extracted and candidate titles/statuses reconciled. The reports use historical commits and were not fully visually inspected; a known finding remains prior art even if its original audit commit differs.
+- Exact current deployed configuration/state (roles, peers, fee map, queue params, implementation addresses and runtime code hashes at a pinned block) remains open.
 - A program-specific initial-discovery/report deadline was not found in the checked page content; treat the deadline as **UNKNOWN**, not absent.
 - The information page prohibits testing with pricing oracles and third-party smart contracts. The scope page also contains narrower oracle-impact wording. Follow the stricter restriction until the program gives clear written clarification; no oracle/third-party interaction is authorized by this note.
 
-### Initial implementation plan
+### Work completed and next gate
 
-1. Capture page 2 and record all 14 address/name/date rows.
-2. For each candidate address, record chain, runtime bytecode hash at a pinned block, explorer-verified source, compiler/settings, constructor args, proxy implementation (if any), and the exact repository commit that reproduces the deployed code. Fail closed on a mismatch.
-3. Read the entire linked known-issues document and map each relevant source/test path to the dated official audit reports. An inaccessible document or unread PDF is an OPEN gate, not a negative result.
-4. Choose one invariant family only after steps 1–3: Transit signature/replay/settlement state or PAXGy fee/share accounting.
-5. Define baseline, property, pre-state, allowed local environment, minimum impact, kill condition, evidence schema, and any required mocks before implementing a PoC.
-6. Run only offline/static work until the program's restrictions and exact deployment pin permit the specific test. No production/public-testnet tests. No oracle or third-party-contract interactions without explicit authorization.
-7. Keep candidate status at `RECONNAISSANCE` until deterministic observed behavior exists. No vulnerability, severity, payout, or novelty claim is made here.
+1. ✅ Captured all 14 official scope rows and dates.
+2. ✅ Read the official known-issues document body directly and mapped exclusions.
+3. ✅ Text-extracted key Transit and PAXGy fee-module audit reports and recorded known/resolved/acknowledged findings.
+4. ✅ Retrieved Sourcify verified source text for TransitStation and DCDAssetSpecificFeeModule; DCD source matches the pinned repository file exactly. TransitStation has a 3-character NatSpec phrase discrepancy; full normalized comparison remains open.
+5. ✅ Identified non-exact Explorer source matches for Accountant, WithdrawQueue, and WithdrawQueue fee module; those targets are blocked pending source diff.
+6. ⏳ Next: finish exact source comparison, then re-evaluate whether any distinct non-known invariant still justifies a local harness. Current decision: no candidate clears the serious-work gate yet.
+
+All work so far is static/source/audit review. No target-interacting PoC was run. No vulnerability, severity, payout or novelty claim is made.
 
 ## 3. Candidate ledger
 
-| ID | Candidate family | Status | Next discriminating check | Stop condition |
-|---|---|---|---|---|
-| PX-TR-01 | Transit quote signature, chain/domain binding, one-use digest, cross-chain replay | `RECONNAISSANCE` | Map exact TransitStation and peer source to scoped address; audit quote hash, digest marking, peer authentication, and receipt flow | Stop if behavior is covered by audit/known issue, cannot reach in deployed config, or lacks an in-scope impact |
-| PX-TR-02 | Transit amount normalization and destination amount due | `RECONNAISSANCE` | Model supported deployed token decimals and all rounding boundaries at exact deployed configuration | Do not promote dust/rounding alone; current program excludes rounding/precision loss unless a PoC demonstrates at least USD 100,000 loss |
-| PX-PX-01 | PAXGy dynamic deposit/withdrawal fee and vault-share conservation | `RECONNAISSANCE` | Trace fee-module deployment, fee recipient, share-supply/NAV treatment, and deployed configuration; reconcile the relevant fee-module audits and known issues | Stop if module/behavior is out of scope, intentionally documented, or only impacts off-chain accounting not covered by the bounty |
-| PX-PX-02 | PAXGy Teller / DCD supply cap and deposit slippage boundary | `RECONNAISSANCE` | Reconstruct atomic sequence: post-fee deposit, Teller mint, share transfer, total-value cap check, and rollback on revert | Stop if effect relies only on unconfigured privileged values or known operational limitations |
-| PX-AUTH-01 | Merkle manager / decoder / role capability composition | `RECONNAISSANCE` | Map scoped manager and decoder bytecode + active deployed permissions; audit target/selector/argument decoding boundaries | Stop if precondition requires a privileged address/role or absent deployed Merkle/role configuration |
+| ID | Candidate family | Status | Decision |
+|---|---|---|---|
+| PX-TR-01 | Transit quote signature, chain/domain binding, one-use digest, cross-chain replay | `RECONNAISSANCE / BLOCKED` | Exact TransitStation source normalization and audit-to-deployed mapping remain open; adjacent known/audited behaviors exist. Do not start a PoC yet. |
+| PX-TR-02 | Cross-chain decimal normalization / dust / zero `amountDue` | `KILLED / KNOWN AUDIT ISSUE` | yAudit, Guardian and Pashov record adjacent dust/low-decimal fee behaviors; no repeat. |
+| PX-TR-03 | Version-skewed payload, receive-route/backlog, peer removal | `KILLED / ACKNOWLEDGED AUDIT ISSUE` | Guardian/yAudit record the behavior; do not repackage. |
+| PX-PX-01 | DCD fee arithmetic and per-token fee configuration | `RECONNAISSANCE / CONFIGURATION GATE OPEN` | Deployed module source matches repo, but owner/fee mapping/config and qualifying unprivileged impact are not established. |
+| PX-PX-02 | Cross-chain DCD supply cap | `KILLED / KNOWN ISSUE` | Explicit official issue; do not repeat. |
+| PX-PX-03 | Dynamic PAXGy fee/oracle/share accounting | `BLOCKED / SCOPE MAPPING OPEN` | Dynamic modules are not the scoped DCD fee contract; oracle testing is restricted and audit overlap exists. |
+| PX-WQ-01 | WithdrawQueue refund recipient, receipt screening, raw-hash signatures | `KILLED / KNOWN ISSUE` | Explicit official issue and source Similar Match not resolved. |
+| PX-WQ-02 | Queue processor gas/refunds and shared CCIP rate limits | `KILLED / KNOWN ISSUE` | Explicit known issues, not a new theft candidate. |
+| PX-AUTH-01 | Merkle double-preimage / decoder authorization | `KILLED / KNOWN ISSUE / DESIGN-BOUNDED` | Official known-issues document says no viable double-preimage route and describes decoder behavior as bounded. |
+| PX-EE-01 | EquivalentExchange flash-loan/dangling approvals | `REPORTED / FOLLOW-UP FIX MERGED` | PR #342 merged 2026-09-08; EquivalentExchange UManager is not a separately listed target address. |
 
 These IDs label investigation lines, not vulnerability reports. No candidate is `HYPOTHESIS`, `REPRODUCED`, or `IN-SCOPE` yet.
 
