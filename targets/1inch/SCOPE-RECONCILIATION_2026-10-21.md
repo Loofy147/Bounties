@@ -1,75 +1,75 @@
 # 1inch Scope Reconciliation — 2026-10-21
 
-**Status:** SCOPE-ROW CHANGE ESTABLISHED; eligible code pin and H-E2 report eligibility remain OPEN  
-**Previous record:** [`CURRENT_STATUS_2026-10-20.md`](../../CURRENT_STATUS_2026-10-20.md)  
-**Current program sources:**  
-- https://immunefi.com/bug-bounty/1inch-SmartContracts/information/
-- https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/
+**Status:** SCOPE SNAPSHOT DISCREPANCY OPEN; no material asset-addition delta established  
+**Previous records:** [`CURRENT_STATUS_2026-10-20.md`](../../CURRENT_STATUS_2026-10-20.md), [`CURRENT_STATUS_2026-09-29.md`](../../CURRENT_STATUS_2026-09-29.md)  
+**Official program sources:**
+- Information: https://immunefi.com/bug-bounty/1inch-SmartContracts/information/
+- Scope: https://immunefi.com/bug-bounty/1inch-SmartContracts/scope/
+- Release repository: https://github.com/1inch/limit-order-protocol/releases
 
-## Observation
+## 1. Evidence reconciliation
 
-The repository's 2026-10-20 status and a subsequent rendered/search result do not provide a clean, stable row-level reconciliation. The official search-indexed scope page reports `Last Updated 20 October 2026` and all eight asset-added dates as **5 October 2026**, while the earlier local snapshot records June 10. This document records the discrepancy as OPEN; it does not assert that October 14 is an asset-added date:
+The available snapshots do not support a stable, authoritative claim that the eight 1inch target rows were newly added on 14 October. Keep the discrepancy open rather than promoting one inconsistent rendering into a confirmed scope delta.
 
-| Displayed scope row | Displayed added date |
-|---|---|
-| Limit Order Protocol - new | 2026-10-14 |
-| Limit Order Settlement - new | 2026-10-14 |
-| Token-plugins - new | 2026-10-14 |
-| Farming Contracts - new | 2026-10-14 |
-| Delegating Contracts - new | 2026-10-14 |
-| Cross-chain Swap - new | 2026-10-14 |
-| Solana Crosschain - new | 2026-10-14 |
-| Solana Fusion - new | 2026-10-14 |
+| Evidence record | What it says | Classification |
+|---|---|---|
+| `CURRENT_STATUS_2026-09-29.md` | Working LOP pin `4.3.4` → `7da29889efa2e635611e1caf60f85f595ff7f05f`; the live scope was checked at that time | Historical repository record |
+| `CURRENT_STATUS_2026-10-20.md` | Information page update: 14 October; scope page update recorded as 14 August; eight target asset-added dates recorded as 10 June; its conclusion was that no October 14 scope addition had been established | Historical repository snapshot, not a live guarantee |
+| Official search-indexed scope result checked 21 October 2026 | Scope page reports “Last Updated 20 October 2026”; all eight asset-added dates are shown as 5 October 2026 | Official source evidence, but search-indexed rather than a preserved table capture |
+| Transient rendered-page attempt during this review | A render briefly returned rows with a “- new” label and an October 14 date, but this could not be reconciled consistently with the official search-indexed result and was not preserved as a stable source snapshot | Unconfirmed observation; not sufficient to establish a material change |
 
-This is a material correction to the interpretation recorded in `CURRENT_STATUS_2026-10-20.md`, which concluded there was no official evidence of a new-labelled asset or October 14 asset addition. The existing status is preserved as a historical snapshot; this document records the newer observation.
+The eight target families in the differing views are Limit Order Protocol, Limit Order Settlement, Token-plugins, Farming Contracts, Delegating Contracts, Cross-chain Swap, Solana Crosschain, and Solana Fusion. Their names alone do not prove new source revisions or new reward eligibility.
 
-## Evidence classification
+### Decision
 
-- **ESTABLISHED:** The current rendered scope table displays the eight named rows as `- new` and gives each the date 2026-10-14.
-- **ESTABLISHED:** The program information page states that only the latest eligible tags/releases apply and carries the 24-hour initial-discovery reporting requirement.
-- **UNKNOWN:** Whether every newly displayed row maps to a separately changed contract implementation, repository, or source commit. A display-row date alone does not establish deployment/source correspondence.
-- **UNKNOWN:** Whether H-E2 is eligible for a reward. Its local technical evidence was created before this snapshot.
-- **HYPOTHESIS:** None created by this page change. No contract behavior or vulnerability is inferred from a scope label.
+- **ESTABLISHED:** The saved 20 October and 29 September status records disagree with the later search-indexed scope-page values.
+- **ESTABLISHED:** The official 1inch information page carries a 24-hour initial-discovery reporting rule, and the program applies only to the latest eligible tags/releases.
+- **UNKNOWN:** Whether a substantive current asset addition or eligible-source change occurred that merits an alert.
+- **UNKNOWN:** Whether each differing row/date reflects a real scope change, a listing/rendering inconsistency, or an update to the rendered/indexed metadata.
+- **NOT ESTABLISHED:** That the eight rows were newly added on 14 October.
+- **NOT ESTABLISHED:** Any vulnerability or new report eligibility from the scope discrepancy.
 
-## Release pin gate
+Therefore this is a **snapshot-quality issue, not a confirmed new opportunity**. Do not report a material scope delta until a fresh official page capture with exact row names, dates, links and source refs can be retained and reconciled against the saved snapshots.
 
-The prior research pin remains:
+## 2. Exact release / source gate
+
+Existing research pin:
 - Repository: https://github.com/1inch/limit-order-protocol
 - Tag: `4.3.4`
 - Commit: `7da29889efa2e635611e1caf60f85f595ff7f05f`
 
-The repository and the program's live scope/source link must be reconciled again before any new experiment. Do not substitute a default-branch package version or WIP commit for an eligible tagged release. Record, for each selected row:
-1. exact scope row and official URL;
-2. linked repository;
-3. tag/ref and resolved immutable commit;
-4. proof that the ref is eligible under the current program;
-5. the audit/known-issue coverage for that exact code.
+The repository warns against using default-branch/WIP code as the bounty target. Default-branch package metadata is not evidence that a corresponding eligible release tag exists. Before any future, distinct experiment, record:
+1. exact live scope row and URL;
+2. the repository linked from that row;
+3. exact eligible tag/ref and resolved immutable commit;
+4. the official evidence that this ref is eligible under the current program;
+5. exact relevant audit/known-issue coverage.
 
-If any mapping is ambiguous, no target-specific test starts until program clarification is received.
+If any row-to-release mapping is ambiguous, do not run a target-specific test until the program clarifies it.
 
-## Initial-discovery reporting gate
+## 3. H-E2 / K-04 reporting eligibility — HOLD
 
-The official program rule is **within 24 hours of initial discovery**. The asset-added date is not the discovery timestamp for a previously investigated behavior, and a scope-page change does not reset an existing discovery clock.
+Prior evidence records:
+- Local resolver-reward behavior: `EXPERIMENTALLY_SUPPORTED`.
+- Overall H-E2 candidate: `HYPOTHESIS`.
+- Bounty submission/reward eligibility: `UNKNOWN / NOT CLEARED`.
 
-For H-E2/K-04:
-- local mechanism: `EXPERIMENTALLY_SUPPORTED`;
-- overall candidate: `HYPOTHESIS`;
-- submission/reward eligibility: `UNKNOWN / NOT CLEARED`;
-- next technical action: none on the same synthetic C < R mechanism;
-- next safe action: ask the authorized program channel for explicit eligibility clarification, while preserving the existing evidence and not submitting unless eligibility is confirmed.
+The official rule is **report within 24 hours of initial discovery**. A page-update date, asset-added date, row label, or later scope change does not reset an earlier discovery timestamp. Existing H-E2 work predates this snapshot; do not submit it unless the authorized 1inch program channel explicitly confirms its eligibility in writing.
 
-Do not claim that a late submission will be accepted. The program's discretion to consider late reports is not a guarantee of reward eligibility.
+No further synthetic version of the already-completed `C < R` H-E2 experiment is justified by a listing discrepancy. The remaining work is eligibility/audit/source reconciliation, not repeating the local mechanism.
 
-## Testing restrictions and stop rules
+## 4. Testing restrictions and stop rules
 
-- Use local forks only; do not test deployed mainnet or public-testnet code.
-- No repeated H-E2 synthetic experiments without genuinely new evidence that changes an unresolved gate.
-- No report generated by AI may be submitted as an external report.
-- Preserve the current hypothesis status until exact target pin, audit/known-issue, adversary-role, impact, and reporting-eligibility gates are settled.
+- Test only on a local fork under the current program rules; do not test deployed mainnet or public-testnet code.
+- Do not repeat H-E2 without new evidence that changes a remaining gate.
+- Do not infer an exploit from a listing, an asset-added timestamp, or a source comment.
+- Do not generate or submit an AI-authored external report. Human researcher must independently validate and own any submission.
+- Preserve prior labels and negative results; do not upgrade `HYPOTHESIS` to a finding from this discrepancy.
 
-## Change ledger
+## 5. Change ledger
 
-| Date | Change | Evidence | Decision |
-|---|---|---|---|
-| 2026-10-20 | Previous interpretation was that October 14 was an information-page update only; no new scope row was demonstrated | `CURRENT_STATUS_2026-10-20.md` | Historical interpretation retained, superseded for live scope state |
-| 2026-10-21 | Current scope table explicitly displays eight `- new` rows, each added 2026-10-14 | Official live scope page linked above | Correct the interpretation; keep code pin and H-E2 eligibility gates open |
+| Date | Observation | Decision |
+|---|---|---|
+| 2026-10-20 | Saved status recorded information-page update on 14 October, an older scope-page update date, and June 10 asset dates | Preserve as historical evidence |
+| 2026-10-21 | Official search-indexed scope result showed a different page-update/date set (20 October / 5 October); a transient page render was inconsistent and not retained as stable row-level evidence | Keep the discrepancy OPEN; no material scope delta asserted |
+| 2026-10-21 | Existing H-E2 remains beyond the documented 24-hour initial-discovery window unless the program explicitly confirms otherwise | HOLD; no repeat experiment or submission recommendation |
