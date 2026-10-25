@@ -16,9 +16,9 @@ Every candidate is classified as `RECONNAISSANCE`, `HYPOTHESIS`, `REPRODUCED`, `
 
 Obtain the first legitimate, externally accepted paid finding, regardless of payout size.
 
-Latest source-verified opportunity review: [`CURRENT_STATUS_2026-10-20.md`](CURRENT_STATUS_2026-10-20.md). It records the 2026-10-14 1inch scope change, the release/eligibility gates, and the SP1 fallback assessment.
+Latest opportunity ranking: [`OPPORTUNITY-RECHECK_2026-10-25.md`](OPPORTUNITY-RECHECK_2026-10-25.md). It rechecks the current official Immunefi pages, corrects SP1's live maximum to $15,000, and ranks high-cap no-KYC candidates including Sky, GMX, and Spark.
 
-Current B0 target: 1inch Smart Contracts / Limit Order Protocol, but the existing H-E2 candidate remains a hypothesis and is on hold pending scope-to-release, audit/known-issue, role, production-impact and reporting-deadline gates. See `targets/1inch/` and the latest status snapshot.
+The existing 1inch Smart Contracts / Limit Order Protocol H-E2/K-04 candidate remains `HYPOTHESIS / HOLD`. Local reproduction is not equivalent to bounty eligibility; the reporting deadline and other eligibility gates remain uncleared. Do not repeat synthetic variants of the same mechanism. See [the 1inch audit and eligibility recheck](targets/1inch/AUDIT-AND-ELIGIBILITY-RECHECK_2026-10-20.md) and [the current opportunity ranking](OPPORTUNITY-RECHECK_2026-10-25.md).
 
 ## Hunter architecture
 
