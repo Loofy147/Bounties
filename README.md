@@ -80,3 +80,8 @@ All work must remain within the current bounty scope and permitted test environm
 ## Snapshot provenance
 
 The initial material in this repository is a preservation snapshot derived from the Moirae bounty-track documents on branch `feat/abd-atomic-register` of `Loofy147/moirae` on 2026-09-02. The original Moirae documents remain untouched.
+
+
+## SSV Network v2.0.0 review (2026-10-25)
+
+Current disposition: no bounty candidate promoted. The proposed EB deviation-settlement flag is not present in the pinned source, and public SSV PR #629 already describes a passing lifecycle round-trip test. The cSSV transferFrom concern is contradicted by hook/balance-update order. See the [SSV research dossier](targets/ssv-network/README.md), [EB lifecycle review](targets/ssv-network/EB-LIFECYCLE-REVIEW-v0.1.md), [cSSV hook review](targets/ssv-network/CSSV-HOOK-REVIEW-v0.1.md), and the [dependency-free reference model](research/ssv-v2-transition-model/README.md). The local reference model has 11 tests; passing it is not Solidity or deployment evidence.
