@@ -27,14 +27,14 @@ The Grove allocator vault `ALLOCATOR-GROVE-A` is another piece of the system and
 
 ### Direct dispatch reads at block 26,267,615
 
-Read-only calls to the SPUSDC PAU Controller `0x4623cdEf0FB92499fd20f710318Cf17B8a7EB6bC` at block `0x190cfdf` returned zero `facet` and zero `delegateSelector` for each of these selector lookups: `usds_vault()`, `usds_mint(uint256)`, `usds_burn(uint256)`, `usds_setVault(address)`, `usds_usds()`, and `usds_mintRateLimitKey()`. A direct call to `usds_vault()` reverted with `CallSelectorNotWired(0x6662401e)`. Therefore, at this pinned block, the SPUSDC PAU Controller does **not** expose this repository's `USDSFacet` entry points.
+Read-only calls to the SPUSDC PAU Controller `0x4623cdEf0FB92499fd20f710318Cf17B8a7EB6bC` at block `0x190cfdf` returned zero `facet` and zero `delegateSelector` for each of these selector lookups: `usds_vault()`, `usds_mint(uint256)`, `usds_burn(uint256)`, `usds_setVault(address)`, `usds_usds()`, and `usds_mintRateLimitKey()`. A direct call to `usds_vault()` reverted with `CallSelectorNotWired(0x6662401e)`. The Controller's `integrations()` read returned exactly two integration IDs: `CCTP_FACET` and `ERC4626_FACET`. Therefore, at this pinned block, the SPUSDC PAU Controller does **not** expose this repository's `USDSFacet` entry points; the observed active integration set is CCTP and ERC-4626, not the USDS allocator-vault path.
 
 The legacy Spark Liquidity Layer `MainnetController` `0x5c46Fc65855c0C7465a1EA85EEA0B24B601502D3` instead reports its own `vault()` as `0x691a6c29e9e96dd897718305427ad5d534db16ba`. Its verified source is `AllocatorVault`, and its `ilk()` getter returns `ALLOCATOR-SPARK-A`—not `ALLOCATOR-GROVE-A`. This is separate from the Grove vault `0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB`. The legacy controller's `proxy()` is `0x1601843c5E9bC251A3272907010AFa41Fa18347E`; the SPUSDC PAU Controller's `proxy()` is `0x8D719A830b00e5571db00D173505CD56c0Ec224a`. They are not the same ALMProxy.
 
 ### Still to verify directly at a pinned block
 
 - The live SPUSDC Controller's `proxy()`, `beacon()`, `rateLimits()`, and local integration dispatch map.
-- Which exact deployed authorized caller, if any, is supposed to use `ALLOCATOR-GROVE-A`; the SPUSDC PAU Controller path we checked does not have `USDSFacet` selectors wired.
+- Which exact deployed authorized caller, if any, is supposed to use `ALLOCATOR-GROVE-A`; it is not the SPUSDC PAU Controller's currently wired path.
 - The set of addresses holding the `CONTROLLER` role on each ALMProxy; in particular, whether the SPUSDC PAU proxy is actually shared by multiple active Controllers.
 - The role members and live rate-limit configuration for each candidate path.
 - Runtime bytecode/source matches and the precise latest active deployment state, not only an address-registry source comment.
@@ -81,7 +81,7 @@ No production transaction should be used for these checks. Stay within the bount
 | Grove allocator `PIP_ALLOCATOR` is a fixed 1:1 oracle at Ethereum block 26,267,615 | `ESTABLISHED` | Direct read-only state/source check recorded in [the PAU × Spotter recheck](PAU-SPOTTER-STALE-PRICE-RECHECK_2026-10-25.md). |
 | The address registry distinguishes SPUSDC PAU from the legacy SLL Controller/Proxy and pins version comments | `ESTABLISHED` | Current registry source, linked above. |
 | Multi-controller reentrancy guards are scoped per Controller, not per ALMProxy | `ESTABLISHED / DISCLOSED` | Current architecture docs and merged PR #203. |
-| SPUSDC PAU Controller exposes `USDSFacet` selectors at block 26,267,615 | `CONTRADICTED` | Direct `getDispatch(bytes4)` reads return empty facet/delegate selector for six `usds_*` selectors; direct `usds_vault()` reverts with `CallSelectorNotWired`. |
+| SPUSDC PAU Controller exposes `USDSFacet` selectors at block 26,267,615 | `CONTRADICTED` | Direct `getDispatch(bytes4)` reads return empty facet/delegate selector for six `usds_*` selectors; `integrations()` lists only `CCTP_FACET` and `ERC4626_FACET`; direct `usds_vault()` reverts with `CallSelectorNotWired`. |
 | Legacy SLL controller uses Grove's `ALLOCATOR-GROVE-A` vault | `CONTRADICTED` | Its `vault()` returns verified `AllocatorVault` `0x691a...`, whose `ilk()` is `ALLOCATOR-SPARK-A`; Grove's vault is `0xf739...` / `ALLOCATOR-GROVE-A`. |
 | Multiple active Controllers currently share the SPUSDC PAU ALMProxy | `UNKNOWN` | Role membership and full live proxy/controller topology not yet queried. |
 | The new SwapFacet PR is deployed and eligible | `CONTRADICTED` by current repository state | PR #234 remained open and draft at review time; no deployment evidence. |
