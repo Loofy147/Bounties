@@ -18,6 +18,8 @@ Obtain the first legitimate, externally accepted paid finding, regardless of pay
 
 Latest opportunity ranking: [`OPPORTUNITY-RECHECK_2026-10-25.md`](OPPORTUNITY-RECHECK_2026-10-25.md). It rechecks the current official Immunefi pages, corrects SP1's live maximum to $15,000, and ranks high-cap no-KYC candidates including Sky, GMX, and Spark.
 
+The PAU × Spotter stale external-price hypothesis has been rechecked against the exact Grove AllocatorVault source/deployment and is marked `HYPOTHESIS CONTRADICTED`; see [the source-to-deployment recheck](targets/sky/PAU-SPOTTER-STALE-PRICE-RECHECK_2026-10-25.md). The active on-chain `MCD_SPOT` pointer still needs a direct read-only RPC check before claiming the deployment storage is fully verified.
+
 The existing 1inch Smart Contracts / Limit Order Protocol H-E2/K-04 candidate remains `HYPOTHESIS / HOLD`. Local reproduction is not equivalent to bounty eligibility; the reporting deadline and other eligibility gates remain uncleared. Do not repeat synthetic variants of the same mechanism. See [the 1inch audit and eligibility recheck](targets/1inch/AUDIT-AND-ELIGIBILITY-RECHECK_2026-10-20.md) and [the current opportunity ranking](OPPORTUNITY-RECHECK_2026-10-25.md).
 
 ## Hunter architecture
