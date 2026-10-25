@@ -20,6 +20,8 @@ Latest source-verified opportunity review: [`CURRENT_STATUS_2026-10-20.md`](CURR
 
 Current B0 target: 1inch Smart Contracts / Limit Order Protocol, but the existing H-E2 candidate remains a hypothesis and is on hold pending scope-to-release, audit/known-issue, role, production-impact and reporting-deadline gates. See `targets/1inch/` and the latest status snapshot.
 
+Secondary reconnaissance candidate: [Initia L1 / MoveVM](targets/initia/README.md), based on the publicly disclosed 2026-10-23 incident. Status is **RECONNAISSANCE / KNOWN PUBLIC INCIDENT** only: bounty eligibility and the post-incident patch-to-production mapping are unverified, so no active testing is authorized by this dossier. See the [source snapshot](targets/initia/INCIDENT-SNAPSHOT-2026-10-25.md), [gated research plan](targets/initia/RESEARCH-PLAN.md), and [asset state-integrity monitoring spec](research/INITIA-ASSET-STATE-INVARIANTS-v0.1.md).
+
 ## Hunter architecture
 
 The reusable research engine is defined in [`research/BUG-HUNTER-FOUNDATION-v0.1.md`](research/BUG-HUNTER-FOUNDATION-v0.1.md).
