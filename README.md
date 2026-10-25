@@ -22,6 +22,8 @@ The PAU × Spotter stale external-price hypothesis is marked `HYPOTHESIS CONTRAD
 
 The stUSDS Keeper lead is now `HYPOTHESIS KILLED FOR CURRENT LIVE AUTOMATION`: at pinned Ethereum block 26,267,715 (2026-10-25T05:51:59Z), the Chainlog-resolved ValueRegistry reports `STUSDS_KEEPER_ENABLED=0`, although the keeper EOA remains authorized as a rate-setter `bud`. Four recent `Set` events in the inspected window were executed through the documented Operator Multisig, and no keeper-originated update or attacker-controlled path was demonstrated. Reopen only if the switch is enabled and a reproducible unprivileged input-to-impact path emerges. See [the stUSDS keeper authorization/live-state recheck](targets/sky/STUSDS-KEEPER-RATE-SETTER-AUTHORIZATION-REVIEW_2026-10-25.md).
 
+The LayerZero USDS adapter rate-limit lead is closed as a false positive. Correct ABI-word decoding shows the Oct 24, 2026 transfer was 50,001 USDS, not 12.8M; across 110 outbound events for Solana EID 30168, max single send was 816,400 USDS and max observed rolling 24-hour sum was ~1.88M versus a configured 5M/24h cap. The in-flight getter and linear-decay view are consistent once properly parsed. See [the LayerZero rate-limit recheck](targets/sky/LAYERZERO-USDS-RATE-LIMIT-RECHECK_2026-10-25.md).
+
 The existing 1inch Smart Contracts / Limit Order Protocol H-E2/K-04 candidate remains `HYPOTHESIS / HOLD`. Local reproduction is not equivalent to bounty eligibility; the reporting deadline and other eligibility gates remain uncleared. Do not repeat synthetic variants of the same mechanism. See [the 1inch audit and eligibility recheck](targets/1inch/AUDIT-AND-ELIGIBILITY-RECHECK_2026-10-20.md) and [the current opportunity ranking](OPPORTUNITY-RECHECK_2026-10-25.md).
 
 ## Hunter architecture
