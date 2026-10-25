@@ -64,7 +64,22 @@ The official onboarding proposal says `AllocatorInit.initIlk` takes the shared `
 
 The official [October 8, 2026 spell](https://vote.sky.money/executive/template-executive-vote-stusds-keeper-launch-monthly-settlement-cycle-for-september-2026-treasury-management-function-parameter-updates-adjust-allocator-grove-a-dc-iam-parameters-update-safe-harbor-agreement-prime-agent-proxy-spells-october-8-2026) raises Grove's DC-IAM **maximum** `line` from 500M to 1.5B USDS, increases target available debt (`gap`) from 25M to 150M, and lengthens the ceiling-increase cooldown from 12 to 24 hours. The September 10 spell had changed the maximum from 25M to 100M and the gap from 5M to 15M.
 
-These are DC-IAM parameter changes governing the available ceiling and increases. They do not themselves establish that the actual Vat line instantly became the maximum, and do not turn the fixed allocator oracle into a live valuation of PAU's investments. At every debt increase, `Vat.frob` checks the current `ilk.Art × ilk.rate ≤ ilk.line`, global `debt ≤ Line`, and the stored `ilk.spot` collateral safety condition.
+These are DC-IAM parameter changes governing the maximum, target available debt, and increase cooldown. The maximum is not automatically the currently installed Vat line.
+
+### Pinned read-only mainnet state
+
+A direct, read-only `eth_call` snapshot was taken at Ethereum block **26,267,615** (`0x190cfdf`), not against a local model:
+
+- Chainlog `PIP_ALLOCATOR`: `0xc7b91c401c02b73cbdf424dfaaa60950d5040db7`.
+- Chainlog `MCD_SPOT`: `0x65c79fcb50ca1594b025960e539ed7a9a6d434a3`; `MCD_VAT`: `0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b`; `MCD_IAM_AUTO_LINE`: `0xc7bdd1f2b16447dcf3de045c4a039a60ec2f0ba3`.
+- `MCD_SPOT.ilks("ALLOCATOR-GROVE-A")` returned `pip = 0xc7b91c401c02b73cbdf424dfaaa60950d5040db7` and `mat = 1e27`. The active Spotter mapping therefore points to the same fixed-price oracle recorded by Chainlog.
+- Verified Etherscan source at [that PIP address](https://etherscan.io/address/0xc7b91c401c02b73cbdf424dfaaa60950d5040db7#code) identifies it as `AllocatorOracle`; `peek()` and `read()` both return `1e18` (1:1), and `peek()` is always valid.
+- `Vat.ilks("ALLOCATOR-GROVE-A")` returned `rate = 1e27`, `spot = 1e27`, `Art = 120003799741575000000000010` (about **120,003,799.741575 USDS** current debt), and `line = 270003799741575000000000010000000000000000000000000000` rad (about **270,003,799.741575 USDS**).
+- `DssAutoLine.ilks("ALLOCATOR-GROVE-A")` returned `line = 1.5B USDS` maximum, `gap = 150M USDS`, `ttl = 86,400 seconds`; its `lastInc` was `2026-10-12 14:01:47 UTC`.
+
+This deployed-state snapshot is consistent with the AutoLine rule that the current Vat line stays near debt plus the configured `gap`, subject to its update/cooldown logic: the observed Vat line is about current debt + 150M USDS, not the 1.5B maximum. This is direct evidence against the claim that the October maximum-parameter change itself instantly set the real Vat line to 1.5B.
+
+At every debt increase, `Vat.frob` still checks the current per-ilk `Art × rate ≤ line`, global `debt ≤ Line`, and the stored `ilk.spot` collateral safety condition. The measured state shows no stale external-asset price flowing into this allocator `ilk`.
 
 ## Bounty-eligibility constraints
 
@@ -81,15 +96,10 @@ This does not rule out every conceivable PAU or allocator defect. It does mean t
 | `AllocatorOracle` is constant 1:1 in the pinned source | `ESTABLISHED` | `peek()` and `read()` return `WAD`; no external price input or freshness field. |
 | Official onboarding assigns shared `PIP_ALLOCATOR` to Grove's allocator `ilk` | `ESTABLISHED` | Executed onboarding proposal and pinned `AllocatorInit` source. |
 | The Sept/Oct ceiling changes create a stale-Spotter window that enables unbacked minting | `CONTRADICTED` | No causal mechanism is shown; these are DC-IAM max/gap/cooldown changes, and `Vat.frob` still enforces debt ceilings and safety. |
-| Exact current on-chain `MCD_SPOT.ilks("ALLOCATOR-GROVE-A")` pointer/spot values were queried directly in this review | `UNKNOWN / OPEN` | Not yet read via direct RPC. The review relies on the official onboarding setup and later published spells, which do not describe a subsequent PIP reconfiguration. |
+| On-chain Chainlog / Spotter / Vat / AutoLine state at block 26,267,615 | `ESTABLISHED` | Direct read-only `eth_call` shows Spotter uses the same constant `PIP_ALLOCATOR`; Vat `spot = 1e27`, actual line ≈ debt + 150M USDS, while AutoLine maximum is 1.5B. This is a pinned block snapshot, not a guarantee against later governance changes. |
 
 ## Stop decision and next discriminating check
 
-**Stop** testing variants of the stale external-asset price hypothesis unless the active on-chain state falsifies the recorded setup.
+**Stop** the stale external-asset price hypothesis. The mainnet snapshot now confirms the active `MCD_SPOT` mapping, the fixed oracle implementation, Vat `spot`, actual Vat line, and AutoLine maximum/gap at a single pinned block. No PoC for this stale-price mechanism is justified by the evidence.
 
-If resuming, the only useful next check for this hypothesis is a read-only direct-RPC comparison of:
-1. the active Chainlog `PIP_ALLOCATOR` address;
-2. `MCD_SPOT.ilks(keccak256("ALLOCATOR-GROVE-A"))`'s stored `pip`, `mat`, and `Vat.ilks` `spot`;
-3. the deployed code hash/source of the active PIP and the current actual `Vat.ilks` `line`.
-
-Proceed to a local-fork invariant test only if this shows a materially different active implementation or a mismatch not explained by governance. Otherwise mark this candidate killed and redirect effort to a distinct, in-scope public-call path in currently deployed code. Do not conduct exploit tests against mainnet/public testnet; Sky's program requires authorized local-fork testing.
+Reopen this candidate only if a later official spell or a new pinned state snapshot shows that the active allocator PIP was changed away from the constant oracle, or if a separate, public-call path independently violates the Vat debt/safety invariants. Such a candidate must be evaluated against current scope, known issues, audit disclosures, and role restrictions before local-fork testing. Do not conduct exploit tests against mainnet/public testnet; Sky's program requires authorized local-fork testing.
