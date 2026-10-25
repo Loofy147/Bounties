@@ -78,3 +78,7 @@ All work must remain within the current bounty scope and permitted test environm
 ## Snapshot provenance
 
 The initial material in this repository is a preservation snapshot derived from the Moirae bounty-track documents on branch `feat/abd-atomic-register` of `Loofy147/moirae` on 2026-09-02. The original Moirae documents remain untouched.
+
+## Executable invariant benchmark
+
+A dependency-free synthetic benchmark now exercises transition postconditions, trusted instruction-source identity, and source-debit/payout accounting. Run it from [research/benchmarks/invariant-composition-v0.1](research/benchmarks/invariant-composition-v0.1/README.md). The current local result is 11 passing unit tests, 3/3 seeded defects detected, and 3/3 negative controls clean. This is a model-level check only; it does not execute chain code or establish that any real target is vulnerable or secure.
