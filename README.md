@@ -24,7 +24,7 @@ Current B0 target: 1inch Smart Contracts / Limit Order Protocol, but the existin
 
 The reusable research engine is defined in [`research/BUG-HUNTER-FOUNDATION-v0.1.md`](research/BUG-HUNTER-FOUNDATION-v0.1.md).
 
-Reusable invariant pattern: [`research/TRANSITION-CLOSURE-AND-COMPOSITION-v0.1.md`](research/TRANSITION-CLOSURE-AND-COMPOSITION-v0.1.md) defines cross-entrypoint invariant coverage, state-transition composition, mutation controls, impact accounting, and evidence/promotion gates. The detailed source-checked Euler/Wormhole transaction-level comparison is in [`research/CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md`](research/CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md). These are historical methodology only; they do not assert a vulnerability in a current target or change any existing hypothesis status.
+Reusable invariant pattern: [`research/TRANSITION-CLOSURE-AND-COMPOSITION-v0.1.md`](research/TRANSITION-CLOSURE-AND-COMPOSITION-v0.1.md) defines cross-entrypoint invariant coverage, state-transition composition, mutation controls, impact accounting, and evidence/promotion gates. The detailed source-checked Euler/Wormhole transaction-level comparison is in [`research/CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md`](research/CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md). The WAX negative-fee case adds parameter-domain and source-debit-to-cross-chain-liability invariants in [`research/CASE-STUDY-WAX-NEGATIVE-FEE-ATOMICITY-v0.1.md`](research/CASE-STUDY-WAX-NEGATIVE-FEE-ATOMICITY-v0.1.md). These are historical methodology only; they do not assert a vulnerability in a current target or change any existing hypothesis status.
 
 The canonical model is:
 
