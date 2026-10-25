@@ -216,7 +216,7 @@ This method directly fits the repository's existing invariant-first loop: state 
 
 It may inform future research plans for lending, vault accounting, DEX settlement, bridges, and other stateful protocols. It does **not** reopen or strengthen an existing target hypothesis without new target-specific evidence. In particular, it does not change any existing 1inch H-E2 status and must not be used to infer a vulnerability from prior local behavior.
 
-The detailed transaction timeline, Wormhole sysvar-provenance failure, code-diff provenance caveat, and cross-case taxonomy are in [CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md](CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md).
+The detailed transaction timeline, Wormhole sysvar-provenance failure, code-diff provenance caveat, and cross-case taxonomy are in [CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md](CASE-STUDY-EULER-WORMHOLE-TRANSITION-CHECKS-v0.1.md). The public WAX negative-fee incident and its parameter-domain, debit-to-liability, and atomicity detection rules are separately documented in [CASE-STUDY-WAX-NEGATIVE-FEE-ATOMICITY-v0.1.md](CASE-STUDY-WAX-NEGATIVE-FEE-ATOMICITY-v0.1.md); its mechanism remains attributed to secondary security reporting pending a project-authored postmortem and fix pin.
 
 ## 10. Primary references
 
