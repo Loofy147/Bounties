@@ -50,6 +50,8 @@ scope
 
 The system is evidence-driven rather than report-volume-driven. AI components may generate and investigate hypotheses, but the research record remains provenance-aware and a human approval gate is required before external submission.
 
+The integrated operating model is documented in [`docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md`](docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md). It defines the target snapshot, scope contract, attack-surface graph, state model, invariant, hypothesis, controlled experiment, evidence bundle, validation, impact, human-review, and learning components that connect the repository’s labs, detectors, target dossiers, evidence ledger, CI, and research records.
+
 ## Directory model
 
 ```text
