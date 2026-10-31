@@ -1,9 +1,11 @@
 # Evidence-Driven Bug Hunter — Foundation v0.1
 
-**Status:** ARCHITECTURE BASELINE  
-**Date:** 2026-09-02  
-**Repository:** `Loofy147/Bounties`  
+**Status:** ARCHITECTURE BASELINE
+**Date:** 2026-09-02
+**Repository:** `Loofy147/Bounties`
 **Purpose:** Define the reusable security-research engine that will support the bounty track without coupling it to any single target or to the Moirae protocol repository.
+
+**Current integration reference:** This foundation defines the research method. It is not, by itself, an implemented autonomous platform. The current capability audit, branch-local prototype map, shared-object contract, and P0/P1/P2 integration criteria are maintained in [`docs/SYSTEM-GAP-ANALYSIS-v1.1.md`](../docs/SYSTEM-GAP-ANALYSIS-v1.1.md) and the companion [`docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md`](../docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md).
 
 ---
 

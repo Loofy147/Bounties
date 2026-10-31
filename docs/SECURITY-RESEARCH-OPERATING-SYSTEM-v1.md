@@ -1,9 +1,11 @@
 # Evidence-Driven Security Research Operating System
 
-**Version:** 1.0 architecture documentation
-**Status:** proposed integrated operating model
+**Version:** 1.1 architecture documentation
+**Status:** gap-audited integration target
 **Repository:** `Loofy147/Bounties`
 **Document purpose:** define what the repository is becoming, how its parts work together, what is already demonstrated, and which gates prevent unsupported security claims or unsafe external action.
+
+The companion [`SYSTEM-GAP-ANALYSIS-v1.1.md`](SYSTEM-GAP-ANALYSIS-v1.1.md) is the authoritative implementation gap register. It distinguishes `DEMONSTRATED`, `PARTIAL`, `MISSING`, `BLOCKED`, and `PLANNED` capabilities and records the branch-local prototypes that must be integrated before the system can be treated as one operating platform.
 
 ## 1. Executive definition
 
@@ -196,7 +198,7 @@ Records accepted findings, rejected reports, false positives, killed hypotheses,
 
 ## 6. Repository mapping
 
-The current repository already contains important pieces of this architecture:
+The repository portfolio contains important pieces of this architecture, but they are not all integrated on `main`. Branch-local prototypes are evidence of available work, not delivered platform capabilities.
 
 | Repository material | Operating-system role |
 |---|---|
@@ -208,12 +210,12 @@ The current repository already contains important pieces of this architecture:
 | `reentrancy-lab/inspector.py` | reusable stock-plus-custom inspection entry point |
 | `reentrancy-lab/detect_missing_domain_binding.py` | focused custom detector for replayable signatures |
 | `reentrancy-lab/test/` | deterministic reference and configuration tests |
-| `.github/workflows/` | repeatable CI execution and evidence-producing checks |
+| `.github/workflows/` on relevant feature/research branches | repeatable CI execution and evidence-producing checks; the audited `main` tree does not yet have an integrated root workflow |
 | control-plane feature branches | ownership, effect, admission, and concurrency hardening concepts |
 | evidence-gate branches | authorization, integrity, and promotion-boundary tests |
 | research branches | target-specific experiments, source reconciliation, and false-positive closure |
 
-These are complementary capabilities, not one homogeneous codebase. The integration target is a common operating model and shared evidence contracts, while each target harness keeps its own domain-specific implementation.
+These are complementary capabilities, not one homogeneous codebase. The integration target is a common operating model and shared evidence contracts, while each target harness keeps its own domain-specific implementation. The current branch-local reference points are `feat/evidence-gate-layer-v0.1`, `feat/control-plane-kernel-v0.1`, `feat/reentrancy-lab`, and `research/invariant-composition-benchmark-v0.1`; their exact gaps and acceptance criteria are recorded in the companion gap analysis.
 
 ## 7. Canonical operating workflow
 
@@ -288,7 +290,7 @@ The repository demonstrates the following capabilities today:
 - control-plane research around ownership, effects, admission, and concurrency;
 - human review and submission as a separate final gate.
 
-The repository does not yet constitute a single turnkey autonomous platform. The remaining integration work is to standardize machine-readable records, provide a shared executor interface, connect the evidence ledger to experiment outputs, and make the approval boundary enforceable in the orchestration layer.
+The repository does not yet constitute a single turnkey autonomous platform. In particular, it lacks an integrated LLM gateway, retrieval/vector memory, durable workflow engine, common experiment adapter, report/QA interface, normalized outcome-feedback loop, and enforceable cross-branch approval boundary. The remaining integration work and P0/P1/P2 acceptance criteria are defined in [`SYSTEM-GAP-ANALYSIS-v1.1.md`](SYSTEM-GAP-ANALYSIS-v1.1.md).
 
 ## 10. Integration contract for future components
 

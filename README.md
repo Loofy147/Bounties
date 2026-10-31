@@ -50,7 +50,7 @@ scope
 
 The system is evidence-driven rather than report-volume-driven. AI components may generate and investigate hypotheses, but the research record remains provenance-aware and a human approval gate is required before external submission.
 
-The integrated operating model is documented in [`docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md`](docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md). It defines the target snapshot, scope contract, attack-surface graph, state model, invariant, hypothesis, controlled experiment, evidence bundle, validation, impact, human-review, and learning components that connect the repository’s labs, detectors, target dossiers, evidence ledger, CI, and research records.
+The integrated operating model is documented in [`docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md`](docs/SECURITY-RESEARCH-OPERATING-SYSTEM-v1.md). The current gap audit and integration specification is [`docs/SYSTEM-GAP-ANALYSIS-v1.1.md`](docs/SYSTEM-GAP-ANALYSIS-v1.1.md); it distinguishes branch-local prototypes from capabilities integrated on `main` and defines the missing LLM gateway, retrieval memory, workflow engine, experiment adapters, human-QA interface, outcome loop, and self-improvement controls.
 
 ## Directory model
 
